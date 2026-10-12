@@ -25,8 +25,8 @@ const DEFAULTS = {
   theme: { source: 'art', color: '#6750a4', variant: 'tonal' },
   behavior: { tuck: true, hideFullscreen: true },
   activities: { volume: true, media: true, battery: true, audioDevice: true },
-  tabs: { home: true, today: true, stats: true, shelf: true, clip: true, apps: true, term: true, claude: true, power: true },
-  claudeModel: '',
+  tabs: { home: true, today: true, stats: true, shelf: true, clip: true, apps: true, term: true, ai: true, power: true },
+  ai: { provider: 'claude-code', models: {}, effort: 'low', customBase: '' },
 };
 
 function readJson(p, fallback) { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fallback; } }
@@ -48,6 +48,9 @@ fs.mkdirSync(DATA, { recursive: true });
 const events = new EventEmitter();
 let config = merge(DEFAULTS, readJson(CONFIG_PATH, {}));
 let state = merge({ todos: [], favorites: [], shelf: [] }, readJson(STATE_PATH, {}));
+// ancien reglage claudeModel -> ai.models['claude-code']
+if (config.claudeModel && !config.ai.models['claude-code']) { config.ai.models['claude-code'] = config.claudeModel; }
+delete config.claudeModel;
 if (!fs.existsSync(CONFIG_PATH)) saveConfig();
 
 function saveConfig() { fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2)); }

@@ -21,6 +21,11 @@
   await I.buildNav();
   I.showTab(I.tab);
   I.renderCompact();
+  I.updateMood();
+
+  // L'icone de la zone de notification = la mascotte aux couleurs du theme
+  const trayIcon = () => { clearTimeout(I.trayT); I.trayT = setTimeout(() => Follet.png(64).then(follet.setTrayIcon).catch(() => { }), 900); };
+  I.on('theme', trayIcon); trayIcon();
 
   if (I.demo) {
     I.setMode('expanded');

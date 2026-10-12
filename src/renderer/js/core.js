@@ -103,20 +103,34 @@ function renderCompact() {
   if (m.present) {
     $('.c-title').textContent = m.title || 'Lecture';
     $('.c-sub').textContent = [m.artist, m.appName].filter(Boolean).join(' · ');
-    $('.c-lead .ms').textContent = 'music_note';
   } else {
     const now = new Date();
     $('.c-title').textContent = `${hhmm(now)} · ${dayName(now, { weekday: 'long', day: 'numeric', month: 'long' })}`;
     $('.c-sub').textContent = I.peekLine || 'Fais défiler ou clique pour ouvrir';
-    $('.c-lead .ms').textContent = I.peekIcon || 'wb_twilight';
   }
 }
 I.renderCompact = renderCompact;
+
+// ---------- la mascotte et son humeur ----------
+// Priorites : alerte (temporaire) > reflexion de l'IA > musique > sommeil (inactif) > repos
+I.mascot = Follet.create($('.c-mascot'), { size: 24 });
+I.moodState = { alert: false, think: false, idle: 0 };
+function updateMood() {
+  const s = I.moodState, playing = I.media.present && I.media.status === 'Playing';
+  const m = s.alert ? 'alert' : s.think ? 'think' : playing ? 'music' : s.idle > 300 ? 'sleep' : s.happy ? 'happy' : 'idle';
+  I.mood = m;
+  I.emit('mood', m);
+  I.mascot.setMood(m);
+}
+I.updateMood = updateMood;
+I.flashMood = (key, ms = 2500) => { I.moodState[key] = true; updateMood(); clearTimeout(I.moodState[key + 'T']); I.moodState[key + 'T'] = setTimeout(() => { I.moodState[key] = false; updateMood(); }, ms); };
+setInterval(async () => { I.moodState.idle = await follet.idleTime().catch(() => 0); updateMood(); }, 20000);
 $$('#compact [data-media]').forEach((b) => b.addEventListener('click', () => follet.mediaCmd(b.dataset.media)));
 follet.onMedia((m) => {
   const keep = I.media.thumb && m.present && !m.thumb && m.key === I.media.key ? I.media.thumb : null;
   I.media = { ...m, thumb: m.thumb || keep };
   renderCompact();
+  updateMood();
   I.emit('media', I.media);
 });
 follet.media().then((m) => { if (m) { I.media = m; renderCompact(); } });
@@ -134,6 +148,9 @@ function showActivity(html, kind, dur = 2600) {
 }
 I.showActivity = showActivity;
 I.activity = (a) => {
+  I.mascot.bump();
+  if (a.kind === 'battery' && a.low) I.flashMood('alert', 3500);
+  else if (a.kind === 'audioDevice' || (a.kind === 'battery' && a.plugged)) I.flashMood('happy', 2500);
   if (a.kind === 'volume') {
     const icon = a.muted || a.level === 0 ? 'volume_off' : a.level < 40 ? 'volume_down' : 'volume_up';
     if (actKind === 'volume' && I.mode === 'activity') {           // mise a jour sans relancer l'animation
@@ -194,6 +211,7 @@ function tickTimer() {
   if (!t.paused && left <= 0) {
     I.timer = null; I.saveTimer();
     notchEl.classList.remove('has-timer');
+    I.flashMood('alert', 3000);
     showActivity(`<div class="a-ico">${ms('timer', 'fill s20')}</div><div class="a-txt"><div class="title-s">Minuteur terminé</div><div class="body-s variant">${fmtDur(t.total)}</div></div>`, 'timer', 6000);
     follet.notify('Minuteur terminé', `${fmtDur(t.total)} écoulé${t.total >= 120 ? 'es' : ''}`);
   }

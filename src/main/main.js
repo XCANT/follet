@@ -1,5 +1,5 @@
 // Follet : une encoche facon "Dynamic Island" en haut de l'ecran, pour Windows.
-const { app, Tray, Menu, nativeImage, globalShortcut, shell } = require('electron');
+const { app, Tray, Menu, nativeImage, globalShortcut, shell, ipcMain, powerMonitor } = require('electron');
 const path = require('path');
 
 if (!app.requestSingleInstanceLock()) { app.quit(); process.exit(0); }
@@ -15,7 +15,7 @@ require('./stats');
 require('./today');
 require('./tools');
 require('./terminal');
-require('./claude');
+require('./ai');
 
 // ---------- raccourci global ----------
 let shortcut = null;
@@ -51,6 +51,10 @@ function createTray() {
   tray.on('click', () => { windowMod.reveal(); core.send('toggle'); });
   rebuild();
 }
+
+// La mascotte, rendue par l'interface aux couleurs du theme, sert d'icone de notification
+ipcMain.on('tray-icon', (_e, dataUrl) => { const img = nativeImage.createFromDataURL(dataUrl); if (tray && !img.isEmpty()) tray.setImage(img.resize({ width: 32, height: 32 })); });
+ipcMain.handle('idle-time', () => powerMonitor.getSystemIdleTime());
 
 app.whenReady().then(() => {
   helper.start();

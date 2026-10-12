@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('follet', {
   setRect: sendTo('notch-rect'),
   collapsed: sendTo('collapsed'),
   focusWindow: sendTo('focus-window'),
+  idleTime: invoke('idle-time'), setTrayIcon: sendTo('tray-icon'),
   onPointer: on('pointer'), onTuck: on('tuck'), onReveal: on('reveal'), onToggle: on('toggle'), onOpenTab: on('open-tab'),
   onTheme: on('theme'), onActivity: on('activity'),
 
@@ -44,7 +45,8 @@ contextBridge.exposeInMainWorld('follet', {
   onPtyData: on('pty-data'), onPtyExit: on('pty-exit'),
 
   // Claude
-  claudeAsk: invoke('claude-ask'), claudeStop: invoke('claude-stop'), claudeUsage: invoke('claude-usage'), onClaude: on('claude-event'),
+  aiAsk: invoke('ai-ask'), aiStop: invoke('ai-stop'), onAi: on('ai-event'), aiModels: invoke('ai-models'), aiInfo: invoke('ai-info'), aiKeySet: invoke('ai-key-set'),
+  claudeUsage: invoke('claude-usage'),
 
   // reglages
   configGet: invoke('config-get'), configSet: invoke('config-set'), loginSet: invoke('login-set'),

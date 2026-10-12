@@ -8,7 +8,7 @@ I.view('settings', {
 
   sections: [
     ['look', 'palette', 'Apparence'], ['behavior', 'tune', 'Comportement'], ['activities', 'notifications_active', 'Activités'],
-    ['tabs', 'tab', 'Onglets'], ['weather', 'partly_cloudy_day', 'Météo'], ['agenda', 'calendar_month', 'Agenda'],
+    ['tabs', 'tab', 'Onglets'], ['weather', 'partly_cloudy_day', 'Météo'], ['agenda', 'calendar_month', 'Agenda'], ['ai', 'local_fire_department', 'IA'],
     ['system', 'computer', 'Système'], ['about', 'info', 'À propos'],
   ],
 
@@ -20,6 +20,7 @@ I.view('settings', {
   async show() { this.data = await follet.configGet(); this.open(this.sec); },
   async open(sec) {
     if (!this.data) this.data = await follet.configGet();
+    if (sec === 'ai') this.ai = await follet.aiInfo();
     this.sec = sec;
     $$('.set-nav button', this.el).forEach((b) => b.classList.toggle('on', b.dataset.s === sec));
     const body = $('.set-body', this.el);
@@ -152,13 +153,46 @@ I.view('settings', {
     });
   },
 
+  // ---------- IA ----------
+  r_ai() {
+    const i = this.ai, p = i.providers[i.provider];
+    const opts = Object.entries(i.providers).map(([id, v]) => `<option value="${id}" ${id === i.provider ? 'selected' : ''}>${esc(v.label)} — ${esc(v.hint)}</option>`).join('');
+    let html = this.row('Fournisseur', 'Celui qui répond quand tu parles à Follet.', `<select class="field ai-prov" style="width:300px">${opts}</select>`);
+    if (i.provider === 'custom') html += this.row('Adresse du serveur', 'Ex. http://localhost:1234/v1 (LM Studio), https://api.groq.com/openai/v1…', `<input class="field ai-base" value="${esc(i.customBase)}" placeholder="https://…/v1" style="width:300px">`);
+    if (p.key) html += this.row('Clé API' + (p.key === 'optional' ? ' (optionnelle)' : ''), p.hasKey ? `${ms('lock', 's18')} Enregistrée, chiffrée par Windows sur ce PC` : 'Stockée chiffrée sur ce PC, jamais dans le code ni envoyée ailleurs.',
+      `<div style="display:flex;gap:6px"><input type="password" class="field ai-key" placeholder="${p.hasKey ? '••••••••' : 'Colle ta clé'}" style="width:190px">${p.hasKey ? `<button class="icon-btn sm state ai-key-del" title="Supprimer la clé">${ms('delete')}</button>` : ''}<button class="btn filled sm state ai-key-save">OK</button></div>`);
+    html += this.row('Modèle', i.provider === 'claude-code' ? 'Vide = le modèle par défaut de Claude Code.' : 'Liste lue chez le fournisseur.', `<div style="display:flex;gap:6px"><select class="field ai-model" style="width:230px"><option value="">${i.model ? esc(i.model) : 'Par défaut'}</option></select><button class="icon-btn sm state ai-refresh" title="Recharger la liste">${ms('refresh')}</button></div>`);
+    if (i.provider === 'anthropic') html += this.row('Effort', 'Plus d\'effort = réponses plus réfléchies mais plus lentes et plus chères.', '<div class="seg-effort"></div>');
+    html += `<div class="body-s variant" style="margin:10px 8px">${ms('info', 's18')} Tes messages sont envoyés au fournisseur choisi. Avec Ollama, tout reste sur ton PC.</div>`;
+    return html;
+  },
+  async b_ai(body) {
+    const i = this.ai;
+    $('.ai-prov', body).addEventListener('change', async (e) => { await this.save({ ai: { provider: e.target.value } }); this.open('ai'); });
+    $('.ai-base', body)?.addEventListener('change', (e) => this.save({ ai: { customBase: e.target.value.trim() } }, 'Adresse enregistrée'));
+    const saveKey = async () => { const k = $('.ai-key', body).value.trim(); if (!k) return; await follet.aiKeySet(i.provider, k); snack('Clé enregistrée'); this.open('ai'); };
+    $('.ai-key-save', body)?.addEventListener('click', saveKey);
+    $('.ai-key', body)?.addEventListener('keydown', (e) => e.key === 'Enter' && saveKey());
+    $('.ai-key-del', body)?.addEventListener('click', async () => { await follet.aiKeySet(i.provider, ''); snack('Clé supprimée'); this.open('ai'); });
+    if ($('.seg-effort', body)) segmented($('.seg-effort', body), [['low', 'Rapide'], ['medium', 'Équilibré'], ['high', 'Réfléchi']], i.effort, (v) => this.save({ ai: { effort: v } }));
+    const sel = $('.ai-model', body);
+    sel.addEventListener('change', () => this.save({ ai: { models: { [i.provider]: sel.value } } }, sel.value ? 'Modèle : ' + sel.value : 'Modèle par défaut'));
+    const load = async () => {
+      const list = await follet.aiModels(i.provider);
+      if (!Array.isArray(list)) { snack('Liste indisponible : ' + (list && list.error)); return; }
+      const all = [...new Set([i.model, ...list].filter(Boolean))];
+      sel.innerHTML = `<option value="">Par défaut</option>` + all.map((m) => `<option value="${esc(m)}" ${m === i.model ? 'selected' : ''}>${esc(m)}</option>`).join('');
+    };
+    $('.ai-refresh', body).addEventListener('click', load);
+    load();
+  },
+
   // ---------- Systeme ----------
   r_system() {
     const c = this.data.config;
     const drives = this.data.drives.map((d) => `<label class="chip ${c.disks.includes(d) ? 'selected' : ''}" style="cursor:pointer"><input type="checkbox" data-d="${esc(d)}" ${c.disks.includes(d) ? 'checked' : ''} hidden>${ms(c.disks.includes(d) ? 'check' : 'hard_drive')}${d.slice(0, 2)}</label>`).join(' ');
     return this.row('Disques affichés', '', `<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${drives}</div>`)
-      + this.row('Shell du terminal', 'Par défaut : PowerShell 7.', `<select class="field shell">${[['pwsh.exe', 'PowerShell 7'], ['powershell.exe', 'Windows PowerShell'], ['cmd.exe', 'Invite de commandes'], ['wsl.exe', 'WSL']].map(([v, l]) => `<option value="${v}" ${c.shell === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`)
-      + this.row('Modèle Claude', 'Pour l\'onglet Claude.', `<select class="field model">${[['', 'Par défaut'], ['sonnet', 'Sonnet'], ['opus', 'Opus'], ['haiku', 'Haiku']].map(([v, l]) => `<option value="${v}" ${c.claudeModel === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`);
+      + this.row('Shell du terminal', 'Par défaut : PowerShell 7.', `<select class="field shell">${[['pwsh.exe', 'PowerShell 7'], ['powershell.exe', 'Windows PowerShell'], ['cmd.exe', 'Invite de commandes'], ['wsl.exe', 'WSL']].map(([v, l]) => `<option value="${v}" ${c.shell === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`);
   },
   b_system(body) {
     $$('[data-d]', body).forEach((cb) => cb.addEventListener('change', async () => {
@@ -166,7 +200,6 @@ I.view('settings', {
       await this.save({ disks }); this.open('system');
     }));
     $('.shell', body).addEventListener('change', (e) => this.save({ shell: e.target.value }, 'Effet au prochain terminal'));
-    $('.model', body).addEventListener('change', (e) => this.save({ claudeModel: e.target.value }));
   },
 
   // ---------- A propos ----------
