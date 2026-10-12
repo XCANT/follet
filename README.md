@@ -1,4 +1,6 @@
-# Island
+# Follet
+
+*Un feu follet : la petite flamme du folklore québécois, cousine du hitodama japonais.*
 
 Une encoche façon *Dynamic Island* pour Windows. Elle vit en haut de l'écran, se déroule au survol et regroupe ce qu'on va chercher dix fois par jour : la musique, l'agenda, la météo, les stats du PC, une étagère de fichiers, le presse-papiers, un terminal et Claude.
 
@@ -48,7 +50,7 @@ Le démarrage avec Windows se règle dans **Réglages → Comportement** ou dans
 
 ## Vie privée
 
-- Toutes les données personnelles (config, tâches, étagère, favoris, conversations Claude) restent dans `%APPDATA%\Island`, jamais dans le dossier du projet.
+- Toutes les données personnelles (config, tâches, étagère, favoris, conversations Claude) restent dans `%APPDATA%\Follet`, jamais dans le dossier du projet.
 - Le presse-papiers n'est jamais écrit sur le disque.
 - Services externes : [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (position approximative par IP, désactivable), [Open-Meteo](https://open-meteo.com) (météo et recherche de ville), [speed.cloudflare.com](https://speed.cloudflare.com) (test de vitesse, seulement sur demande) et les adresses iCal que tu ajoutes.
 
@@ -68,15 +70,15 @@ src/main/
   preload.js     pont sécurisé vers l'interface
 src/renderer/
   css/m3.css     jetons et composants Material 3
-  css/island.css encoche et onglets
+  css/notch.css  encoche et onglets
   js/            core.js (états, activités), views/*.js (un fichier par onglet), boot.js
 ```
 
 ### Tests
 
-- `ISLAND_DEMO=<onglet>` ouvre l'island déployée sur un onglet (`home`, `today`, `stats`, `shelf`, `clip`, `apps`, `term`, `claude`, `power`, `settings`) ; `ISLAND_DEMO=1` les fait défiler.
-- `ISLAND_EVAL="<expression JS>"` écrit le résultat de l'expression dans la sortie standard, par exemple `I.activity({kind:'volume', level:42})` pour voir une activité.
+- `FOLLET_DEMO=<onglet>` ouvre Follet déployée sur un onglet (`home`, `today`, `stats`, `shelf`, `clip`, `apps`, `term`, `claude`, `power`, `settings`) ; `FOLLET_DEMO=1` les fait défiler.
+- `FOLLET_EVAL="<expression JS>"` écrit le résultat de l'expression dans la sortie standard, par exemple `I.activity({kind:'volume', level:42})` pour voir une activité.
 
 ## Inspiration
 
-Le look s'inspire de [Hitodama](https://hitodama.in) et des encoches macOS ([boring.notch](https://github.com/TheBoredTeam/boring.notch), NotchNook, Alcove). Island n'est affilié à aucun de ces projets.
+Le look s'inspire de [Hitodama](https://hitodama.in) et des encoches macOS ([boring.notch](https://github.com/TheBoredTeam/boring.notch), NotchNook, Alcove). Follet n'est affilié à aucun de ces projets.

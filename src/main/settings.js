@@ -4,16 +4,23 @@ const fs = require('fs');
 const { execFile } = require('child_process');
 const core = require('./core');
 
+const REG = require('path').join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'reg.exe');
 const RUN_KEY = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run';
-const LOGIN = { path: process.execPath, args: app.isPackaged ? [] : [core.APP_DIR], name: 'Island' };
+const LOGIN = { path: process.execPath, args: app.isPackaged ? [] : [core.APP_DIR], name: 'Follet' };
 
 function loginEnabled() {
-  return new Promise((resolve) => execFile('reg.exe', ['query', RUN_KEY, '/v', 'Island'], { windowsHide: true }, (err) => resolve(!err)));
+  return new Promise((resolve) => execFile(REG, ['query', RUN_KEY, '/v', 'Follet'], { windowsHide: true }, (err) => resolve(!err)));
 }
 function setLogin(on) {
   app.setLoginItemSettings({ ...LOGIN, openAtLogin: on });
   return loginEnabled();
 }
+
+// Ancien nom (Island) : on remplace son entree de demarrage par celle de Follet
+execFile(REG, ['query', RUN_KEY, '/v', 'Island'], { windowsHide: true }, (err) => {
+  if (err) return;
+  execFile(REG, ['delete', RUN_KEY, '/v', 'Island', '/f'], { windowsHide: true }, () => setLogin(true));
+});
 
 function displays() {
   const primary = screen.getPrimaryDisplay().id;

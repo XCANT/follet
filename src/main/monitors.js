@@ -1,5 +1,5 @@
 // Surveille la musique, le volume, la sortie audio et la batterie.
-// Envoie l'etat a l'interface et declenche les "activites en direct" (l'island s'elargit quelques secondes).
+// Envoie l'etat a l'interface et declenche les "activites en direct" (l'encoche s'elargit quelques secondes).
 const { ipcMain, powerMonitor } = require('electron');
 const core = require('./core');
 const helper = require('./helper');

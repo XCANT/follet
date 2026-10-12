@@ -66,7 +66,7 @@ ipcMain.handle('app-fav', (_e, p, on) => {
   core.saveState(); return core.state.favorites;
 });
 
-// ---------- etagere : fichiers deposes sur l'island ----------
+// ---------- etagere : fichiers deposes sur l'encoche ----------
 function shelfInfo(p) {
   try { const st = fs.statSync(p); return { path: p, name: path.basename(p), size: st.isDirectory() ? null : st.size, dir: st.isDirectory(), exists: true }; }
   catch { return { path: p, name: path.basename(p), exists: false }; }

@@ -17,9 +17,9 @@ I.view('settings', {
     $('.set-nav', el).innerHTML = this.sections.map(([id, i, l]) => `<button class="state" data-s="${id}">${ms(i)}${l}</button>`).join('');
     $('.set-nav', el).addEventListener('click', (e) => { const b = e.target.closest('[data-s]'); if (b) this.open(b.dataset.s); });
   },
-  async show() { this.data = await island.configGet(); this.open(this.sec); },
+  async show() { this.data = await follet.configGet(); this.open(this.sec); },
   async open(sec) {
-    if (!this.data) this.data = await island.configGet();
+    if (!this.data) this.data = await follet.configGet();
     this.sec = sec;
     $$('.set-nav button', this.el).forEach((b) => b.classList.toggle('on', b.dataset.s === sec));
     const body = $('.set-body', this.el);
@@ -27,7 +27,7 @@ I.view('settings', {
     body.scrollTop = 0;
     this['b_' + sec] && this['b_' + sec](body);
   },
-  async save(patch, msg) { this.data.config = await island.configSet(patch); if (msg) snack(msg); },
+  async save(patch, msg) { this.data.config = await follet.configSet(patch); if (msg) snack(msg); },
   row(hl, sup, ctrl) { return `<div class="set-row"><div class="txt"><div class="hl">${hl}</div>${sup ? `<div class="sup">${sup}</div>` : ''}</div>${ctrl}</div>`; },
   sw(key, on) { return `<input type="checkbox" class="switch" data-k="${key}" ${on ? 'checked' : ''}>`; },
   bindSwitches(body, fn) { $$('.switch[data-k]', body).forEach((s) => s.addEventListener('change', () => fn(s.dataset.k, s.checked))); },
@@ -59,13 +59,13 @@ I.view('settings', {
     return this.row('Écran', 'Où l\'encoche s\'affiche.', `<select class="field disp">${disp}</select>`)
       + this.row('Se ranger devant une fenêtre maximisée', 'Elle ressort quand la souris touche le haut de l\'écran, au milieu.', this.sw('tuck', c.behavior.tuck))
       + this.row('Masquer pendant les jeux en plein écran', '', this.sw('hideFullscreen', c.behavior.hideFullscreen))
-      + this.row('Raccourci clavier', 'Ouvre ou ferme l\'island de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)
+      + this.row('Raccourci clavier', 'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)
       + this.row('Démarrer avec Windows', '', `<input type="checkbox" class="switch login" ${this.data.login ? 'checked' : ''}>`);
   },
   b_behavior(body) {
     $('.disp', body).addEventListener('change', (e) => this.save({ display: e.target.value }, 'Écran changé'));
     this.bindSwitches(body, (k, v) => this.save({ behavior: { [k]: v } }));
-    $('.login', body).addEventListener('change', async (e) => { this.data.login = await island.loginSet(e.target.checked); snack(this.data.login ? 'Island démarrera avec Windows' : 'Démarrage automatique désactivé'); });
+    $('.login', body).addEventListener('change', async (e) => { this.data.login = await follet.loginSet(e.target.checked); snack(this.data.login ? 'Follet démarrera avec Windows' : 'Démarrage automatique désactivé'); });
     const sc = $('.shortcut', body);
     sc.addEventListener('focus', () => { sc.value = 'Appuie sur la combinaison…'; });
     sc.addEventListener('blur', () => { sc.value = this.data.config.shortcut; });
@@ -113,7 +113,7 @@ I.view('settings', {
     $('.geo-q', body).addEventListener('input', (e) => {
       clearTimeout(t);
       t = setTimeout(async () => {
-        const res = await island.geocode(e.target.value).catch(() => []);
+        const res = await follet.geocode(e.target.value).catch(() => []);
         $('.geo-results', body).innerHTML = res.map((r, i) => `<div class="list-item state" data-i="${i}" style="min-height:44px;cursor:pointer">${ms('location_on')}<div class="txt"><div class="hl">${esc(r.city)}</div><div class="sup">${esc(r.region)}</div></div></div>`).join('');
         this.geo = res;
       }, 300);
@@ -131,7 +131,7 @@ I.view('settings', {
   r_agenda() {
     const cals = this.data.config.calendars;
     return `<div class="set-row" style="flex-direction:column;align-items:stretch">
-        <div class="txt"><div class="hl">Agendas iCal</div><div class="sup">Google Agenda → Paramètres → ton agenda → « Adresse secrète au format iCal ». Fonctionne aussi avec Outlook, iCloud, Proton… L'adresse reste dans %APPDATA%\\Island, jamais dans le code.</div></div>
+        <div class="txt"><div class="hl">Agendas iCal</div><div class="sup">Google Agenda → Paramètres → ton agenda → « Adresse secrète au format iCal ». Fonctionne aussi avec Outlook, iCloud, Proton… L'adresse reste dans %APPDATA%\\Follet, jamais dans le code.</div></div>
         <div class="cal-list">${cals.map((c, i) => { const u = typeof c === 'string' ? c : c.url; return `<div class="cal-item">${ms('calendar_month')}<span class="u ellipsis">${esc(u.replace(/(private-)[^/]+/, '$1••••'))}</span><button class="icon-btn xs state" data-del="${i}" title="Retirer">${ms('close')}</button></div>`; }).join('') || '<div class="body-s variant" style="padding:6px 0">Aucun agenda</div>'}</div>
         <div style="display:flex;gap:8px;margin-top:6px"><input class="field cal-url" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics"><button class="btn filled sm state cal-add">${ms('add')}Ajouter</button></div>
       </div>`;
@@ -171,9 +171,9 @@ I.view('settings', {
 
   // ---------- A propos ----------
   r_about() {
-    return this.row('Island', `Version ${esc(this.data.version)} · Material You · open source`, '')
+    return this.row('Follet', `Version ${esc(this.data.version)} · Material You · open source`, '')
       + this.row('Données personnelles', esc(this.data.dataDir) + '<br>Config, tâches, étagère et conversations Claude restent sur ce PC.', `<button class="btn tonal sm state open-data">${ms('folder_open')}Ouvrir</button>`)
       + this.row('Services contactés', 'ipwho.is / geojs.io (position par IP), Open-Meteo (météo), speed.cloudflare.com (test de vitesse, sur demande), tes agendas iCal.', '');
   },
-  b_about(body) { $('.open-data', body).addEventListener('click', () => island.openDataFolder()); },
+  b_about(body) { $('.open-data', body).addEventListener('click', () => follet.openDataFolder()); },
 });

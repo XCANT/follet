@@ -1,9 +1,9 @@
-// Island : une encoche facon "Dynamic Island" en haut de l'ecran, pour Windows.
+// Follet : une encoche facon "Dynamic Island" en haut de l'ecran, pour Windows.
 const { app, Tray, Menu, nativeImage, globalShortcut, shell } = require('electron');
 const path = require('path');
 
 if (!app.requestSingleInstanceLock()) { app.quit(); process.exit(0); }
-app.setAppUserModelId('Island');
+app.setAppUserModelId('Follet');
 
 const core = require('./core');
 const helper = require('./helper');
@@ -38,9 +38,9 @@ let tray;
 function createTray() {
   const icon = nativeImage.createFromPath(path.join(core.RENDERER, 'icon.png'));
   tray = new Tray(icon.resize({ width: 16, height: 16 }));
-  tray.setToolTip('Island');
+  tray.setToolTip('Follet');
   const rebuild = async () => tray.setContextMenu(Menu.buildFromTemplate([
-    { label: windowMod.win.isVisible() ? 'Masquer l\'island' : 'Afficher l\'island', click: () => { const w = windowMod.win; w.isVisible() ? w.hide() : w.showInactive(); rebuild(); } },
+    { label: windowMod.win.isVisible() ? 'Masquer Follet' : 'Afficher Follet', click: () => { const w = windowMod.win; w.isVisible() ? w.hide() : w.showInactive(); rebuild(); } },
     { label: 'Réglages…', click: () => { windowMod.reveal(); core.send('open-tab', 'settings'); windowMod.win.focus(); } },
     { label: 'Recharger', click: () => { core.reloadConfig(); windowMod.place(); windowMod.win.reload(); } },
     { label: 'Ouvrir le dossier des données', click: () => shell.openPath(core.DATA) },

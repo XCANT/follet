@@ -6,7 +6,7 @@ I.view('power', {
     const P = [['lock', 'Verrouiller', 'lock', false], ['sleep', 'Veille', 'bedtime', false], ['signout', 'Déconnexion', 'logout', true], ['restart', 'Redémarrer', 'restart_alt', true], ['shutdown', 'Éteindre', 'power_settings_new', true]];
     $('.power-grid', el).innerHTML = P.map(([a, l, i, hold]) => `<button class="pw state ${hold ? 'danger' : ''}" data-a="${a}" data-hold="${hold}"><span class="fill"></span>${ms(i)}<span>${l}</span></button>`).join('');
     $$('.pw', el).forEach((b) => {
-      const fire = () => { I.setMode('collapsed'); island.power(b.dataset.a); };
+      const fire = () => { I.setMode('collapsed'); follet.power(b.dataset.a); };
       if (b.dataset.hold === 'false') { b.addEventListener('click', fire); return; }
       let t = null;
       const cancel = () => { clearTimeout(t); b.classList.remove('holding'); };

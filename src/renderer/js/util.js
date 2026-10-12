@@ -97,7 +97,7 @@ function pillSlider(el, { value = 50, icon = '', label = '', onInput, onChange, 
 // Menu deroulant Material ancre sous un element ; items : [{ icon, label, on, value }] ou { header }
 function openMenu(anchor, items, onPick) {
   closeMenu();
-  const host = $('#island'), a = anchor.getBoundingClientRect(), h = host.getBoundingClientRect();
+  const host = $('#notch'), a = anchor.getBoundingClientRect(), h = host.getBoundingClientRect();
   const m = document.createElement('div');
   m.className = 'menu';
   m.innerHTML = items.map((it, i) => it.header ? `<div class="mh">${esc(it.header)}</div>` : `<button class="state ${it.on ? 'on' : ''}" data-i="${i}">${ms(it.icon || 'radio_button_unchecked')}<span class="ellipsis">${esc(it.label)}</span></button>`).join('');

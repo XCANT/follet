@@ -27,12 +27,12 @@ I.view('stats', {
     this.sort = 'mem';
     segmented($('.seg-top', el), [['mem', 'RAM'], ['cpu', 'CPU']], 'mem', (v) => { this.sort = v; this.renderProcs(); });
     $('.run-speed', el).addEventListener('click', () => this.runSpeed());
-    island.onSpeedtest((p) => {
+    follet.onSpeedtest((p) => {
       if (p.phase === 'ping') $('.sp-ping', el).textContent = p.value;
       if (p.phase === 'down') $('.sp-down', el).textContent = fmtMbps(p.value);
       if (p.phase === 'up') $('.sp-up', el).textContent = fmtMbps(p.value);
     });
-    island.speedtestLast().then((r) => r && this.showSpeed(r));
+    follet.speedtestLast().then((r) => r && this.showSpeed(r));
   },
 
   show() {
@@ -44,7 +44,7 @@ I.view('stats', {
   hide() { clearInterval(this.t1); clearInterval(this.t2); },
 
   async poll() {
-    const s = await island.stats().catch(() => null); if (!s) return;
+    const s = await follet.stats().catch(() => null); if (!s) return;
     const el = this.el, set = (k, pct, val, sub) => {
       const card = $(`[data-r=${k}]`, el);
       this.g.set($('.gauge', card), pct ?? 0);
@@ -74,7 +74,7 @@ I.view('stats', {
       <div class="kv"><span>Processus</span><b>${this.procs ? this.procs.total : '—'}</b></div>`;
   },
 
-  async pollProcs() { this.procs = await island.procs().catch(() => null); this.renderProcs(); },
+  async pollProcs() { this.procs = await follet.procs().catch(() => null); this.renderProcs(); },
   renderProcs() {
     const p = this.procs, el = $('.proc-list', this.el);
     if (!p) { el.innerHTML = `<div class="empty">${ms('hourglass_empty')}Analyse…</div>`; return; }
@@ -97,7 +97,7 @@ I.view('stats', {
   async runSpeed() {
     const b = $('.run-speed', this.el); b.disabled = true; b.innerHTML = `${ms('progress_activity')}Test…`;
     $('.sp-ping', this.el).textContent = $('.sp-down', this.el).textContent = $('.sp-up', this.el).textContent = '…';
-    const r = await island.speedtest().catch(() => null);
+    const r = await follet.speedtest().catch(() => null);
     b.disabled = false; b.innerHTML = `${ms('speed')}Tester`;
     if (r) this.showSpeed(r); else snack('Test de vitesse impossible');
   },

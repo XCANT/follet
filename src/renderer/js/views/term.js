@@ -24,14 +24,14 @@ I.view('term', {
     term.attachCustomKeyEventHandler((e) => {
       if (e.type !== 'keydown') return true;
       if (e.ctrlKey && e.key === 'c' && term.hasSelection()) { navigator.clipboard.writeText(term.getSelection()); term.clearSelection(); return false; }
-      if (e.ctrlKey && e.key === 'v') { navigator.clipboard.readText().then((t) => island.ptyWrite(t)); return false; }
+      if (e.ctrlKey && e.key === 'v') { navigator.clipboard.readText().then((t) => follet.ptyWrite(t)); return false; }
       return true;
     });
-    term.onData((d) => island.ptyWrite(d));
-    island.onPtyData((d) => term.write(d));
-    island.onPtyExit(() => { term.write('\r\n\x1b[90m[session terminée — rouvre l\'onglet pour relancer]\x1b[0m\r\n'); this.running = false; });
-    new ResizeObserver(() => { if (I.tab === 'term' && I.mode === 'expanded') { try { this.fit.fit(); island.ptyResize(term.cols, term.rows); } catch { } } }).observe(wrap);
+    term.onData((d) => follet.ptyWrite(d));
+    follet.onPtyData((d) => term.write(d));
+    follet.onPtyExit(() => { term.write('\r\n\x1b[90m[session terminée — rouvre l\'onglet pour relancer]\x1b[0m\r\n'); this.running = false; });
+    new ResizeObserver(() => { if (I.tab === 'term' && I.mode === 'expanded') { try { this.fit.fit(); follet.ptyResize(term.cols, term.rows); } catch { } } }).observe(wrap);
     setTimeout(() => this.start(), 80);
   },
-  async start() { this.fit.fit(); if (!this.running) { this.running = true; await island.ptyStart(this.term.cols, this.term.rows); } this.term.focus(); },
+  async start() { this.fit.fit(); if (!this.running) { this.running = true; await follet.ptyStart(this.term.cols, this.term.rows); } this.term.focus(); },
 });

@@ -1,4 +1,4 @@
-/* Etagere : fichiers deposes sur l'island, a glisser ensuite vers n'importe quelle appli. */
+/* Etagere : fichiers deposes sur l'encoche, a glisser ensuite vers n'importe quelle appli. */
 I.view('shelf', {
   label: 'Étagère', icon: 'inventory_2',
   html: `<div class="shelf-head">
@@ -13,24 +13,24 @@ I.view('shelf', {
     grid.addEventListener('click', async (e) => {
       const f = e.target.closest('.file'); if (!f) return;
       const p = f.dataset.path;
-      if (e.target.closest('[data-a=remove]')) { await island.shelfRemove(p); this.refresh(); }
-      else if (e.target.closest('[data-a=reveal]')) island.shelfReveal(p);
-      else island.shelfOpen(p);
+      if (e.target.closest('[data-a=remove]')) { await follet.shelfRemove(p); this.refresh(); }
+      else if (e.target.closest('[data-a=reveal]')) follet.shelfReveal(p);
+      else follet.shelfOpen(p);
     });
     // glisser vers l'exterieur : on laisse Windows gerer le glisser natif
     grid.addEventListener('dragstart', (e) => {
       const f = e.target.closest('.file'); if (!f) return;
       e.preventDefault();
       I.dragOut = true; setTimeout(() => (I.dragOut = false), 1500);
-      island.shelfDrag(f.dataset.path);
+      follet.shelfDrag(f.dataset.path);
     });
-    $('.shelf-clear', el).addEventListener('click', async () => { await island.shelfClear(); this.refresh(); });
+    $('.shelf-clear', el).addEventListener('click', async () => { await follet.shelfClear(); this.refresh(); });
   },
   show() { this.refresh(); },
 
   async refresh() {
     if (!this.el) return;
-    const items = await island.shelfList();
+    const items = await follet.shelfList();
     const grid = $('.shelf-grid', this.el);
     $('.shelf-clear', this.el).style.display = items.length ? '' : 'none';
     grid.innerHTML = items.length ? items.map((f) => `<div class="file state ${f.exists ? '' : 'missing'}" draggable="true" data-path="${esc(f.path)}" title="${esc(f.path)}">
@@ -40,7 +40,7 @@ I.view('shelf', {
       </div>`).join('')
       : `<div class="empty" style="grid-column:1/-1;padding-top:60px">${ms('move_to_inbox')}<span class="title-s">L'étagère est vide</span>Fais glisser des fichiers sur l'encoche, même quand elle est repliée.</div>`;
     for (const ph of $$('[data-icon]', grid)) {
-      island.shelfIcon(ph.dataset.icon).then((u) => { if (u) ph.outerHTML = `<img src="${u}" draggable="false">`; });
+      follet.shelfIcon(ph.dataset.icon).then((u) => { if (u) ph.outerHTML = `<img src="${u}" draggable="false">`; });
     }
   },
 });

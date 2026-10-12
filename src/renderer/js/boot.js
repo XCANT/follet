@@ -11,7 +11,7 @@
   }
 
   I.buildNav = async () => {
-    const { config } = await island.configGet();
+    const { config } = await follet.configGet();
     const visible = I.order.filter((id) => config.tabs[id] !== false);
     $('#nav').innerHTML = visible.map((id) => `<button data-tab="${id}"><span class="ind">${ms(I.views[id].icon)}</span><span class="lbl">${esc(I.views[id].label)}</span></button>`).join('');
     $$('#nav button').forEach((b) => b.addEventListener('click', () => I.showTab(b.dataset.tab)));

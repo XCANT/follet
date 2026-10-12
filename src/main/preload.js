@@ -5,9 +5,9 @@ const invoke = (ch) => (...a) => ipcRenderer.invoke(ch, ...a);
 const sendTo = (ch) => (...a) => ipcRenderer.send(ch, ...a);
 const on = (ch) => (cb) => { const f = (_e, ...a) => cb(...a); ipcRenderer.on(ch, f); return () => ipcRenderer.removeListener(ch, f); };
 
-contextBridge.exposeInMainWorld('island', {
+contextBridge.exposeInMainWorld('follet', {
   // fenetre / etats
-  setRect: sendTo('island-rect'),
+  setRect: sendTo('notch-rect'),
   collapsed: sendTo('collapsed'),
   focusWindow: sendTo('focus-window'),
   onPointer: on('pointer'), onTuck: on('tuck'), onReveal: on('reveal'), onToggle: on('toggle'), onOpenTab: on('open-tab'),

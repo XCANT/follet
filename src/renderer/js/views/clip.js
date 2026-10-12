@@ -10,16 +10,16 @@ I.view('clip', {
 
   init(el) {
     this.el = el; this.clips = [];
-    island.clipList().then((c) => (this.clips = c));
-    island.onClip((c) => { this.clips = c; if (I.mode === 'expanded' && I.tab === 'clip') this.render(); });
+    follet.clipList().then((c) => (this.clips = c));
+    follet.onClip((c) => { this.clips = c; if (I.mode === 'expanded' && I.tab === 'clip') this.render(); });
     $('.clip-search', el).addEventListener('input', () => this.render());
-    $('.clip-clear', el).addEventListener('click', async () => { this.clips = await island.clipClear(); this.render(); });
+    $('.clip-clear', el).addEventListener('click', async () => { this.clips = await follet.clipClear(); this.render(); });
     $('.clips', el).addEventListener('click', async (e) => {
       const c = e.target.closest('.clip'); if (!c) return;
       const at = +c.dataset.at;
-      if (e.target.closest('.del')) { this.clips = await island.clipRemove(at); this.render(); return; }
+      if (e.target.closest('.del')) { this.clips = await follet.clipRemove(at); this.render(); return; }
       const item = this.clips.find((x) => x.at === at); if (!item) return;
-      await island.clipCopy(item.text);
+      await follet.clipCopy(item.text);
       snack('Copié dans le presse-papiers');
       setTimeout(() => I.setMode('collapsed'), 700);
     });

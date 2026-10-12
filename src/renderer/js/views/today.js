@@ -49,12 +49,12 @@ I.view('today', {
       if (e.target.closest('.del')) this.todos.splice(i, 1);
       else if (e.target.closest('.check') || e.target.closest('.txt')) this.todos[i].done = !this.todos[i].done;
       else return;
-      island.todosSave(this.todos); this.renderTodos();
+      follet.todosSave(this.todos); this.renderTodos();
     });
     $('.todo-input', el).addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && e.target.value.trim()) { this.todos.push({ text: e.target.value.trim(), done: false }); e.target.value = ''; island.todosSave(this.todos); this.renderTodos(); }
+      if (e.key === 'Enter' && e.target.value.trim()) { this.todos.push({ text: e.target.value.trim(), done: false }); e.target.value = ''; follet.todosSave(this.todos); this.renderTodos(); }
     });
-    island.todos().then((t) => { this.todos = t || []; this.renderTodos(); });
+    follet.todos().then((t) => { this.todos = t || []; this.renderTodos(); });
 
     // meteo et agenda servent aussi a l'apercu de l'encoche : on charge tout de suite, puis toutes les 15 min
     const refresh = () => { this.loadWeather(); this.loadCalendar(); };
@@ -91,7 +91,7 @@ I.view('today', {
   },
 
   async loadWeather() {
-    const w = await island.weather().catch(() => null);
+    const w = await follet.weather().catch(() => null);
     const el = $('.weather', this.el);
     if (!w || !w.current) { el.innerHTML = `<div class="empty">${ms('cloud_off')}Météo indisponible<br><span class="body-s">Vérifie la connexion ou règle une ville dans Réglages → Météo</span></div>`; return; }
     const c = w.current;
@@ -118,7 +118,7 @@ I.view('today', {
 
   async loadCalendar(force) {
     const el = $('.agenda-list', this.el);
-    const cal = await island.calendar(force).catch((e) => ({ configured: true, events: [], errors: [e.message] }));
+    const cal = await follet.calendar(force).catch((e) => ({ configured: true, events: [], errors: [e.message] }));
     this.events = cal.events || [];
     if (!cal.configured) {
       el.innerHTML = `<div class="empty">${ms('calendar_month')}Aucun agenda configuré<br><button class="btn tonal sm state add-cal" style="margin-top:8px">${ms('add')}Ajouter un agenda</button></div>`;

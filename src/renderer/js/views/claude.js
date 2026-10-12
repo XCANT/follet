@@ -18,14 +18,14 @@ I.view('claude', {
     const ta = $('textarea', el);
     ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; });
     ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); } });
-    $('.chat-send', el).addEventListener('click', () => (this.busy ? island.claudeStop() : this.send()));
+    $('.chat-send', el).addEventListener('click', () => (this.busy ? follet.claudeStop() : this.send()));
     $('.chat-new', el).addEventListener('click', () => {
       if (this.busy) return;
       this.cont = false;
       $('.chat-log', el).innerHTML = `<div class="empty">${ms('auto_awesome')}Nouvelle conversation</div>`;
       ta.focus();
     });
-    island.onClaude(({ type, data }) => {
+    follet.onClaude(({ type, data }) => {
       if (type === 'delta') { this.text += data; this.queue(); }
       else if (type === 'result') { if (data.text && !this.text) this.text = data.text; if (data.error) this.add('err', esc(data.text || 'Erreur')); this.cont = true; }
       else if (type === 'error') this.add('err', esc(data));
@@ -58,11 +58,11 @@ I.view('claude', {
     this.add('user', esc(q));
     this.text = ''; this.ai = this.add('ai typing', '');
     this.setBusy(true);
-    if (!(await island.claudeAsk(q, this.cont))) this.setBusy(false);
+    if (!(await follet.claudeAsk(q, this.cont))) this.setBusy(false);
   },
 
   async loadUsage() {
-    const u = await island.claudeUsage().catch(() => null), el = $('.usage', this.el);
+    const u = await follet.claudeUsage().catch(() => null), el = $('.usage', this.el);
     if (!u) { el.innerHTML = `<div class="empty">${ms('data_usage')}Journaux introuvables</div>`; return; }
     const max = Math.max(1, ...u.days.map((d) => d.out));
     const reset = u.windowStart ? new Date(u.windowStart + 5 * 3600e3) : null;

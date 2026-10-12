@@ -1,5 +1,5 @@
 // Fenetre transparente toujours au-dessus, centree en haut de l'ecran choisi.
-// La souris traverse la fenetre partout sauf sur l'island : le processus principal suit le curseur
+// La souris traverse la fenetre partout sauf sur l'encoche : le processus principal suit le curseur
 // et active la capture quand il passe sur le rectangle que l'interface lui signale.
 const { BrowserWindow, ipcMain, screen, desktopCapturer } = require('electron');
 const path = require('path');
@@ -8,7 +8,7 @@ const helper = require('./helper');
 
 const WIN_W = 900, WIN_H = 600;
 let win = null;
-let islandRect = null;        // rectangle de l'island dans la fenetre (px CSS), null = rien a capturer
+let notchRect = null;        // rectangle de l'encoche dans la fenetre (px CSS), null = rien a capturer
 let inside = false;
 let coveredByMax = false, revealed = false, tucked = false, hiddenForFullscreen = false;
 
@@ -31,7 +31,7 @@ function create() {
   win = new BrowserWindow({
     width: WIN_W, height: WIN_H, frame: false, transparent: true, resizable: false, movable: false,
     skipTaskbar: true, hasShadow: false, alwaysOnTop: true, show: false, fullscreenable: false, maximizable: false,
-    backgroundColor: '#00000000', title: 'Island',
+    backgroundColor: '#00000000', title: 'Follet',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
   });
   core.setWindow(win);
@@ -42,15 +42,15 @@ function create() {
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setIgnoreMouseEvents(true, { forward: true });
   place();
-  const demo = process.env.ISLAND_DEMO;
+  const demo = process.env.FOLLET_DEMO;
   win.loadFile(path.join(core.RENDERER, 'index.html'), demo ? { query: { demo } } : undefined);
   win.once('ready-to-show', () => win.showInactive());
   win.webContents.on('console-message', (e) => {
     if (e.level === 'error' || e.level === 'warning') console.log(`[renderer ${e.level}] ${e.message} (${e.sourceId}:${e.lineNumber})`);
   });
-  if (process.env.ISLAND_EVAL) setTimeout(async () => {
-    try { console.log('[eval]', JSON.stringify(await win.webContents.executeJavaScript(process.env.ISLAND_EVAL))); } catch (e) { console.log('[eval error]', e.message); }
-  }, +(process.env.ISLAND_EVAL_DELAY || 8000));
+  if (process.env.FOLLET_EVAL) setTimeout(async () => {
+    try { console.log('[eval]', JSON.stringify(await win.webContents.executeJavaScript(process.env.FOLLET_EVAL))); } catch (e) { console.log('[eval error]', e.message); }
+  }, +(process.env.FOLLET_EVAL_DELAY || 8000));
   for (const ev of ['display-metrics-changed', 'display-added', 'display-removed']) screen.on(ev, place);
   core.events.on('config', (c, before) => { if (c.display !== before.display) place(); applyTuck(); });
 
@@ -61,13 +61,13 @@ function create() {
 }
 
 // ---------- capture de la souris ----------
-ipcMain.on('island-rect', (_e, r) => { islandRect = r; });
+ipcMain.on('notch-rect', (_e, r) => { notchRect = r; });
 function trackCursor() {
   if (!win || !win.isVisible()) return;
   const p = screen.getCursorScreenPoint();
   const wb = win.getBounds();
-  const now = !!islandRect && p.x >= wb.x + islandRect.x && p.x <= wb.x + islandRect.x + islandRect.w
-    && p.y >= wb.y + islandRect.y && p.y <= wb.y + islandRect.y + islandRect.h;
+  const now = !!notchRect && p.x >= wb.x + notchRect.x && p.x <= wb.x + notchRect.x + notchRect.w
+    && p.y >= wb.y + notchRect.y && p.y <= wb.y + notchRect.y + notchRect.h;
   if (now !== inside) {
     inside = now;
     win.setIgnoreMouseEvents(!now, { forward: true });
@@ -91,7 +91,7 @@ ipcMain.on('collapsed', () => {
   revealed = false; applyTuck();
 });
 const DESKTOP_CLASSES = new Set(['Progman', 'WorkerW', 'Shell_TrayWnd', 'Shell_SecondaryTrayWnd']);
-// On regarde la fenetre visible en haut de l'ecran, a cote de l'island (pas la fenetre active :
+// On regarde la fenetre visible en haut de l'ecran, a cote de l'encoche (pas la fenetre active :
 // une appli maximisee peut etre derriere une petite boite de dialogue).
 async function checkCovered() {
   if (!win || !helper.ready) return;

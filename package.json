@@ -1,7 +1,7 @@
 {
-  "name": "island",
+  "name": "follet",
   "version": "1.0.0",
-  "description": "Une encoche façon Dynamic Island pour Windows : musique, agenda, stats, presse-papiers, terminal, Claude.",
+  "description": "Follet : une encoche façon Dynamic Island pour Windows, en Material You — musique, agenda, stats, étagère, presse-papiers, terminal, Claude.",
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron ."
@@ -21,6 +21,6 @@
   "allowScripts": {
     "electron@37.10.3": true
   },
-  "productName": "Island",
+  "productName": "Follet",
   "private": true
 }

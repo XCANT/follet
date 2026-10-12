@@ -10,7 +10,7 @@ const { EventEmitter } = require('events');
 const SRC = path.join(__dirname, '..');
 const APP_DIR = path.join(SRC, '..');
 const RENDERER = path.join(SRC, 'renderer');
-// Les donnees personnelles vivent dans %APPDATA%\Island, jamais dans le dossier du code.
+// Les donnees personnelles vivent dans %APPDATA%\Follet, jamais dans le dossier du code.
 const DATA = app.getPath('userData');
 const CONFIG_PATH = path.join(DATA, 'config.json');
 const STATE_PATH = path.join(DATA, 'state.json');
@@ -38,6 +38,13 @@ function merge(base, over) {
 }
 
 fs.mkdirSync(DATA, { recursive: true });
+// Migration depuis l'ancien nom (Island) : on recopie la config, l'etat et les conversations
+(function migrate() {
+  const old = path.join(app.getPath('appData'), 'Island');
+  if (fs.existsSync(CONFIG_PATH) || !fs.existsSync(path.join(old, 'config.json'))) return;
+  for (const f of ['config.json', 'state.json']) { try { fs.copyFileSync(path.join(old, f), path.join(DATA, f)); } catch { } }
+  try { fs.cpSync(path.join(old, 'claude-chat'), path.join(DATA, 'claude-chat'), { recursive: true }); } catch { }
+})();
 const events = new EventEmitter();
 let config = merge(DEFAULTS, readJson(CONFIG_PATH, {}));
 let state = merge({ todos: [], favorites: [], shelf: [] }, readJson(STATE_PATH, {}));
@@ -64,7 +71,7 @@ function send(channel, ...args) { if (win && !win.isDestroyed()) win.webContents
 function fetchRaw(url, { timeout = 10000, method = 'GET', body = null, headers = {} } = {}) {
   return new Promise((resolve, reject) => {
     const lib = url.startsWith('https') ? https : http;
-    const req = lib.request(url, { method, timeout, headers: { 'User-Agent': 'island/1.0', ...headers } }, (res) => {
+    const req = lib.request(url, { method, timeout, headers: { 'User-Agent': 'follet/1.0', ...headers } }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) { res.resume(); return resolve(fetchRaw(new URL(res.headers.location, url).href, { timeout, method, body, headers })); }
       resolve(res);
     });

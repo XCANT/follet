@@ -38,14 +38,14 @@ I.view('home', {
     // controles media
     $$('[data-m]', el).forEach((b) => b.addEventListener('click', () => {
       const m = I.media, a = b.dataset.m;
-      if (a === 'shuffle') island.mediaShuffle(!m.shuffle);
-      else if (a === 'repeat') island.mediaRepeat({ None: 'List', List: 'Track', Track: 'None' }[m.repeat] || 'List');
-      else island.mediaCmd(a);
+      if (a === 'shuffle') follet.mediaShuffle(!m.shuffle);
+      else if (a === 'repeat') follet.mediaRepeat({ None: 'List', List: 'Track', Track: 'None' }[m.repeat] || 'List');
+      else follet.mediaCmd(a);
     }));
     $('.wavy', el).addEventListener('click', (e) => {
       const m = I.media; if (!m.present || !m.duration) return;
       const r = e.currentTarget.getBoundingClientRect();
-      island.mediaSeek(((e.clientX - r.left) / r.width) * m.duration);
+      follet.mediaSeek(((e.clientX - r.left) / r.width) * m.duration);
     });
     I.on('media', () => this.renderMedia());
     I.on('tick', () => { if (this.visible()) this.renderProgress(); });
@@ -55,19 +55,19 @@ I.view('home', {
     // volume
     this.vol = pillSlider($('.vol', el), {
       icon: 'volume_up', label: 'Volume',
-      onInput: (v) => { this.vol.set(v, false); this.vol.setIcon(this.volIcon(v, false)); island.setVolume(v); },
-      onIcon: () => island.mute(!(this.volume && this.volume.muted)),
+      onInput: (v) => { this.vol.set(v, false); this.vol.setIcon(this.volIcon(v, false)); follet.setVolume(v); },
+      onIcon: () => follet.mute(!(this.volume && this.volume.muted)),
     });
     const applyVol = (v) => { if (!v) return; this.volume = v; this.vol.set(v.level, v.muted); this.vol.setIcon(this.volIcon(v.level, v.muted)); };
-    island.onVolume(applyVol);
-    island.volume().then(applyVol);
+    follet.onVolume(applyVol);
+    follet.volume().then(applyVol);
 
     // sortie audio
     $('.out-btn', el).addEventListener('click', async (e) => {
-      const list = await island.audioDevices().catch(() => []);
+      const list = await follet.audioDevices().catch(() => []);
       const icon = (n) => (/head|casque|buds|airpods|écouteur|jbl|sony|bose/i.test(n) ? 'headphones' : /hdmi|nvidia|display|vx|monitor/i.test(n) ? 'tv' : /virtual|cable|steam|oculus/i.test(n) ? 'settings_input_component' : 'speaker');
       openMenu(e.currentTarget, [{ header: 'Sortie audio' }, ...list.sort((a, b) => b.isDefault - a.isDefault).map((d) => ({ icon: d.isDefault ? 'check' : icon(d.name), label: d.name.replace(/\s*\((.*)\)$/, ' · $1'), on: d.isDefault, value: d.id }))],
-        async (it) => { await island.setAudioDevice(it.value); this.loadOutput(); snack('Sortie : ' + it.label.split(' · ')[0]); });
+        async (it) => { await follet.setAudioDevice(it.value); this.loadOutput(); snack('Sortie : ' + it.label.split(' · ')[0]); });
     });
     this.loadOutput();
 
@@ -83,16 +83,16 @@ I.view('home', {
       if (k.startsWith('radio:')) {
         const kind = k.slice(6), on = !t.classList.contains('on');
         t.classList.add('busy');
-        const r = await island.setRadio(kind, on).catch(() => null);
+        const r = await follet.setRadio(kind, on).catch(() => null);
         t.classList.remove('busy');
         if (r === 'Allowed') t.classList.toggle('on', on); else snack('Windows a refusé le changement');
         return;
       }
-      island.openUri(k); I.setMode('collapsed');
+      follet.openUri(k); I.setMode('collapsed');
     });
 
-    island.onBattery((b) => { this.battery = b; this.renderStatus(); });
-    island.battery().then((b) => { this.battery = b; this.renderStatus(); });
+    follet.onBattery((b) => { this.battery = b; this.renderStatus(); });
+    follet.battery().then((b) => { this.battery = b; this.renderStatus(); });
   },
 
   visible() { return I.mode === 'expanded' && I.tab === 'home'; },
@@ -102,7 +102,7 @@ I.view('home', {
   volIcon(level, muted) { return muted || level === 0 ? 'volume_off' : level < 40 ? 'volume_down' : 'volume_up'; },
 
   async loadOutput() {
-    const list = await island.audioDevices().catch(() => null);
+    const list = await follet.audioDevices().catch(() => null);
     const d = list && list.find((x) => x.isDefault);
     if (!d) return;
     const name = d.name.replace(/\s*\(.*\)$/, ''), detail = (d.name.match(/\((.*)\)$/) || [])[1] || '';
@@ -111,13 +111,13 @@ I.view('home', {
     $('.ms', btn).textContent = /head|casque|buds|écouteur/i.test(name) ? 'headphones' : /hdmi|nvidia|display/i.test(d.name) ? 'tv' : 'speaker';
   },
   async loadRadios() {
-    const list = await island.radios().catch(() => []);
+    const list = await follet.radios().catch(() => []);
     for (const r of list || []) { const t = $(`.tile[data-k="radio:${r.kind}"]`, this.el); if (t) t.classList.toggle('on', r.on); }
   },
   async loadBrightness() {
     if (this.brightLoaded && Date.now() - this.brightLoaded < 60000) return;
     this.brightLoaded = Date.now();
-    const list = (await island.brightness().catch(() => [])) || [];
+    const list = (await follet.brightness().catch(() => [])) || [];
     const box = $('.bright', this.el);
     box.innerHTML = list.map((_, i) => `<div class="br" data-i="${i}" style="margin-top:8px"></div>`).join('');
     list.forEach((d, i) => {
@@ -125,7 +125,7 @@ I.view('home', {
       const name = d.kind === 'wmi' ? 'Écran intégré' : (d.name || 'Écran').replace(/\s*\(.*\)$/, '').replace(/-.*$/, '');
       pillSlider($(`.br[data-i="${i}"]`, box), {
         value: d.value, icon: 'light_mode', label: name,
-        onInput: (v) => { clearTimeout(t); t = setTimeout(() => island.setBrightness(d.id, v), 90); },
+        onInput: (v) => { clearTimeout(t); t = setTimeout(() => follet.setBrightness(d.id, v), 90); },
       });
     });
   },

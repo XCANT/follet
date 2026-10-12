@@ -9,7 +9,7 @@ ipcMain.handle('pty-start', (_e, cols, rows) => {
   const nodePty = require('@lydell/node-pty');
   pty = nodePty.spawn(core.config.shell || 'pwsh.exe', ['-NoLogo'], {
     name: 'xterm-256color', cols: cols || 100, rows: rows || 24, cwd: os.homedir(),
-    env: { ...process.env, TERM_PROGRAM: 'island' },
+    env: { ...process.env, TERM_PROGRAM: 'follet' },
   });
   pty.onData((d) => core.send('pty-data', d));
   pty.onExit(() => { pty = null; core.send('pty-exit'); });

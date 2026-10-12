@@ -11,7 +11,7 @@ I.view('apps', {
       for (const en of entries) {
         if (!en.isIntersecting) continue;
         const ph = en.target; this.obs.unobserve(ph);
-        island.appIcon(ph.dataset.path).then((u) => { if (u && ph.isConnected) { const i = document.createElement('img'); i.src = u; ph.replaceWith(i); } });
+        follet.appIcon(ph.dataset.path).then((u) => { if (u && ph.isConnected) { const i = document.createElement('img'); i.src = u; ph.replaceWith(i); } });
       }
     });
     const search = $('.app-search', el);
@@ -21,16 +21,16 @@ I.view('apps', {
     });
     el.addEventListener('click', async (e) => {
       const t = e.target.closest('.app'); if (!t) return;
-      if (e.target.closest('.fav')) { this.favs = await island.appFav(t.dataset.path, !this.favs.includes(t.dataset.path)); this.render(); return; }
+      if (e.target.closest('.fav')) { this.favs = await follet.appFav(t.dataset.path, !this.favs.includes(t.dataset.path)); this.render(); return; }
       this.launch(t.dataset.path);
     });
   },
   async show() {
-    if (!this.apps) { const r = await island.appsList(); this.apps = r.apps; this.favs = r.favorites; }
+    if (!this.apps) { const r = await follet.appsList(); this.apps = r.apps; this.favs = r.favorites; }
     this.render();
     setTimeout(() => $('.app-search', this.el).focus(), 60);
   },
-  launch(p) { island.appLaunch(p); $('.app-search', this.el).value = ''; I.setMode('collapsed'); },
+  launch(p) { follet.appLaunch(p); $('.app-search', this.el).value = ''; I.setMode('collapsed'); },
   tile(a, fav) {
     return `<button class="app state" data-path="${esc(a.path)}" title="${esc(a.name)}"><div class="ph" data-path="${esc(a.path)}"></div><span>${esc(a.name)}</span>
       <i class="icon-btn xs state fav ${fav ? 'on' : ''}" title="${fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${ms('star', fav ? 'fill' : '')}</i></button>`;
