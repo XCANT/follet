@@ -1,0 +1,11 @@
+node_modules/
+dist/
+out/
+*.log
+*.err
+
+# Données personnelles : elles vivent dans %APPDATA%\Island, mais au cas où
+config.json
+state.json
+claude-chat/
+.env

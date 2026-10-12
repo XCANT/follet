@@ -1,0 +1,11 @@
+{
+  "display": "primary",
+  "shortcut": "Control+Alt+Space",
+  "shell": "pwsh.exe",
+  "disks": ["C:\\"],
+  "calendars": [],
+  "weather": {
+    "mode": "ip",
+    "fallback": null
+  }
+}
