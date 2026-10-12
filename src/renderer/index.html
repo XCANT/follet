@@ -2,145 +2,70 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'">
 <title>Island</title>
+<link rel="stylesheet" href="../../node_modules/@fontsource-variable/roboto-flex/full.css">
+<link rel="stylesheet" href="../../node_modules/material-symbols/rounded.css">
 <link rel="stylesheet" href="../../node_modules/@xterm/xterm/css/xterm.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/m3.css">
+<link rel="stylesheet" href="css/island.css">
 </head>
 <body>
-<div id="island" class="collapsed">
-  <!-- Etat replie / apercu -->
-  <div id="pill">
-    <div class="pill-left">
-      <img id="pill-art" alt="">
-      <div class="pill-text">
-        <div id="pill-title"></div>
-        <div id="pill-sub"></div>
-      </div>
+<div id="island" data-mode="collapsed">
+  <!-- replie / apercu -->
+  <div id="compact">
+    <img class="c-art" alt="">
+    <div class="c-lead"><span class="ms s18 fill">wb_twilight</span></div>
+    <div class="c-mid">
+      <div class="c-title"></div>
+      <div class="c-sub"></div>
     </div>
-    <div class="pill-right">
-      <div id="eq" class="eq"><i></i><i></i><i></i><i></i></div>
-      <button id="pill-play" class="icon-btn small" title="Lecture/pause"></button>
-      <div id="pill-clock"></div>
+    <div class="c-right">
+      <div class="eq"><i></i><i></i><i></i><i></i></div>
+      <span class="c-timer"><span class="ms fill">timer</span><span class="c-timer-val"></span></span>
+      <div class="c-ctrl">
+        <button class="icon-btn sm state" data-media="prev" title="Précédent"><span class="ms fill">skip_previous</span></button>
+        <button class="icon-btn sm state play" data-media="toggle" title="Lecture/pause"><span class="ms fill">play_arrow</span></button>
+        <button class="icon-btn sm state" data-media="next" title="Suivant"><span class="ms fill">skip_next</span></button>
+      </div>
+      <span class="c-clock"></span>
     </div>
   </div>
 
-  <!-- Etat deploye -->
+  <!-- activite en direct -->
+  <div id="activity"></div>
+
+  <!-- panneau deploye -->
   <div id="panel">
-    <nav id="tabs">
-      <button data-tab="home">Contrôles</button>
-      <button data-tab="today">Aujourd'hui</button>
-      <button data-tab="stats">Stats</button>
-      <button data-tab="clip">Presse-papiers</button>
-      <button data-tab="apps">Apps</button>
-      <button data-tab="term">Terminal</button>
-      <button data-tab="claude">Claude</button>
-      <button data-tab="power">Alim.</button>
-    </nav>
-
-    <section data-view="home" class="view">
-      <div class="home-grid">
-        <div class="card media-card">
-          <img id="m-art" alt="">
-          <div class="m-info">
-            <div id="m-app" class="eyebrow"></div>
-            <div id="m-title" class="m-title">Rien en lecture</div>
-            <div id="m-artist" class="muted"></div>
-            <div class="m-progress"><div id="m-bar"></div></div>
-            <div class="m-times"><span id="m-pos"></span><span id="m-dur"></span></div>
-            <div class="m-ctrl">
-              <button class="icon-btn" data-media="prev" title="Précédent"></button>
-              <button class="icon-btn big" data-media="toggle" id="m-toggle" title="Lecture/pause"></button>
-              <button class="icon-btn" data-media="next" title="Suivant"></button>
-            </div>
-          </div>
-        </div>
-        <div class="home-side">
-          <div class="card vol-card">
-            <button id="mute" class="icon-btn" title="Couper le son"></button>
-            <input id="vol" type="range" min="0" max="100">
-            <span id="vol-val" class="mono"></span>
-          </div>
-          <div class="quick" id="quick"></div>
-          <div class="card mini-stats" id="mini-stats"></div>
-        </div>
+    <div class="topbar">
+      <div class="tb-time"><b id="tb-clock"></b><span id="tb-date"></span></div>
+      <nav id="nav"></nav>
+      <div class="tb-actions">
+        <button class="icon-btn state" id="btn-settings" title="Réglages"><span class="ms">settings</span></button>
       </div>
-    </section>
-
-    <section data-view="today" class="view">
-      <div class="today-grid">
-        <div class="today-left">
-          <div class="big-date">
-            <div id="t-day" class="eyebrow"></div>
-            <div id="t-date" class="display"></div>
-            <div id="t-time" class="mono muted"></div>
-          </div>
-          <div id="weather" class="card weather"></div>
-        </div>
-        <div class="card agenda">
-          <div class="card-head"><span>Agenda</span><button id="cal-refresh" class="icon-btn small" title="Actualiser"></button></div>
-          <div id="agenda-list" class="scroll"></div>
-        </div>
-        <div class="card todo">
-          <div class="card-head"><span>À faire</span><span id="todo-count" class="chip"></span></div>
-          <div id="todo-list" class="scroll"></div>
-          <input id="todo-input" placeholder="Ajouter une tâche…">
-        </div>
-      </div>
-    </section>
-
-    <section data-view="stats" class="view">
-      <div class="stats-grid" id="stats-grid"></div>
-    </section>
-
-    <section data-view="clip" class="view">
-      <div class="toolbar">
-        <input id="clip-search" placeholder="Rechercher dans l'historique…">
-        <button id="clip-clear" class="text-btn">Tout effacer</button>
-      </div>
-      <div id="clip-list" class="scroll clip-list"></div>
-      <div class="footnote">Gardé en mémoire seulement — rien n'est écrit sur le disque. Clic = recopier.</div>
-    </section>
-
-    <section data-view="apps" class="view">
-      <div class="toolbar"><input id="app-search" placeholder="Chercher une appli…"></div>
-      <div id="app-favs" class="app-favs"></div>
-      <div id="app-list" class="scroll app-grid"></div>
-    </section>
-
-    <section data-view="term" class="view">
-      <div id="term"></div>
-    </section>
-
-    <section data-view="claude" class="view">
-      <div class="claude-grid">
-        <div class="card chat">
-          <div id="chat-log" class="scroll">
-            <div class="chat-empty">Pose une question à Claude. Ça passe par ton abonnement (Claude Code), pas d'API payante.</div>
-          </div>
-          <div class="chat-input">
-            <textarea id="chat-text" rows="2" placeholder="Demande à Claude… (Entrée pour envoyer, Maj+Entrée = nouvelle ligne)"></textarea>
-            <div class="chat-actions">
-              <button id="chat-new" class="text-btn" title="Commencer une nouvelle conversation">Nouvelle</button>
-              <button id="chat-send" class="accent-btn">Envoyer</button>
-            </div>
-          </div>
-        </div>
-        <div class="card usage" id="usage"></div>
-      </div>
-    </section>
-
-    <section data-view="power" class="view">
-      <div class="power-grid" id="power-grid"></div>
-      <div class="footnote center">Redémarrer, éteindre et déconnexion : maintiens le bouton enfoncé 1 seconde.</div>
-    </section>
+    </div>
+    <div id="views"></div>
   </div>
+
+  <div id="dropzone"><span class="ms s40">move_to_inbox</span><span class="title-s">Dépose ici pour garder sous la main</span></div>
+  <div class="snackbar" id="snackbar"></div>
 </div>
 
 <script src="../../node_modules/@xterm/xterm/lib/xterm.js"></script>
 <script src="../../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
 <script src="../../node_modules/@xterm/addon-webgl/lib/addon-webgl.js"></script>
-<script src="icons.js"></script>
-<script src="app.js"></script>
+<script src="js/util.js"></script>
+<script src="js/core.js"></script>
+<script src="js/views/home.js"></script>
+<script src="js/views/today.js"></script>
+<script src="js/views/stats.js"></script>
+<script src="js/views/shelf.js"></script>
+<script src="js/views/clip.js"></script>
+<script src="js/views/apps.js"></script>
+<script src="js/views/term.js"></script>
+<script src="js/views/claude.js"></script>
+<script src="js/views/power.js"></script>
+<script src="js/views/settings.js"></script>
+<script src="js/boot.js"></script>
 </body>
 </html>

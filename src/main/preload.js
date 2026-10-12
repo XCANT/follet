@@ -1,44 +1,48 @@
-const { contextBridge, ipcRenderer } = require('electron');
+// Pont securise entre l'interface et le processus principal : l'interface n'a acces qu'a ces fonctions.
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
+const invoke = (ch) => (...a) => ipcRenderer.invoke(ch, ...a);
+const sendTo = (ch) => (...a) => ipcRenderer.send(ch, ...a);
 const on = (ch) => (cb) => { const f = (_e, ...a) => cb(...a); ipcRenderer.on(ch, f); return () => ipcRenderer.removeListener(ch, f); };
 
 contextBridge.exposeInMainWorld('island', {
-  captureMouse: (v) => ipcRenderer.send('capture-mouse', v),
-  collapsed: () => ipcRenderer.send('collapsed'),
-  focusWindow: () => ipcRenderer.send('focus-window'),
-  onToggle: on('toggle'),
-  onTuck: on('tuck'),
-  onReveal: on('reveal'),
+  // fenetre / etats
+  setRect: sendTo('island-rect'),
+  collapsed: sendTo('collapsed'),
+  focusWindow: sendTo('focus-window'),
+  onPointer: on('pointer'), onTuck: on('tuck'), onReveal: on('reveal'), onToggle: on('toggle'), onOpenTab: on('open-tab'),
+  onTheme: on('theme'), onActivity: on('activity'),
 
-  helper: (op, arg) => ipcRenderer.invoke('helper', op, arg),
-  stats: () => ipcRenderer.invoke('stats'),
+  // media / son / ecrans
+  media: invoke('media-get'), onMedia: on('media'),
+  mediaCmd: invoke('media-cmd'), mediaSeek: invoke('media-seek'),
+  volume: invoke('volume-get'), onVolume: on('volume'), setVolume: invoke('volume-set'), mute: invoke('mute'),
+  battery: invoke('battery-get'), onBattery: on('battery'),
+  brightness: invoke('brightness-get'), setBrightness: invoke('brightness-set'),
 
-  clipList: () => ipcRenderer.invoke('clip-list'),
-  clipCopy: (t) => ipcRenderer.invoke('clip-copy', t),
-  clipRemove: (at) => ipcRenderer.invoke('clip-remove', at),
-  clipClear: () => ipcRenderer.invoke('clip-clear'),
-  onClip: on('clip-update'),
+  // stats
+  stats: invoke('stats'), procs: invoke('procs'),
+  speedtest: invoke('speedtest'), speedtestLast: invoke('speedtest-last'), onSpeedtest: on('speedtest-progress'),
 
-  appsList: () => ipcRenderer.invoke('apps-list'),
-  appIcon: (p) => ipcRenderer.invoke('app-icon', p),
-  appLaunch: (p) => ipcRenderer.invoke('app-launch', p),
-  appFav: (p, v) => ipcRenderer.invoke('app-fav', p, v),
-  openUri: (u) => ipcRenderer.invoke('open-uri', u),
-  power: (a) => ipcRenderer.invoke('power', a),
+  // aujourd'hui
+  todos: invoke('todos'), todosSave: invoke('todos-save'),
+  calendar: invoke('calendar'), weather: invoke('weather'), geocode: invoke('geocode'), notify: invoke('notify'),
 
-  todos: () => ipcRenderer.invoke('todos'),
-  todosSave: (t) => ipcRenderer.invoke('todos-save', t),
-  calendar: (force) => ipcRenderer.invoke('calendar', force),
-  weather: () => ipcRenderer.invoke('weather'),
+  // outils
+  clipList: invoke('clip-list'), clipCopy: invoke('clip-copy'), clipRemove: invoke('clip-remove'), clipClear: invoke('clip-clear'), onClip: on('clip-update'),
+  appsList: invoke('apps-list'), appIcon: invoke('app-icon'), appLaunch: invoke('app-launch'), appFav: invoke('app-fav'),
+  shelfList: invoke('shelf-list'), shelfAdd: invoke('shelf-add'), shelfRemove: invoke('shelf-remove'), shelfClear: invoke('shelf-clear'),
+  shelfIcon: invoke('shelf-icon'), shelfOpen: invoke('shelf-open'), shelfReveal: invoke('shelf-reveal'), shelfDrag: sendTo('shelf-drag'),
+  pathForFile: (file) => webUtils.getPathForFile(file),
+  openUri: invoke('open-uri'), openDataFolder: invoke('open-data-folder'), power: invoke('power'),
 
-  ptyStart: (c, r) => ipcRenderer.invoke('pty-start', c, r),
-  ptyWrite: (d) => ipcRenderer.send('pty-write', d),
-  ptyResize: (c, r) => ipcRenderer.send('pty-resize', c, r),
-  onPtyData: on('pty-data'),
-  onPtyExit: on('pty-exit'),
+  // terminal
+  ptyStart: invoke('pty-start'), ptyWrite: sendTo('pty-write'), ptyResize: sendTo('pty-resize'),
+  onPtyData: on('pty-data'), onPtyExit: on('pty-exit'),
 
-  claudeAsk: (p, cont) => ipcRenderer.invoke('claude-ask', p, cont),
-  claudeStop: () => ipcRenderer.invoke('claude-stop'),
-  claudeUsage: () => ipcRenderer.invoke('claude-usage'),
-  onClaude: on('claude-event'),
+  // Claude
+  claudeAsk: invoke('claude-ask'), claudeStop: invoke('claude-stop'), claudeUsage: invoke('claude-usage'), onClaude: on('claude-event'),
+
+  // reglages
+  configGet: invoke('config-get'), configSet: invoke('config-set'), loginSet: invoke('login-set'),
 });
