@@ -200,6 +200,29 @@ function tickTimer() {
   I.emit('timer');
 }
 
+// ---------- info-bulles Material (remplacent celles de Windows) ----------
+const tip = document.createElement('div'); tip.id = 'tip'; islandEl.appendChild(tip);
+let tipTimer = null;
+document.addEventListener('mouseover', (e) => {
+  const el = e.target.closest('[title], [data-tip]');
+  if (!el || !islandEl.contains(el)) return;
+  if (el.hasAttribute('title')) { el.dataset.tip = el.getAttribute('title'); el.removeAttribute('title'); }
+  if (!el.dataset.tip) return;
+  clearTimeout(tipTimer);
+  tipTimer = setTimeout(() => {
+    if (!el.isConnected) return;
+    tip.textContent = el.dataset.tip;
+    const a = el.getBoundingClientRect(), h = islandEl.getBoundingClientRect();
+    const x = Math.max(8, Math.min(h.width - tip.offsetWidth - 8, a.left - h.left + a.width / 2 - tip.offsetWidth / 2));
+    const below = a.bottom - h.top + 6;
+    tip.style.left = x + 'px';
+    tip.style.top = (below + tip.offsetHeight > h.height - 4 ? a.top - h.top - tip.offsetHeight - 6 : below) + 'px';
+    tip.classList.add('show');
+  }, 550);
+});
+document.addEventListener('mouseout', (e) => { if (e.target.closest('[data-tip]')) { clearTimeout(tipTimer); tip.classList.remove('show'); } });
+document.addEventListener('pointerdown', () => { clearTimeout(tipTimer); tip.classList.remove('show'); });
+
 // ---------- horloge ----------
 function tick() {
   const now = new Date();

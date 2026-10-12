@@ -16,6 +16,9 @@ contextBridge.exposeInMainWorld('island', {
   // media / son / ecrans
   media: invoke('media-get'), onMedia: on('media'),
   mediaCmd: invoke('media-cmd'), mediaSeek: invoke('media-seek'),
+  mediaShuffle: invoke('media-shuffle'), mediaRepeat: invoke('media-repeat'),
+  audioDevices: invoke('audio-devices'), setAudioDevice: invoke('audio-set'),
+  radios: invoke('radios'), setRadio: invoke('radio-set'),
   volume: invoke('volume-get'), onVolume: on('volume'), setVolume: invoke('volume-set'), mute: invoke('mute'),
   battery: invoke('battery-get'), onBattery: on('battery'),
   brightness: invoke('brightness-get'), setBrightness: invoke('brightness-set'),

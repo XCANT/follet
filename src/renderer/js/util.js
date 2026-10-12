@@ -64,6 +64,54 @@ function slider(el, { value = 50, icon = '', onInput, onChange } = {}) {
   };
 }
 
+// Curseur "pilule" : icone, nom et valeur dans la piste ; glisser n'importe ou, molette, clic sur l'icone
+function pillSlider(el, { value = 50, icon = '', label = '', onInput, onChange, onIcon } = {}) {
+  el.classList.add('pill');
+  const layer = `<div class="ico" data-ico>${ms(icon)}</div><span class="pl">${esc(label)}</span><span class="pv"></span>`;
+  el.innerHTML = `<div class="layer">${layer}</div><div class="layer top">${layer}</div>`;
+  let v = value, dragging = false;
+  const paint = () => {
+    el.style.setProperty('--v', v + '%');
+    $$('.pv', el).forEach((p) => (p.textContent = el.classList.contains('muted') ? 'Muet' : v + ' %'));
+  };
+  const fromX = (x) => { const r = el.getBoundingClientRect(); return Math.round(Math.max(0, Math.min(100, ((x - r.left) / r.width) * 100))); };
+  el.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('[data-ico]') && onIcon) return;
+    dragging = true; el.classList.add('dragging'); el.setPointerCapture(e.pointerId);
+    v = fromX(e.clientX); paint(); onInput && onInput(v);
+  });
+  el.addEventListener('pointermove', (e) => { if (!dragging) return; const n = fromX(e.clientX); if (n !== v) { v = n; paint(); onInput && onInput(v); } });
+  const end = () => { if (!dragging) return; dragging = false; el.classList.remove('dragging'); onChange && onChange(v); };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  el.addEventListener('wheel', (e) => { e.preventDefault(); v = Math.max(0, Math.min(100, v + (e.deltaY < 0 ? 2 : -2))); paint(); onInput && onInput(v); onChange && onChange(v); }, { passive: false });
+  el.addEventListener('click', (e) => { if (e.target.closest('[data-ico]') && onIcon) onIcon(); });
+  paint();
+  return {
+    set(n, muted) { if (dragging) return; v = n; el.classList.toggle('muted', !!muted); paint(); },
+    setIcon(name) { $$('.ico .ms', el).forEach((i) => (i.textContent = name)); },
+    setLabel(t) { $$('.pl', el).forEach((i) => (i.textContent = t)); },
+    get dragging() { return dragging; },
+  };
+}
+
+// Menu deroulant Material ancre sous un element ; items : [{ icon, label, on, value }] ou { header }
+function openMenu(anchor, items, onPick) {
+  closeMenu();
+  const host = $('#island'), a = anchor.getBoundingClientRect(), h = host.getBoundingClientRect();
+  const m = document.createElement('div');
+  m.className = 'menu';
+  m.innerHTML = items.map((it, i) => it.header ? `<div class="mh">${esc(it.header)}</div>` : `<button class="state ${it.on ? 'on' : ''}" data-i="${i}">${ms(it.icon || 'radio_button_unchecked')}<span class="ellipsis">${esc(it.label)}</span></button>`).join('');
+  host.appendChild(m);
+  const left = Math.min(a.left - h.left, h.width - m.offsetWidth - 12);
+  m.style.left = Math.max(8, left) + 'px';
+  m.style.top = Math.min(a.bottom - h.top + 4, h.height - m.offsetHeight - 8) + 'px';
+  m.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) { closeMenu(); onPick(items[+b.dataset.i]); } });
+  setTimeout(() => document.addEventListener('pointerdown', outside), 0);
+  function outside(e) { if (!m.contains(e.target)) closeMenu(); }
+  closeMenu.current = () => { document.removeEventListener('pointerdown', outside); m.remove(); };
+}
+function closeMenu() { if (closeMenu.current) { closeMenu.current(); closeMenu.current = null; } }
+
 function segmented(el, options, value, onChange) {
   el.className = 'segmented';
   const render = () => {

@@ -14,6 +14,7 @@ function Await($op, $type) {
 }
 [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media.Control, ContentType = WindowsRuntime] | Out-Null
 [Windows.Storage.Streams.IRandomAccessStreamWithContentType, Windows.Storage.Streams, ContentType = WindowsRuntime] | Out-Null
+[Windows.Devices.Radios.Radio, Windows.System.Devices, ContentType = WindowsRuntime] | Out-Null
 # Le flux de la pochette arrive comme __ComObject brut : AsStreamForRead invoque par reflexion
 $asStreamForRead = [System.IO.WindowsRuntimeStreamExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsStreamForRead' -and $_.GetParameters().Count -eq 1 }
 $mgr = Await ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager]::RequestAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager])
@@ -42,9 +43,18 @@ interface IMMDevice {
   int OpenPropertyStore(int access, out IPropertyStore store);
   int GetId([MarshalAs(UnmanagedType.LPWStr)] out string id);
 }
+[Guid("0BD7A1BE-7A1A-44DB-8397-CC5392387B5E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface IMMDeviceCollection { int GetCount(out uint n); int Item(uint i, out IMMDevice d); }
 [Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-interface IMMDeviceEnumerator { int f(); int GetDefaultAudioEndpoint(int flow, int role, out IMMDevice d); }
+interface IMMDeviceEnumerator { int EnumAudioEndpoints(int flow, int mask, out IMMDeviceCollection c); int GetDefaultAudioEndpoint(int flow, int role, out IMMDevice d); }
 [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] class MMDeviceEnumerator {}
+// Interface non documentee mais stable depuis Windows 7 (utilisee par AudioDeviceCmdlets, EarTrumpet...)
+[Guid("f8679f50-850a-41cf-9c72-430f290290c8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface IPolicyConfig {
+  int a(); int b(); int c(); int d(); int e(); int f(); int g(); int h(); int i(); int j();
+  int SetDefaultEndpoint([MarshalAs(UnmanagedType.LPWStr)] string id, int role);
+}
+[ComImport, Guid("870af99c-171d-4f9e-af0d-e63df40c2bc9")] class PolicyConfigClient {}
 
 public static class Vol {
   static IMMDevice Dev() { var en = (IMMDeviceEnumerator)new MMDeviceEnumerator(); IMMDevice d; en.GetDefaultAudioEndpoint(0, 1, out d); return d; }
@@ -56,13 +66,26 @@ public static class Vol {
   public static bool Muted() { bool m; Ep().GetMute(out m); return m; }
   public static void Mute(bool m) { Ep().SetMute(m, Guid.Empty); }
   // Nom de la sortie audio par defaut (PKEY_Device_FriendlyName)
-  public static object Device() {
-    var d = Dev(); string id; d.GetId(out id);
+  static string Name(IMMDevice d) {
     IPropertyStore st; d.OpenPropertyStore(0, out st);
     var key = new PROPERTYKEY { fmtid = new Guid("a45c254e-df1c-4efd-8020-67d146a850e0"), pid = 14 };
     PROPVARIANT v; st.GetValue(ref key, out v);
-    string name = v.vt == 31 ? Marshal.PtrToStringUni(v.p) : null;
-    return new { id = id, name = name };
+    return v.vt == 31 ? Marshal.PtrToStringUni(v.p) : null;
+  }
+  public static object Device() { var d = Dev(); string id; d.GetId(out id); return new { id = id, name = Name(d) }; }
+  // Sorties audio actives
+  public static List<object> Devices() {
+    var en = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+    string def; Dev().GetId(out def);
+    IMMDeviceCollection col; en.EnumAudioEndpoints(0, 1, out col);
+    uint n; col.GetCount(out n);
+    var list = new List<object>();
+    for (uint i = 0; i < n; i++) { IMMDevice d; col.Item(i, out d); string id; d.GetId(out id); list.Add(new { id = id, name = Name(d), isDefault = id == def }); }
+    return list;
+  }
+  public static void SetDefault(string id) {
+    var pc = (IPolicyConfig)new PolicyConfigClient();
+    for (int role = 0; role < 3; role++) pc.SetDefaultEndpoint(id, role);
   }
 }
 
@@ -152,6 +175,8 @@ function Get-Media($knownKey) {
         present = $true; title = $p.Title; artist = $p.Artist; album = $p.AlbumTitle; app = $s.SourceAppUserModelId
         status = $info.PlaybackStatus.ToString(); key = $key
         canPrev = $info.Controls.IsPreviousEnabled; canNext = $info.Controls.IsNextEnabled
+        canShuffle = $info.Controls.IsShuffleEnabled; canRepeat = $info.Controls.IsRepeatEnabled
+        shuffle = [bool]$info.IsShuffleActive; repeat = $(if ($info.AutoRepeatMode) { $info.AutoRepeatMode.ToString() } else { 'None' })
         # la pochette n'est renvoyee que si le client ne l'a pas deja
         thumb = $(if ($knownKey -ne $key) { $script:lastThumb } else { $null }); hasThumb = [bool]$script:lastThumb
         position = $tl.Position.TotalSeconds; duration = $tl.EndTime.TotalSeconds
@@ -217,6 +242,30 @@ while ($true) {
                 $s = $mgr.GetCurrentSession()
                 if ($s) { Await ($s.TryChangePlaybackPositionAsync([long]([double]$cmd.arg * 10000000))) ([bool]) | Out-Null }
                 $true
+            }
+            'media-shuffle' {
+                $s = $mgr.GetCurrentSession()
+                if ($s) { Await ($s.TryChangeShuffleActiveAsync([bool]$cmd.arg)) ([bool]) | Out-Null }
+                $true
+            }
+            'media-repeat' {
+                $s = $mgr.GetCurrentSession()
+                if ($s) { Await ($s.TryChangeAutoRepeatModeAsync([Windows.Media.MediaPlaybackAutoRepeatMode][string]$cmd.arg)) ([bool]) | Out-Null }
+                $true
+            }
+            'audio-devices' { [Vol]::Devices() }
+            'audio-set' { [Vol]::SetDefault([string]$cmd.arg); $true }
+            'radios' {
+                $null = Await ([Windows.Devices.Radios.Radio]::RequestAccessAsync()) ([Windows.Devices.Radios.RadioAccessStatus])
+                $list = Await ([Windows.Devices.Radios.Radio]::GetRadiosAsync()) ([System.Collections.Generic.IReadOnlyList[Windows.Devices.Radios.Radio]])
+                @($list | Where-Object { $_.Kind -eq 'WiFi' -or $_.Kind -eq 'Bluetooth' } | ForEach-Object { @{ kind = $_.Kind.ToString(); on = ($_.State -eq 'On'); name = $_.Name } })
+            }
+            'radio-set' {
+                $list = Await ([Windows.Devices.Radios.Radio]::GetRadiosAsync()) ([System.Collections.Generic.IReadOnlyList[Windows.Devices.Radios.Radio]])
+                $r = $list | Where-Object { $_.Kind.ToString() -eq $cmd.arg.kind } | Select-Object -First 1
+                if (-not $r) { throw "radio introuvable" }
+                $state = if ($cmd.arg.on) { [Windows.Devices.Radios.RadioState]::On } else { [Windows.Devices.Radios.RadioState]::Off }
+                (Await ($r.SetStateAsync($state)) ([Windows.Devices.Radios.RadioAccessStatus])).ToString()
             }
             'volume' { @{ level = [math]::Round([Vol]::Get() * 100); muted = [Vol]::Muted() } }
             'volume-set' { [Vol]::Set([float]$cmd.arg / 100); $true }

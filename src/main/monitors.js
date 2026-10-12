@@ -86,6 +86,12 @@ ipcMain.handle('media-seek', async (_e, s) => { await helper.call('media-seek', 
 ipcMain.handle('volume-get', () => volume);
 ipcMain.handle('volume-set', async (_e, v) => { volumeSetAt = Date.now(); await helper.call('volume-set', v); if (volume && volume.muted) await helper.call('mute', false); return true; });
 ipcMain.handle('mute', async (_e, m) => { volumeSetAt = Date.now(); await helper.call('mute', m); return true; });
+ipcMain.handle('media-shuffle', async (_e, on) => { await helper.call('media-shuffle', on); setTimeout(() => pollMedia().catch(() => { }), 250); return true; });
+ipcMain.handle('media-repeat', async (_e, mode) => { await helper.call('media-repeat', mode); setTimeout(() => pollMedia().catch(() => { }), 250); return true; });
+ipcMain.handle('audio-devices', () => helper.call('audio-devices'));
+ipcMain.handle('audio-set', async (_e, id) => { await helper.call('audio-set', id); await pollAudioDevice().catch(() => { }); return true; });
+ipcMain.handle('radios', () => helper.call('radios', null, 10000));
+ipcMain.handle('radio-set', (_e, kind, on) => helper.call('radio-set', { kind, on }, 10000));
 ipcMain.handle('battery-get', () => battery);
 ipcMain.handle('brightness-get', () => helper.call('brightness', null, 15000));
 ipcMain.handle('brightness-set', (_e, id, value) => helper.call('brightness-set', { id, value }));

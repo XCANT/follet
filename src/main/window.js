@@ -1,7 +1,7 @@
 // Fenetre transparente toujours au-dessus, centree en haut de l'ecran choisi.
 // La souris traverse la fenetre partout sauf sur l'island : le processus principal suit le curseur
 // et active la capture quand il passe sur le rectangle que l'interface lui signale.
-const { BrowserWindow, ipcMain, screen } = require('electron');
+const { BrowserWindow, ipcMain, screen, desktopCapturer } = require('electron');
 const path = require('path');
 const core = require('./core');
 const helper = require('./helper');
@@ -35,6 +35,10 @@ function create() {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
   });
   core.setWindow(win);
+  // Visualiseur : le son du systeme (boucle locale) est analyse dans l'interface, jamais enregistre
+  win.webContents.session.setDisplayMediaRequestHandler((_req, cb) => {
+    desktopCapturer.getSources({ types: ['screen'] }).then((s) => cb({ video: s[0], audio: 'loopback' })).catch(() => cb({}));
+  });
   win.setAlwaysOnTop(true, 'screen-saver');
   win.setIgnoreMouseEvents(true, { forward: true });
   place();

@@ -13,7 +13,7 @@
   I.buildNav = async () => {
     const { config } = await island.configGet();
     const visible = I.order.filter((id) => config.tabs[id] !== false);
-    $('#nav').innerHTML = visible.map((id) => `<button data-tab="${id}" title="${esc(I.views[id].label)}"><span class="ind">${ms(I.views[id].icon)}</span><span class="lbl">${esc(I.views[id].label)}</span></button>`).join('');
+    $('#nav').innerHTML = visible.map((id) => `<button data-tab="${id}"><span class="ind">${ms(I.views[id].icon)}</span><span class="lbl">${esc(I.views[id].label)}</span></button>`).join('');
     $$('#nav button').forEach((b) => b.addEventListener('click', () => I.showTab(b.dataset.tab)));
     if (!visible.includes(I.tab) && I.tab !== 'settings') I.tab = visible[0] || 'home';
     $$('#nav button').forEach((b) => b.classList.toggle('on', b.dataset.tab === I.tab));
