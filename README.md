@@ -92,7 +92,7 @@ Si npm bloque le script d'installation d'Electron : `npm install-scripts approve
 
 1. Ajoute une section à [CHANGELOG.md](CHANGELOG.md).
 2. `npm version x.y.z --no-git-tag-version`, puis commit.
-3. `git tag vx.y.z` et `git push --follow-tags`.
+3. `git push`, puis `git tag vx.y.z` et `git push origin vx.y.z`.
 
 GitHub Actions construit l'installateur et publie la release avec le texte du CHANGELOG.
 
