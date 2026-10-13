@@ -1,0 +1,39 @@
+# Pousser un tag vX.Y.Z construit l'installateur Windows et publie la release GitHub,
+# avec le texte de la section correspondante du CHANGELOG.
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Le tag correspond à la version du package
+        shell: bash
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if [ "v$v" != "$GITHUB_REF_NAME" ]; then echo "Tag $GITHUB_REF_NAME, package.json $v"; exit 1; fi
+
+      - run: npm ci
+      - run: node scripts/check.js
+      - run: npx electron-builder --win --publish never
+
+      - name: Publier la release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          node scripts/release-notes.js "$v" > notes.md
+          gh release create "$GITHUB_REF_NAME" "dist/Follet-Setup-$v.exe" --title "Follet $v" --notes-file notes.md

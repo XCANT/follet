@@ -1,0 +1,19 @@
+# Propose chaque mois des mises à jour groupées des dépendances npm et des actions GitHub.
+# Electron est exclu des mises à jour majeures : un saut de version se teste à la main.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      dependances:
+        patterns: ['*']
+    ignore:
+      - dependency-name: electron
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@material/material-color-utilities'
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

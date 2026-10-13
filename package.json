@@ -5,7 +5,8 @@
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win",
+    "check": "node scripts/check.js"
   },
   "type": "commonjs",
   "dependencies": {

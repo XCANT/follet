@@ -52,6 +52,13 @@ function create() {
   });
   if (process.env.FOLLET_EVAL) setTimeout(async () => {
     try { console.log('[eval]', JSON.stringify(await win.webContents.executeJavaScript(process.env.FOLLET_EVAL))); } catch (e) { console.log('[eval error]', e.message); }
+    // capture PNG (avec transparence) de l'encoche seule, pour la documentation
+    if (process.env.FOLLET_CAPTURE) setTimeout(async () => {
+      const r = notchRect || { x: 0, y: 0, w: WIN_W, h: WIN_H };
+      const img = await win.webContents.capturePage({ x: r.x, y: 0, width: r.w, height: r.h });
+      require('fs').writeFileSync(process.env.FOLLET_CAPTURE, img.toPNG());
+      console.log('[capture]', process.env.FOLLET_CAPTURE);
+    }, 1200);
   }, +(process.env.FOLLET_EVAL_DELAY || 8000));
   for (const ev of ['display-metrics-changed', 'display-added', 'display-removed']) screen.on(ev, place);
   core.events.on('config', (c, before) => { if (c.display !== before.display) place(); applyTuck(); });

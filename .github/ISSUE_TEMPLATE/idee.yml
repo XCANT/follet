@@ -1,0 +1,16 @@
+name: Idée
+description: Une fonction ou une amélioration
+labels: [idée]
+body:
+  - type: textarea
+    id: idee
+    attributes:
+      label: L'idée
+      description: Ce que Follet devrait faire, et dans quel onglet.
+    validations:
+      required: true
+  - type: textarea
+    id: pourquoi
+    attributes:
+      label: Pourquoi
+      description: La situation où ça t'aiderait.

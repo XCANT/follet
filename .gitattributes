@@ -1,0 +1,6 @@
+# Fins de ligne LF dans le dépôt pour tout le texte (plus d'avertissements LF/CRLF)
+* text=auto eol=lf
+# helper.ps1 est lu par Windows PowerShell 5.1 : on le garde en CRLF
+*.ps1 text eol=crlf
+*.png binary
+*.ico binary
