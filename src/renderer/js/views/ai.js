@@ -37,7 +37,7 @@ I.view('ai', {
     this.el = el; this.messages = []; this.busy = false; this.attach = false; this.files = []; this.pane = 'chat';
     this.mascot = Follet.create($('.stage-mascot', el), { size: 84, active: () => I.mode === 'expanded' && I.tab === 'ai' });
     I.on('mood', (m) => { if (!this.busy) this.mascot.setMood(m === 'sleep' && I.tab === 'ai' && I.mode === 'expanded' ? 'idle' : m); });
-    I.on('theme', () => this.refreshAvatar());
+    I.on('theme', () => this.refreshAvatar()); I.on('mascot-palette', () => this.refreshAvatar());
     this.refreshAvatar();
     this.renderEmpty();
 

@@ -30,7 +30,6 @@ body.tucked #notch[data-mode=collapsed] { transform: translate(-50%, calc(-100% 
 .c-mascot { width: 24px; height: 24px; flex-shrink: 0; margin-left: -4px; transition: width .5s var(--spring), height .5s var(--spring), margin .5s var(--spring); }
 #notch[data-mode=peek] .c-mascot { width: 50px; height: 50px; margin-left: -4px; }
 #notch[data-mode=peek].has-art .c-mascot { display: none; }
-.c-mascot .follet { width: 100% !important; height: 100% !important; }
 .c-mid { flex: 1; min-width: 0; opacity: 0; transform: translateY(4px); transition: opacity .2s, transform .4s var(--spring); }
 #notch[data-mode=peek] .c-mid { opacity: 1; transform: none; transition-delay: .08s; }
 .c-title { font: 500 14px/20px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

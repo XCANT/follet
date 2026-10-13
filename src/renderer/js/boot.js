@@ -1,5 +1,6 @@
 /* Demarrage : construit la navigation et les vues, puis applique le mode demo si demande. */
 (async function boot() {
+  try { Follet.setPalette(((await follet.configGet()).config.mascot || {}).color); } catch { }
   const views = $('#views');
   for (const v of Object.values(I.views)) {
     const el = document.createElement('section');
@@ -25,7 +26,7 @@
 
   // L'icone de la zone de notification = la mascotte aux couleurs du theme
   const trayIcon = () => { clearTimeout(I.trayT); I.trayT = setTimeout(() => Follet.png(64).then(follet.setTrayIcon).catch(() => { }), 900); };
-  I.on('theme', trayIcon); trayIcon();
+  I.on('theme', trayIcon); I.on('mascot-palette', trayIcon); trayIcon();
 
   // Premier lancement : Follet se presente et explique les gestes
   if (!localStorage.getItem('welcomed') || I.demo === 'welcome') {

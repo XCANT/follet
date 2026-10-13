@@ -1,263 +1,286 @@
-/* Follet, la mascotte : un feu follet dessine image par image (SVG + requestAnimationFrame).
-   La flamme est une forme procedurale (cercle etire vers une pointe qui ondule), en trois couches :
-   halo flou, corps en degrade, coeur lumineux. Braises qui montent, ressort de "squash & stretch",
-   clignements aleatoires, yeux qui suivent la souris. Les humeurs se fondent les unes dans les autres.
-   Humeurs : idle, music, sleep, think, happy, alert. */
+/* Follet, la mascotte : une petite flamme corail dessinee image par image dans un canvas.
+   Contour d'apres le dessin de reference (goutte large, pointe principale un peu a droite, une langue
+   de chaque cote, flammeche a gauche), interieur creme, grands yeux brillants, bouche ":3", joues roses.
+   Humeurs : idle, music (ecouteurs), think (aureole + points), happy (clin d'oeil + etincelles),
+   alert (grands yeux + !), sleep (bonnet de nuit + z). Les accessoires n'apparaissent qu'a partir de 40 px. */
 const Follet = (() => {
-  const INK = '#1d1b20';
-  const MOODS = {
-    //        hauteur  halo  vacille vitesse braises/s
-    idle:  { h: 1.00, glow: .85, flick: 1.0, speed: 1.0, embers: 1.2 },
-    music: { h: 1.05, glow: 1.1, flick: 1.3, speed: 1.5, embers: 4 },
-    sleep: { h: .80, glow: .45, flick: .45, speed: .45, embers: 0 },
-    think: { h: 1.08, glow: 1.15, flick: 1.7, speed: 1.9, embers: 3 },
-    happy: { h: 1.06, glow: 1.1, flick: 1.2, speed: 1.3, embers: 3.5 },
-    alert: { h: 1.16, glow: 1.35, flick: 2.3, speed: 2.6, embers: 5 },
+  const PALETTES = {
+    corail: { core: '#ffefe4', mid: '#ffbfa9', edge: '#ff9894', rim: '#ff7f8c', glow: '255,112,110', inner: '255,242,230' },
   };
-  // bruit doux : somme de sinus decales (assez organique pour une flamme, sans dependance)
-  const noise = (t, s) => Math.sin(t * 1.7 + s) * 0.5 + Math.sin(t * 2.9 + s * 1.3) * 0.3 + Math.sin(t * 4.3 + s * 2.1) * 0.2;
-  const lerp = (a, b, k) => a + (b - a) * k;
+  let pal = PALETTES.corail, palName = 'corail';
+  const EYE = '#3a2026', MOUTH = '#4a2a2e', BLUSH = '255,110,130';
 
-  // Contour de flamme : demi-cercle en bas, cotes concaves qui convergent vers une pointe qui ondule.
-  // p = 0 au milieu du corps, 1 a la pointe ; la ligne mediane se courbe de plus en plus vers le haut.
-  function flame(cx, cy, R, H, sway, t, flick, seed) {
-    const n = 12, right = [], left = [];
-    const mid = (p) => cx + R * (sway * p * p * 1.1 + 0.16 * flick * p * p * noise(t * 1.6 + p * 2, seed));
-    for (let i = 0; i <= n; i++) {
-      const p = 1 - Math.pow(1 - i / n, 1.35), y = cy - p * H;
-      const w = R * Math.pow(1 - p, 1.25) * (1 + 0.55 * p) * (1 + 0.025 * flick * noise(t * 2.3 + i, seed + 7));
-      right.push([mid(p) + w, y]); left.push([mid(p) - w, y]);
-    }
-    const pts = [...right.slice(0, -1), right[n]];
-    for (let i = n - 1; i >= 0; i--) pts.push(left[i]);
-    for (let i = 1; i < 10; i++) { const a = Math.PI * (i / 10); pts.push([cx - Math.cos(a) * R, cy + Math.sin(a) * R * 0.98]); }
-    const N = pts.length;
-    let d = `M${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)}`;
-    for (let i = 0; i < N; i++) {
-      const p0 = pts[(i - 1 + N) % N], p1 = pts[i], p2 = pts[(i + 1) % N], p3 = pts[(i + 2) % N];
-      // tension reduite autour de la pointe pour la garder fine
-      const k = i === n - 1 || i === n ? 12 : 6;
-      d += `C${(p1[0] + (p2[0] - p0[0]) / k).toFixed(2)} ${(p1[1] + (p2[1] - p0[1]) / k).toFixed(2)} ${(p2[0] - (p3[0] - p1[0]) / k).toFixed(2)} ${(p2[1] - (p3[1] - p1[1]) / k).toFixed(2)} ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`;
-    }
-    return d + 'Z';
+  // ---- couleurs derivees du theme Material You (option "suivre les couleurs de l'appli") ----
+  const hex = (h) => { h = h.replace('#', ''); if (h.length === 3) h = h.replace(/./g, '$&$&'); const n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+  const mix = (a, b, k) => { const A = hex(a), B = hex(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
+  function themePalette() {
+    const cs = getComputedStyle(document.documentElement), v = (n) => cs.getPropertyValue(n).trim() || '#d0bcff';
+    const p = v('--md-primary'), t = v('--md-tertiary');
+    return { core: mix(p, '#ffffff', 0.88), mid: mix(p, '#ffffff', 0.5), edge: mix(t, p, 0.35), rim: p, glow: hex(p).join(','), inner: hex(mix(p, '#ffffff', 0.92)).join(',') };
   }
-  const star = 'M0 -3.2 L.8 -.8 3.2 0 .8 .8 0 3.2 -.8 .8 -3.2 0 -.8 -.8Z';
-  const eye = (cls) => `<g class="eye ${cls}"><g class="e-open"><ellipse rx="3.2" ry="4.3" fill="${INK}"/><circle class="e-shine" cx="1.1" cy="-1.7" r="1.15" fill="#fff"/></g>
-    <path class="e-arc" d="M-3.3 1.2 Q0 -3.6 3.3 1.2" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>
-    <path class="e-line" d="M-3.2 0 Q0 2.4 3.2 0" fill="none" stroke="${INK}" stroke-width="1.9" stroke-linecap="round"/></g>`;
-  function svg(id) {
-    return `<svg class="follet" viewBox="0 0 64 64" aria-hidden="true" overflow="visible">
-      <defs>
-        <radialGradient id="fg${id}" cx="50%" cy="60%" r="50%"><stop offset="0" style="stop-color:var(--md-primary);stop-opacity:.6"/><stop offset="1" style="stop-color:var(--md-primary);stop-opacity:0"/></radialGradient>
-        <linearGradient id="fb${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--md-tertiary)"/><stop offset=".5" style="stop-color:var(--md-primary)"/><stop offset="1" style="stop-color:color-mix(in srgb, var(--md-primary) 80%, #fff)"/></linearGradient>
-        <radialGradient id="fc${id}" cx="50%" cy="70%" r="60%"><stop offset="0" style="stop-color:#fff;stop-opacity:.85"/><stop offset=".55" style="stop-color:color-mix(in srgb, var(--md-primary) 45%, #fff);stop-opacity:.5"/><stop offset="1" style="stop-color:var(--md-primary);stop-opacity:0"/></radialGradient>
-        <filter id="fx${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter>
-      </defs>
-      <ellipse class="f-halo" cx="32" cy="42" rx="27" ry="24" fill="url(#fg${id})"/>
-      <g class="f-embers">${'<circle r="1" style="fill:var(--md-tertiary)"/>'.repeat(8)}</g>
-      <g class="f-sparks">${`<path d="${star}" style="fill:var(--md-tertiary)"/>`.repeat(3)}</g>
-      <g class="f-z" style="fill:var(--md-on-surface-variant);font:700 9px sans-serif"><text>z</text><text>z</text></g>
-      <g class="f-body">
-        <path class="f-aura" style="fill:var(--md-primary)" opacity=".38" filter="url(#fx${id})"/>
-        <path class="f-main" fill="url(#fb${id})"/>
-        <path class="f-core" fill="url(#fc${id})"/>
-        <ellipse class="f-shine" cx="24.5" cy="31" rx="2.6" ry="4.2" fill="#fff" opacity=".28" transform="rotate(-24 24.5 31)"/>
-        <g class="f-face">
-          <ellipse class="f-cheek" cx="21.5" cy="46.5" rx="3" ry="1.7" style="fill:var(--md-tertiary)" opacity=".5"/>
-          <ellipse class="f-cheek" cx="42.5" cy="46.5" rx="3" ry="1.7" style="fill:var(--md-tertiary)" opacity=".5"/>
-          ${eye('l')}${eye('r')}
-          <path class="f-mouth" fill="none" stroke="${INK}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-        </g>
-      </g>
-    </svg>`;
+  function setPalette(name) {
+    palName = name === 'theme' ? 'theme' : 'corail';
+    pal = palName === 'theme' ? themePalette() : PALETTES.corail;
   }
 
-  const MOUTH = {
-    idle: 'M29.6 48.2 Q32 50.2 34.4 48.2',
-    music: 'M29 47.6 Q32 52.4 35 47.6 Z',
-    happy: 'M28.8 47.4 Q32 53 35.2 47.4 Z',
-    sleep: 'M30.4 49 Q32 49.8 33.6 49',
-    think: 'M31 49.2 Q32.6 48.4 34 49.4',
-    alert: 'M30.4 49.6 Q32 46.6 33.6 49.6 Q32 51.4 30.4 49.6 Z',
+  // ---- formes (unites : rayon du bulbe = 1, centre du bulbe en 0,0, y vers le bas) ----
+  function outline(c, t) {
+    const m = Math.sin(t * 1.7) * 0.07, l = Math.sin(t * 2.3 + 1) * 0.05, r = Math.sin(t * 2.1 + 2.4) * 0.05, h = Math.sin(t * 2.6) * 0.04;
+    c.beginPath();
+    c.moveTo(0, 0.98);
+    c.bezierCurveTo(0.6, 0.98, 1.0, 0.6, 1.0, 0.06);
+    c.bezierCurveTo(1.0, -0.36, 0.86, -0.62, 0.68 + r, -0.94 + r * 0.5);
+    c.bezierCurveTo(0.62, -0.8, 0.55, -0.74, 0.46, -0.74);
+    c.bezierCurveTo(0.52, -1.08, 0.42, -1.42, 0.2 + m, -1.7 + h);
+    c.bezierCurveTo(0.08 + m * 0.5, -1.38, -0.06, -1.1, -0.24, -0.9);
+    c.bezierCurveTo(-0.3, -0.96, -0.42, -1.02, -0.56 + l, -1.1 + l * 0.4);
+    c.bezierCurveTo(-0.84, -0.78, -1.0, -0.42, -1.0, 0.06);
+    c.bezierCurveTo(-1.0, 0.6, -0.6, 0.98, 0, 0.98);
+    c.closePath();
+  }
+  function inner(c, t) {
+    const m = Math.sin(t * 2.2 + 0.5) * 0.05;
+    c.beginPath();
+    c.moveTo(0, 0.86);
+    c.bezierCurveTo(0.52, 0.86, 0.8, 0.52, 0.8, 0.12);
+    c.bezierCurveTo(0.8, -0.2, 0.62, -0.42, 0.46, -0.56);
+    c.bezierCurveTo(0.42, -0.42, 0.34, -0.36, 0.24, -0.36);
+    c.bezierCurveTo(0.22, -0.62, 0.1, -0.86, -0.06 + m, -1.02);
+    c.bezierCurveTo(-0.14, -0.78, -0.3, -0.56, -0.5, -0.42);
+    c.bezierCurveTo(-0.72, -0.24, -0.8, -0.04, -0.8, 0.12);
+    c.bezierCurveTo(-0.8, 0.52, -0.52, 0.86, 0, 0.86);
+    c.closePath();
+  }
+  function body(c, t, px) {
+    const g = c.createRadialGradient(0, 0.35, 0.05, 0, 0.1, 2.3);
+    g.addColorStop(0, pal.core); g.addColorStop(0.32, pal.mid); g.addColorStop(0.72, pal.edge); g.addColorStop(1, pal.rim);
+    c.save(); c.shadowColor = `rgba(${pal.glow},.95)`; c.shadowBlur = px * 0.5;
+    outline(c, t); c.fillStyle = g; c.fill(); c.restore();
+    outline(c, t); c.fillStyle = g; c.fill();
+    inner(c, t);
+    const ig = c.createRadialGradient(0, 0.3, 0.05, 0, 0.1, 1.15);
+    ig.addColorStop(0, `rgba(${pal.inner},1)`); ig.addColorStop(0.6, `rgba(${pal.inner},.75)`); ig.addColorStop(1, `rgba(${pal.inner},.15)`);
+    c.fillStyle = ig; c.fill();
+  }
+  function wisp(c, t, px) {
+    const sw = Math.sin(t * 2.4) * 0.08;
+    c.save(); c.translate(-0.42, -1.4 + Math.sin(t * 2) * 0.05); c.scale(0.3, 0.3); c.globalAlpha = 0.85 + 0.15 * Math.sin(t * 3);
+    c.shadowColor = `rgba(${pal.glow},.9)`; c.shadowBlur = px * 0.14;
+    c.beginPath(); c.moveTo(0, 0.55);
+    c.bezierCurveTo(-0.48, 0.55, -0.52, 0.0, -0.22, -0.42);
+    c.bezierCurveTo(-0.02, -0.72, -0.16, -1.0, 0.04 + sw, -1.32);
+    c.bezierCurveTo(0.38, -0.92, 0.52, -0.42, 0.46, 0.04);
+    c.bezierCurveTo(0.42, 0.4, 0.26, 0.55, 0, 0.55); c.closePath();
+    const g = c.createLinearGradient(0, -1.3, 0, 0.55); g.addColorStop(0, pal.edge); g.addColorStop(1, pal.mid);
+    c.fillStyle = g; c.fill(); c.restore();
+  }
+
+  // ---- visage ----
+  function eye(c, x, y, st, kind, side) {
+    const r = 0.265;
+    c.save(); c.translate(x + st.look[0] * 0.05, y + st.look[1] * 0.04);
+    c.lineCap = 'round'; c.lineJoin = 'round'; c.strokeStyle = EYE;
+    if (kind === 'happy') { c.lineWidth = 0.07; c.beginPath(); c.moveTo(-0.2, 0.05); c.quadraticCurveTo(0, -0.18, 0.2, 0.05); c.stroke(); }
+    else if (kind === 'sleep') { c.lineWidth = 0.065; c.beginPath(); c.moveTo(-0.19, 0); c.quadraticCurveTo(0, 0.14, 0.19, 0); c.stroke(); }
+    else if (kind === 'wink' && side > 0) { c.lineWidth = 0.07; c.beginPath(); c.moveTo(-0.17, -0.13); c.quadraticCurveTo(0.05, -0.02, 0.18, 0); c.quadraticCurveTo(0.05, 0.03, -0.15, 0.13); c.stroke(); }
+    else {
+      const open = kind === 'wide' ? 1.15 : Math.max(0.08, 1 - Math.sin(st.blink * Math.PI));
+      const ry = r * 1.08 * open;
+      c.fillStyle = 'rgba(255,255,255,.95)'; c.beginPath(); c.ellipse(0, 0, r + 0.045, ry + 0.045, 0, 0, Math.PI * 2); c.fill();
+      const g = c.createRadialGradient(0, ry * 0.45, 0.02, 0, 0, r * 1.2); g.addColorStop(0, '#6e3b41'); g.addColorStop(1, EYE);
+      c.fillStyle = g; c.beginPath(); c.ellipse(0, 0, r, ry, 0, 0, Math.PI * 2); c.fill();
+      if (open > 0.45) {
+        c.fillStyle = '#fff'; c.beginPath(); c.arc(0.08, -0.08 * open, 0.095, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(-0.09, 0.1 * open, 0.045, 0, Math.PI * 2); c.fill();
+      }
+    }
+    c.restore();
+  }
+  function mouth(c, kind, t) {
+    c.save(); c.translate(0, 0.42); c.scale(1.2, 1.2);
+    c.strokeStyle = MOUTH; c.fillStyle = MOUTH; c.lineWidth = 0.05; c.lineCap = 'round'; c.lineJoin = 'round';
+    c.beginPath();
+    if (kind === 'cat') { c.moveTo(-0.17, -0.03); c.quadraticCurveTo(-0.085, 0.11, 0, -0.01); c.quadraticCurveTo(0.085, 0.11, 0.17, -0.03); c.stroke(); }
+    else if (kind === 'open') {
+      c.moveTo(-0.15, -0.04); c.quadraticCurveTo(0, -0.01, 0.15, -0.04); c.quadraticCurveTo(0.12, 0.22, 0, 0.22); c.quadraticCurveTo(-0.12, 0.22, -0.15, -0.04); c.fill();
+      c.fillStyle = '#ff8a95'; c.beginPath(); c.ellipse(0, 0.15, 0.075, 0.05, 0, 0, Math.PI * 2); c.fill();
+    }
+    else if (kind === 'o') { const k = 1 + 0.15 * Math.sin(t * 6); c.ellipse(0, 0.03, 0.07, 0.09 * k, 0, 0, Math.PI * 2); c.fill(); }
+    else if (kind === 'flat') { c.moveTo(-0.08, 0.02); c.lineTo(0.08, 0.02); c.stroke(); }
+    c.restore();
+  }
+  function blush(c) {
+    for (const x of [-0.6, 0.6]) {
+      c.save(); c.translate(x, 0.42); c.scale(1, 0.55);
+      const g = c.createRadialGradient(0, 0, 0, 0, 0, 0.22); g.addColorStop(0, `rgba(${BLUSH},.62)`); g.addColorStop(0.55, `rgba(${BLUSH},.62)`); g.addColorStop(1, `rgba(${BLUSH},0)`);
+      c.fillStyle = g; c.beginPath(); c.arc(0, 0, 0.22, 0, Math.PI * 2); c.fill(); c.restore();
+    }
+  }
+
+  // ---- accessoires ----
+  function sparkle(c, x, y, s, a, px) {
+    c.save(); c.globalAlpha = a; c.fillStyle = '#ffe9dc'; c.shadowColor = `rgba(${pal.glow},.9)`; c.shadowBlur = px * 0.15;
+    c.beginPath(); c.moveTo(x, y - s); c.quadraticCurveTo(x, y, x + s, y); c.quadraticCurveTo(x, y, x, y + s); c.quadraticCurveTo(x, y, x - s, y); c.quadraticCurveTo(x, y, x, y - s); c.fill(); c.restore();
+  }
+  function heart(c, x, y, s, a) {
+    c.save(); c.globalAlpha = a; c.fillStyle = '#ff8a95'; c.translate(x, y); c.scale(s, s);
+    c.beginPath(); c.moveTo(0, 0.35); c.bezierCurveTo(-0.9, -0.25, -0.45, -0.95, 0, -0.45); c.bezierCurveTo(0.45, -0.95, 0.9, -0.25, 0, 0.35); c.fill(); c.restore();
+  }
+  function bang(c, x, y, s) {
+    c.save(); c.fillStyle = '#ff8a95'; c.beginPath(); c.roundRect(x - s * 0.18, y - s, s * 0.36, s * 1.2, s * 0.18); c.fill();
+    c.beginPath(); c.arc(x, y + s * 0.55, s * 0.2, 0, Math.PI * 2); c.fill(); c.restore();
+  }
+  function halo(c, t, front, px) {
+    c.save(); c.strokeStyle = 'rgba(255,240,228,.95)'; c.lineWidth = 0.05; c.shadowColor = `rgba(${pal.glow},1)`; c.shadowBlur = px * 0.18;
+    const y = -1.36 + Math.sin(t * 1.8) * 0.05;
+    c.beginPath(); c.ellipse(0.12, y, 0.6, 0.13, Math.sin(t) * 0.04, front ? 0 : Math.PI, front ? Math.PI : Math.PI * 2); c.stroke(); c.restore();
+  }
+  function headphones(c, t, px) {
+    c.save(); c.lineCap = 'round';
+    c.strokeStyle = '#2c2f4f'; c.lineWidth = 0.13; c.beginPath(); c.arc(0, -0.05, 1.13, Math.PI + 0.32, Math.PI * 2 - 0.32); c.stroke();
+    c.strokeStyle = 'rgba(140,150,255,.6)'; c.lineWidth = 0.035; c.beginPath(); c.arc(0, -0.05, 1.13, Math.PI + 0.45, Math.PI * 2 - 0.45); c.stroke();
+    for (const s of [-1, 1]) {
+      const g = c.createLinearGradient(s * 1.0, -0.3, s * 1.3, 0.4); g.addColorStop(0, '#6b74ff'); g.addColorStop(1, '#c58cff');
+      c.fillStyle = '#23263f'; c.beginPath(); c.roundRect(s * 1.1 - 0.17, -0.3, 0.34, 0.68, 0.16); c.fill();
+      c.save(); c.shadowColor = 'rgba(150,120,255,1)'; c.shadowBlur = px * 0.25 * (0.7 + 0.3 * Math.sin(t * 6));
+      c.fillStyle = g; c.beginPath(); c.roundRect(s * 1.14 - 0.12, -0.24, 0.24, 0.56, 0.12); c.fill(); c.restore();
+    }
+    c.restore();
+  }
+  function nightcap(c, t) {
+    c.save(); c.fillStyle = '#4b5a9e'; c.beginPath(); c.moveTo(-0.66, -0.66); c.quadraticCurveTo(0.1, -1.75, 0.95, -1.22 + Math.sin(t) * 0.05); c.quadraticCurveTo(0.4, -1.08, 0.66, -0.66); c.closePath(); c.fill();
+    c.fillStyle = '#e9ecff'; c.beginPath(); c.roundRect(-0.74, -0.76, 1.48, 0.2, 0.1); c.fill(); c.beginPath(); c.arc(0.98, -1.2 + Math.sin(t) * 0.05, 0.13, 0, Math.PI * 2); c.fill(); c.restore();
+  }
+  function zzz(c, now) {
+    c.save(); c.fillStyle = 'rgba(220,200,195,1)';
+    for (let i = 0; i < 2; i++) { const a = (now / 2600 + i * 0.5) % 1; c.globalAlpha = Math.sin(a * Math.PI); c.font = `700 ${0.3 + a * 0.3}px sans-serif`; c.fillText('z', 0.9 + a * 0.5, -1.2 - a * 0.7); }
+    c.restore();
+  }
+  function dots(c, t) {
+    for (let i = 0; i < 3; i++) { const b = Math.max(0, Math.sin(t * 5 - i * 0.9)); c.fillStyle = `rgba(255,236,226,${0.45 + 0.55 * b})`; c.beginPath(); c.arc(1.2 + i * 0.3, -1.25 - b * 0.12, 0.085, 0, Math.PI * 2); c.fill(); }
+  }
+
+  // ---- humeurs ----
+  const LOOK = {
+    idle: { eyes: 'open', mouth: 'cat', wisp: true },
+    music: { eyes: 'happy', mouth: 'cat', headphones: true, motion: 'bop', wisp: true },
+    think: { eyes: 'open', mouth: 'o', halo: true, dots: true, motion: 'sway' },
+    happy: { eyes: 'wink', mouth: 'open', sparkles: true, hearts: true, motion: 'hop' },
+    alert: { eyes: 'wide', mouth: 'o', bang: true, motion: 'shake' },
+    sleep: { eyes: 'sleep', mouth: 'flat', cap: true, zzz: true, motion: 'sleep' },
   };
 
-  const EYE_CSS = '.e-arc, .e-line { display: none; } .eye.arc .e-open, .eye.closed .e-open { display: none; } .eye.arc .e-arc, .eye.closed .e-line { display: inline; }';
-  let uid = 0;
+  function draw(st, c, now, dt) {
+    // la taille suit celle de l'hote (l'encoche grandit en apercu)
+    const hs = st.host.clientWidth;
+    if (hs && Math.abs(hs - st.size) > 0.5) {
+      st.size = hs; st.box = Math.round(hs * 1.8);
+      Object.assign(st.cv.style, { width: st.box + 'px', height: st.box + 'px', margin: `-${st.box / 2}px 0 0 -${st.box / 2}px` });
+    }
+    const o = LOOK[st.mood] || LOOK.idle, rich = st.size >= 40;
+    // ressort (squash & stretch), clignements, regard
+    st.t += dt * (st.mood === 'sleep' ? 0.5 : st.mood === 'think' ? 1.6 : 1);
+    st.sqv += (-170 * st.sq - 11 * st.sqv) * dt; st.sq += st.sqv * dt;
+    if (now > st.blinkAt) { st.blink = 1; st.blinkAt = now + 1800 + Math.random() * 4200; if (Math.random() < 0.2) st.blinkAt = now + 260; }
+    st.blink = Math.max(0, st.blink - dt * 7);
+    st.look[0] += ((st.mood === 'think' ? 0.6 : st.lookT[0]) - st.look[0]) * Math.min(1, dt * 8);
+    st.look[1] += ((st.mood === 'think' ? -1 : st.lookT[1]) - st.look[1]) * Math.min(1, dt * 8);
+    const t = st.t;
+    let dy = Math.sin(t * 2.1) * 0.05, rot = 0;
+    if (o.motion === 'bop') { const ph = ((now / 1000) % 0.5) / 0.5; if (ph < st.beat) st.sqv -= 1.0; st.beat = ph; dy = -Math.sin(ph * Math.PI) * 0.14; rot = Math.sin((now / 1000) * Math.PI * 2) * 0.06; }
+    else if (o.motion === 'hop') { const ph = ((now / 1000) % 1.1) / 1.1; if (ph < st.beat) st.sqv -= 1.3; st.beat = ph; dy = -Math.max(0, Math.sin(ph * Math.PI * 1.6)) * 0.22; }
+    else if (o.motion === 'sway') rot = Math.sin(t * 1.6) * 0.05;
+    else if (o.motion === 'sleep') dy = Math.sin(t * 1.2) * 0.04 + 0.05;
+    else if (o.motion === 'shake') rot = Math.sin(now / 45) * 0.05 * Math.max(0, 1 - ((now / 1000) % 2) * 1.2);
+    const sq = Math.max(-0.25, Math.min(0.25, st.sq));
+
+    const { cv } = st, dpr = Math.min(3, devicePixelRatio || 1), W = st.box, unit = st.size / 2.9;
+    if (cv.width !== Math.round(W * dpr)) cv.width = cv.height = Math.round(W * dpr);
+    c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, W);
+    // le personnage (de -1.7 a 0.98 en hauteur) est centre dans la boite de l'hote
+    c.translate(W / 2, W / 2 + 0.36 * unit); c.scale(unit, unit);
+    const px = unit * dpr;
+    c.save();
+    c.translate(0, dy + 1); c.rotate(rot); c.scale(1 - sq * 0.7, 1 + sq); c.translate(0, -1);
+    if (rich && o.halo) halo(c, t, false, px);
+    body(c, t, px);
+    if (rich && o.halo) halo(c, t, true, px);
+    if (rich && o.cap) nightcap(c, t);
+    blush(c);
+    eye(c, -0.42, 0.1, st, o.eyes, -1); eye(c, 0.42, 0.1, st, o.eyes, 1);
+    mouth(c, o.mouth, t);
+    if (rich && o.headphones) headphones(c, t, px);
+    c.restore();
+    if (rich && o.wisp) wisp(c, t, px);
+    if (rich && o.sparkles) { sparkle(c, -1.45, -0.4, 0.17, 0.6 + 0.4 * Math.sin(t * 3), px); sparkle(c, 1.2, -1.45, 0.13, 0.6 + 0.4 * Math.sin(t * 3 + 2), px); sparkle(c, -0.7, -2.0, 0.09, 0.5 + 0.5 * Math.sin(t * 4 + 1), px); }
+    if (rich && o.hearts) { const b = Math.sin(t * 3) * 0.06; heart(c, 1.4, -1.0 + b, 0.28, 0.95); heart(c, 1.58, -0.5 - b, 0.17, 0.8); }
+    if (rich && o.bang) bang(c, -1.2, -1.5, 0.28);
+    if (rich && o.zzz) zzz(c, now);
+    if (rich && o.dots) dots(c, t);
+  }
+
   const all = new Set();
-
+  let raf = 0;
   function create(host, { size = 64, mood = 'idle', track = true, active = null } = {}) {
-    const id = ++uid;
-    host.innerHTML = svg(id);
-    const el = host.firstElementChild;
-    el.style.width = el.style.height = size + 'px';
-    const q = (s) => el.querySelector(s), qa = (s) => [...el.querySelectorAll(s)];
-    const parts = {
-      halo: q('.f-halo'), body: q('.f-body'), aura: q('.f-aura'), main: q('.f-main'), core: q('.f-core'), face: q('.f-face'), mouth: q('.f-mouth'),
-      eyes: qa('.eye'), embers: qa('.f-embers circle'), sparks: qa('.f-sparks path'), zs: qa('.f-z text'),
-    };
-    const st = {
-      host, el, parts, size, track, active, seed: Math.random() * 100,
-      mood: null, p: { ...MOODS.idle }, phase: 0, last: 0,
-      sq: 0, sqv: 0, beat: 0,
-      look: [0, 0], lookT: [0, 0],
-      blinkAt: performance.now() + 1500 + Math.random() * 3000, blink: 0,
-      ember: [], spawn: 0, sparkW: 0, zW: 0,
-    };
+    // le canvas deborde de l'hote (accessoires, lueur) sans changer sa mise en page
+    const box = Math.round(size * 1.8);
+    host.innerHTML = '';
+    if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+    const cv = document.createElement('canvas');
+    cv.className = 'follet';
+    cv.style.cssText = `position:absolute;left:50%;top:50%;width:${box}px;height:${box}px;margin:${-box / 2}px 0 0 ${-box / 2}px;pointer-events:none`;
+    host.appendChild(cv);
+    const st = { host, cv, ctx: cv.getContext('2d'), size, box, track, active, mood: 'idle', t: Math.random() * 10, sq: 0, sqv: 0, beat: 0, blink: 0, blinkAt: performance.now() + 1500 + Math.random() * 3000, look: [0, 0], lookT: [0, 0], last: 0 };
     const api = {
-      el, get mood() { return st.mood; }, track,
-      setMood(m) {
-        if (!MOODS[m] || m === st.mood) return;
-        const prev = st.mood; st.mood = m;
-        el.dataset.mood = m;
-        parts.mouth.setAttribute('d', MOUTH[m]);
-        parts.mouth.style.fill = /music|happy|alert/.test(m) ? INK : 'none';
-        parts.eyes.forEach((e) => { e.classList.toggle('arc', m === 'music' || m === 'happy'); e.classList.toggle('closed', m === 'sleep'); });
-        if (prev && m !== 'sleep') api.bump(m === 'alert' ? 1.4 : 0.8);
-      },
+      el: cv, get mood() { return st.mood; }, track,
+      setMood(m) { if (!LOOK[m] || m === st.mood) return; st.mood = m; if (m !== 'sleep') st.sqv -= m === 'alert' ? 2.6 : 1.6; },
       lookAt(x, y) {
-        const r = el.getBoundingClientRect(); if (!r.width) return;
-        const dx = x - (r.left + r.width / 2), dy = y - (r.top + r.height * 0.62);
-        const d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 180);
-        st.lookT = [(dx / d) * 1.5 * k, (dy / d) * 1.2 * k];
+        const r = host.getBoundingClientRect(); if (!r.width) return;
+        const dx = x - (r.left + r.width / 2), dy = y - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 180);
+        st.lookT = [(dx / d) * k, (dy / d) * k];
       },
       bump(f = 1) { st.sqv -= 2.4 * f; },
-      // dessine une image fixe (pour l'icone PNG)
-      frame(t = 0) { render(st, 1 / 60, t, true); },
+      frame() { draw(st, st.ctx, performance.now(), 1 / 60); },
     };
     st.api = api;
-    api.setMood(mood);
-    render(st, 1 / 60, 0, true);
+    st.mood = LOOK[mood] ? mood : 'idle';
+    draw(st, st.ctx, performance.now(), 1 / 60);
     all.add(st);
     if (!raf) raf = requestAnimationFrame(loop);
     return api;
   }
-
   function visible(st) {
-    if (!st.el.isConnected) { all.delete(st); return false; }
+    if (!st.host.isConnected) { all.delete(st); return false; }
     if (st.active && !st.active()) return false;
-    return st.host.offsetParent !== null || st.host.getClientRects().length > 0;
+    return st.host.getClientRects().length > 0;
   }
-
-  function render(st, dt, now, still) {
-    const P = st.p, T = MOODS[st.mood] || MOODS.idle, k = Math.min(1, dt * 3);
-    for (const key in T) P[key] = lerp(P[key], T[key], k);
-    st.phase += dt * P.speed;
-    const t = st.phase, s = st.seed, parts = st.parts;
-
-    // ressort (squash & stretch)
-    if (!still) {
-      st.sqv += (-170 * st.sq - 11 * st.sqv) * dt;
-      st.sq += st.sqv * dt;
-    }
-    // mouvement d'ensemble selon l'humeur
-    let dy = Math.sin(t * 2.1) * 1.4, rot = 0, dx = 0;
-    if (st.mood === 'music' || st.mood === 'happy') {
-      const period = st.mood === 'music' ? 0.5 : 0.75, ph = ((now / 1000) % period) / period;
-      if (ph < st.beat && !still) st.sqv -= st.mood === 'music' ? 1.1 : 1.5;
-      st.beat = ph;
-      dy = -Math.sin(ph * Math.PI) * (st.mood === 'music' ? 2.6 : 3.6);
-      rot = st.mood === 'music' ? Math.sin((now / 1000) * Math.PI * 2) * 4 : 0;
-    } else if (st.mood === 'think') { rot = Math.sin(t * 0.9) * 6; dy = Math.sin(t * 1.2) * 1.2 - 0.6; }
-    else if (st.mood === 'alert') { dx = Math.sin(now / 28) * 1.3 * Math.max(0, 1 - ((now / 1000) % 2.2)); }
-    else if (st.mood === 'sleep') { dy = Math.sin(t * 1.4) * 1 + 1.5; }
-
-    const sq = Math.max(-0.3, Math.min(0.3, st.sq));
-    const sy = 1 + sq, sx = 1 - sq * 0.7;
-    parts.body.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)}) rotate(${rot.toFixed(2)} 32 50) translate(32 56) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) translate(-32 -56)`);
-
-    // la flamme
-    const sway = Math.sin(t * 1.3) * 0.35 + 0.18 * noise(t * 0.7, s + 5);
-    const H = 31 * P.h;
-    parts.aura.setAttribute('d', flame(32, 42, 18, H + 6, sway * 1.1, t * 1.1, P.flick * 1.4, s + 1));
-    parts.main.setAttribute('d', flame(32, 42, 15, H, sway, t, P.flick, s));
-    parts.core.setAttribute('d', flame(32, 47, 8.5, H * 0.5, sway * 0.7, t * 1.3, P.flick * 0.9, s + 3));
-    parts.halo.setAttribute('opacity', (P.glow * (0.82 + 0.18 * Math.sin(t * 2.4))).toFixed(3));
-    parts.face.setAttribute('transform', `translate(${(sway * 1.2).toFixed(2)} 0)`);
-
-    // yeux : regard qui suit en douceur, clignements aleatoires
-    st.look[0] = lerp(st.look[0], st.mood === 'think' ? 1.2 : st.lookT[0], Math.min(1, dt * 8));
-    st.look[1] = lerp(st.look[1], st.mood === 'think' ? -1.4 : st.lookT[1], Math.min(1, dt * 8));
-    if (!still && now > st.blinkAt) { st.blink = 1; st.blinkAt = now + 1800 + Math.random() * 4200; if (Math.random() < 0.2) st.blinkAt = now + 260; }
-    st.blink = Math.max(0, st.blink - dt * 7);
-    const open = st.mood === 'alert' ? 1.18 : 1;
-    const by = Math.max(0.08, 1 - Math.sin(st.blink * Math.PI)) * open;
-    parts.eyes.forEach((e, i) => e.setAttribute('transform', `translate(${(i ? 38 : 26) + st.look[0]} ${41 + st.look[1]}) scale(${open} ${by.toFixed(3)})`));
-
-    // braises qui montent de la pointe
-    if (!still) {
-      st.spawn += dt * P.embers;
-      while (st.spawn >= 1) {
-        st.spawn -= 1;
-        if (st.ember.length < parts.embers.length) st.ember.push({ x: 32 + sway * 10 + (Math.random() - 0.5) * 9, y: 41 - H * 0.55 + Math.random() * 6, vy: -(7 + Math.random() * 6), w: Math.random() * 6, life: 0, max: 1.2 + Math.random() * 0.9, r: 0.8 + Math.random() * 0.9 });
-      }
-    }
-    st.ember = st.ember.filter((p) => (p.life += dt) < p.max);
-    parts.embers.forEach((c, i) => {
-      const p = st.ember[i];
-      if (!p) { c.setAttribute('opacity', 0); return; }
-      const a = p.life / p.max;
-      c.setAttribute('cx', (p.x + Math.sin(p.w + p.life * 4) * 1.6).toFixed(2));
-      c.setAttribute('cy', (p.y + p.vy * p.life).toFixed(2));
-      c.setAttribute('r', (p.r * (1 - a * 0.7)).toFixed(2));
-      c.setAttribute('opacity', (Math.sin(a * Math.PI) * 0.9).toFixed(2));
-    });
-
-    // etincelles de reflexion et "z" du sommeil, en fondu
-    st.sparkW = lerp(st.sparkW, st.mood === 'think' ? 1 : 0, Math.min(1, dt * 5));
-    parts.sparks.forEach((p, i) => {
-      const a = t * 1.5 + (i * Math.PI * 2) / 3, sc = (0.6 + 0.4 * Math.sin(t * 4 + i * 2)) * st.sparkW;
-      p.setAttribute('transform', `translate(${(32 + Math.cos(a) * 25).toFixed(2)} ${(34 + Math.sin(a) * 13).toFixed(2)}) scale(${sc.toFixed(3)})`);
-    });
-    st.zW = lerp(st.zW, st.mood === 'sleep' ? 1 : 0, Math.min(1, dt * 3));
-    parts.zs.forEach((z, i) => {
-      const a = ((now / 1000 / 2.6) + i * 0.5) % 1;
-      z.setAttribute('x', (44 + a * 8).toFixed(2)); z.setAttribute('y', (18 - a * 12).toFixed(2));
-      z.setAttribute('font-size', 6 + a * 5);
-      z.setAttribute('opacity', (Math.sin(a * Math.PI) * st.zW).toFixed(2));
-    });
-  }
-
-  let raf = 0;
   function loop(now) {
     raf = requestAnimationFrame(loop);
     for (const st of all) {
       if (!visible(st)) { st.last = 0; continue; }
-      // les petites mascottes se contentent de ~30 images/s
-      const minGap = st.size < 40 ? 32 : 0;
-      if (st.last && now - st.last < minGap) continue;
+      if (st.last && st.size < 40 && now - st.last < 32) continue;   // les petites : ~30 images/s
       const dt = st.last ? Math.min(0.1, (now - st.last) / 1000) : 1 / 60;
       st.last = now;
-      render(st, dt, now, false);
+      draw(st, st.ctx, now, dt);
     }
     if (!all.size) { cancelAnimationFrame(raf); raf = 0; }
   }
+  document.addEventListener('mousemove', (e) => { for (const st of all) if (st.track && st.host.isConnected) st.api.lookAt(e.clientX, e.clientY); });
 
-  document.addEventListener('mousemove', (e) => { for (const st of all) if (st.track && st.el.isConnected) st.api.lookAt(e.clientX, e.clientY); });
-
-  // PNG fixe aux couleurs du theme (icone de la zone de notification, avatar de discussion)
+  // Image fixe (icone de la zone de notification, avatar de discussion) : corps et visage seulement
   async function png(size = 64) {
-    const host = document.createElement('div');
-    host.style.cssText = 'position:fixed;left:-200px;top:0;width:64px;height:64px';
-    document.body.appendChild(host);
-    const f = create(host, { size: 64, track: false });
-    f.frame(0.4);
-    const cs = getComputedStyle(document.documentElement);
-    const resolve = (s) => s.replace(/var\((--md-[a-z-]+)\)/g, (_, v) => cs.getPropertyValue(v).trim());
-    // l'icone n'a pas besoin des braises ni du halo flou (illisible en 16 px)
-    const s = resolve(f.el.outerHTML).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" ').replace('<defs>', `<style>${EYE_CSS}</style><defs>`)
-      .replace(/<g class="f-(embers|sparks|z)"[\s\S]*?<\/g>/g, '');
-    host.remove();
-    const img = new Image();
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
-    await img.decode();
     const c = document.createElement('canvas'); c.width = c.height = size;
-    c.getContext('2d').drawImage(img, 0, 0, size, size);
+    const x = c.getContext('2d'), unit = size / 3.3;
+    x.translate(size / 2, size / 2 + 0.37 * unit); x.scale(unit, unit);
+    const st = { look: [0, 0], blink: 0 };
+    body(x, 0.4, unit * 0.6); blush(x);
+    eye(x, -0.42, 0.1, st, 'open', -1); eye(x, 0.42, 0.1, st, 'open', 1);
+    mouth(x, 'cat', 0);
     return c.toDataURL('image/png');
   }
 
-  const style = document.createElement('style');
-  style.textContent = '.follet { display: block; overflow: visible; }' + EYE_CSS;
-  document.head.appendChild(style);
+  // suivre le theme : on recalcule les couleurs quand il change
+  if (window.I && I.on) I.on('theme', () => { if (palName === 'theme') setPalette('theme'); });
 
-  return { create, png };
+  return { create, png, setPalette, get palette() { return palName; } };
 })();

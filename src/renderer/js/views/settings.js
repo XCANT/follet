@@ -38,7 +38,8 @@ I.view('settings', {
     const t = this.data.config.theme;
     return this.row('Source des couleurs', 'Material You construit tout le thème à partir d\'une seule couleur.', '<div class="seg-src"></div>')
       + `<div class="set-row custom-row" style="${t.source === 'custom' ? '' : 'display:none'}"><div class="txt"><div class="hl">Couleur</div></div><div class="swatches"></div><input type="color" class="color-pick" value="${esc(t.color)}" style="width:36px;height:32px;border:0;background:none;cursor:pointer"></div>`
-      + this.row('Style', 'Intensité et variété des couleurs dérivées.', '<div class="seg-var"></div>');
+      + this.row('Style', 'Intensité et variété des couleurs dérivées.', '<div class="seg-var"></div>')
+      + this.row('Couleur de Follet', 'La mascotte garde son corail, ou prend les couleurs de l\'appli.', '<div class="seg-mascot"></div>');
   },
   b_look(body) {
     const t = this.data.config.theme;
@@ -47,6 +48,7 @@ I.view('settings', {
       this.save({ theme: { source: v } });
     });
     segmented($('.seg-var', body), [['tonal', 'Doux'], ['vibrant', 'Vif'], ['expressive', 'Expressif'], ['fidelity', 'Fidèle']], t.variant, (v) => this.save({ theme: { variant: v } }));
+    segmented($('.seg-mascot', body), [['corail', 'Corail'], ['theme', 'Couleurs de l\'appli']], (this.data.config.mascot || {}).color || 'corail', (v) => { Follet.setPalette(v); this.save({ mascot: { color: v } }); I.emit('mascot-palette'); });
     const sw = ['#6750a4', '#0b57d0', '#146c2e', '#b3261e', '#e8a33d', '#7d5260', '#006a6a', '#5f6368'];
     $('.swatches', body).innerHTML = sw.map((c) => `<button style="background:${c}" class="${c === t.color ? 'on' : ''}" data-c="${c}"></button>`).join('');
     $('.swatches', body).addEventListener('click', (e) => { const b = e.target.closest('[data-c]'); if (b) { this.save({ theme: { color: b.dataset.c } }); this.open('look'); } });
