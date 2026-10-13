@@ -7,6 +7,7 @@ I.view('stats', {
         <button class="metric state on" data-s="cpu"><i class="dot"></i><div><div class="m-lbl">Processeur</div><div class="m-val"><b>—</b><small>%</small></div><div class="m-sub"></div></div></button>
         <button class="metric state on" data-s="gpu"><i class="dot"></i><div><div class="m-lbl">Carte graphique</div><div class="m-val"><b>—</b><small>%</small></div><div class="m-sub"></div></div></button>
         <button class="metric state on" data-s="ram"><i class="dot"></i><div><div class="m-lbl">Mémoire</div><div class="m-val"><b>—</b><small>%</small></div><div class="m-sub"></div></div></button>
+        <button class="icon-btn sm state to-ff" title="Fiche système">${ms('terminal')}</button>
       </div>
       <div class="chart"><canvas></canvas><span class="ax l">il y a 5 min</span><span class="ax r">maintenant</span></div>
     </div>
@@ -24,16 +25,23 @@ I.view('stats', {
       </div>
       <div class="card disks"><div class="card-title"><span>Stockage</span>${ms('hard_drive')}</div><div class="disk-list"></div></div>
     </div>
+  </div>
+  <div class="card ff" style="display:none">
+    <button class="icon-btn state ff-back" title="Courbes">${ms('monitoring')}</button>
+    <div class="ff-logo"></div>
+    <div class="ff-body"><div class="ff-lines"></div><div class="ff-colors"></div></div>
   </div>`,
 
   init(el) {
-    this.el = el; this.hidden = new Set(); this.sort = 'mem';
+    this.el = el; this.hidden = new Set(); this.sort = 'mem'; this.pane = 'charts';
     segmented($('.seg-top', el), [['mem', 'RAM'], ['cpu', 'CPU']], 'mem', (v) => { this.sort = v; this.renderProcs(); });
     $$('.metric', el).forEach((b) => b.addEventListener('click', () => {
       const s = b.dataset.s; this.hidden.has(s) ? this.hidden.delete(s) : this.hidden.add(s);
       b.classList.toggle('on', !this.hidden.has(s)); this.draw();
     }));
     $('.run-speed', el).addEventListener('click', () => this.runSpeed());
+    $('.to-ff', el).addEventListener('click', () => this.setPane('ff'));
+    $('.ff-back', el).addEventListener('click', () => this.setPane('charts'));
     follet.onSpeedtest((p) => this.showSpeed({ ...(this.speed || {}), [p.phase]: p.value }, true));
     follet.speedtestLast().then((r) => r && this.showSpeed(r));
     I.on('theme', () => { this.colors = null; this.draw(); });
@@ -48,6 +56,51 @@ I.view('stats', {
     this.t2 = setInterval(() => this.pollProcs(), 3000);
   },
   hide() { follet.statsActive(false); clearInterval(this.t1); clearInterval(this.t2); },
+
+  // ---------- fiche systeme facon fastfetch ----------
+  setPane(p) {
+    this.pane = p;
+    $('.v-stats', this.el).style.display = p === 'ff' ? 'none' : '';
+    $('.ff', this.el).style.display = p === 'ff' ? '' : 'none';
+    if (p === 'ff') {
+      if (!this.ffMascot) this.ffMascot = Follet.create($('.ff-logo', this.el), { size: 116, mood: 'idle', active: () => I.tab === 'stats' && this.pane === 'ff' && I.mode === 'expanded' });
+      this.renderFF();
+    } else this.draw();
+  },
+  async renderFF() {
+    const s = (this.sys = this.sys || await follet.sysinfo().catch(() => null));
+    if (!s) { $('.ff-lines', this.el).innerHTML = '<div class="ff-row variant">Lecture du matériel…</div>'; return; }
+    const live = this.s, b = I.views.home.battery;
+    const up = live ? live.uptime : s.uptime;
+    const dur = `${Math.floor(up / 86400) ? Math.floor(up / 86400) + ' j, ' : ''}${Math.floor((up % 86400) / 3600)} h, ${Math.floor((up % 3600) / 60)} min`;
+    const ram = live ? live.ram : s.ram, used = ram.total - ram.free;
+    const gib = (n) => (n / 1073741824).toFixed(2) + ' Gio';
+    const pct = (p) => `<span class="ff-pct ${p > 85 ? 'hi' : p > 60 ? 'mid' : ''}">(${Math.round(p)} %)</span>`;
+    const host = [s.maker, s.family && s.family !== 'Default string' ? s.family : s.model].filter((x) => x && !/To be filled|System Product Name/i.test(x)).join(' ');
+    const disk = (live ? live.disks : s.disks).find((d) => d.name === 'C:');
+    const rows = [
+      ['Système', `${(s.os || 'Windows').replace(/^Microsoft /, '')}${s.ver ? ' ' + s.ver : ''} ${s.arch || ''}`],
+      host && ['Machine', host],
+      ['Noyau', `WIN32_NT ${s.kernel}${s.build ? ' (' + s.build + ')' : ''}`],
+      ['Allumé', dur],
+      ['Shell', /pwsh/i.test(s.shell) && s.pwsh ? 'PowerShell ' + s.pwsh.split('.').slice(0, 3).join('.') : s.shell],
+      ['Écrans', s.displays.map((d) => `${d.w}×${d.h}${d.hz ? ' @ ' + Math.round(d.hz) + ' Hz' : ''}`).join(', ')],
+      ['Thème', `Material You (${{ art: 'pochette', accent: 'accent Windows', custom: 'choisie' }[s.themeSource] || 'pochette'})`],
+      ['Encoche', `Follet ${s.version} · Electron ${s.electron.split('.')[0]}`],
+      ['Processeur', `${s.cpu.replace(/\s+/g, ' ').replace(/ w\/.*$| with .*$/i, '')} (${s.threads})${live && live.cpu.mhz ? ' @ ' + (live.cpu.mhz / 1000).toFixed(2) + ' GHz' : ''}`],
+      ...(s.gpus || []).filter((g) => !/virtual|basic display|basic render|parsec|remote|indirect/i.test(g)).map((g, i, a) => [a.length > 1 ? `GPU ${i + 1}` : 'GPU', g]),
+      ['Mémoire', `${gib(used)} / ${gib(ram.total)} ${pct((100 * used) / ram.total)}`],
+      disk && ['Disque (C:)', `${gib(disk.total - disk.free)} / ${gib(disk.total)} ${pct((100 * (disk.total - disk.free)) / disk.total)}`],
+      b && b.present && ['Batterie', `${b.percent} %${b.plugged ? ' [secteur]' : ''}`],
+      ['Langue', s.locale],
+    ].filter(Boolean);
+    const title = `${s.user}@${s.host}`.toLowerCase();
+    $('.ff-lines', this.el).innerHTML = `<div class="ff-title"><b>${esc(s.user.toLowerCase())}</b>@<b>${esc(s.host.toLowerCase())}</b></div><div class="ff-rule">${'─'.repeat(title.length)}</div>`
+      + rows.map(([k, v]) => `<div class="ff-row"><span class="k">${esc(k)}</span><span class="v">${v.includes('ff-pct') ? v : esc(v)}</span></div>`).join('');
+    // Comme les 16 couleurs de fastfetch, mais avec la palette Material You en cours
+    const roles = ['primary', 'secondary', 'tertiary', 'error', 'primary-container', 'secondary-container', 'tertiary-container', 'surface-container-highest'];
+    $('.ff-colors', this.el).innerHTML = roles.map((r) => `<i style="background:var(--md-${r})" title="${r}"></i>`).join('');
+  },
 
   palette() {
     if (!this.colors) {
@@ -64,7 +117,7 @@ I.view('stats', {
     const el = this.el, set = (k, val, sub) => { const m = $(`.metric[data-s=${k}]`, el); $('b', m).textContent = val; $('.m-sub', m).textContent = sub; };
     set('cpu', s.cpu.load, [s.cpu.mhz ? (s.cpu.mhz / 1000).toFixed(2) + ' GHz' : null, s.cpu.temp != null ? Math.round(s.cpu.temp) + ' °C' : null].filter(Boolean).join(' · '));
     const g = s.gpu;
-    set('gpu', g ? g.util : '—', g ? `${g.temp} °C · ${g.power != null ? Math.round(g.power) + ' W · ' : ''}${(g.memUsed / 1024).toFixed(1)}/${(g.memTotal / 1024).toFixed(0)} Go` : 'Pas de GPU NVIDIA');
+    set('gpu', g ? g.util : '—', g ? `${g.temp} °C · ${g.power != null ? Math.round(g.power) + ' W · ' : ''}${(g.memUsed / 1024).toFixed(1)}/${(g.memTotal / 1024).toFixed(0)} Go`.replace(/ Go$/, '\u202fGo') : 'Pas de GPU NVIDIA');
     const used = s.ram.total - s.ram.free;
     set('ram', Math.round((100 * used) / s.ram.total), `${(used / 1073741824).toFixed(1)} / ${(s.ram.total / 1073741824).toFixed(0)} Go`);
     $('.nd', el).textContent = s.net ? fmtBytes(s.net.down) + '/s' : '—';
@@ -83,7 +136,7 @@ I.view('stats', {
       s.self ? ['local_fire_department', `Follet : ${s.self.cpu.toFixed(1)} % · ${fmtBytes(s.self.mem)}`] : null,
     ].filter(Boolean);
     $('.sys-chips', el).innerHTML = chips.map(([i, t]) => `<span class="chip sm">${ms(i)}${esc(t)}</span>`).join('');
-    this.draw();
+    if (this.pane === 'ff') this.renderFF(); else this.draw();
   },
 
   // Courbes lissees avec degrade ; l'historique vient du processus principal

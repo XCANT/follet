@@ -101,6 +101,40 @@ async function snapshot() {
   };
 }
 
+// Fiche systeme facon fastfetch : la partie fixe (materiel, Windows) est lue une fois.
+let sysStatic = null;
+function readSysStatic() {
+  const ps = `$ErrorActionPreference='SilentlyContinue'
+$os=Get-CimInstance Win32_OperatingSystem; $cs=Get-CimInstance Win32_ComputerSystem; $bb=Get-CimInstance Win32_BaseBoard
+$cv=Get-ItemProperty 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion'
+[pscustomobject]@{ os=$os.Caption; ver=$cv.DisplayVersion; build="$($cv.CurrentBuild).$($cv.UBR)"; arch=$os.OSArchitecture
+ maker=$cs.Manufacturer; model=$cs.Model; family=$cs.SystemFamily; board=$bb.Product
+ gpus=@(Get-CimInstance Win32_VideoController | ForEach-Object Name)
+ pwsh=(Get-Command pwsh -EA 0).Version.ToString()
+ installed=$os.InstallDate.ToString('yyyy-MM-dd') } | ConvertTo-Json -Compress`;
+  const exe = require('path').join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  return new Promise((resolve) => execFile(exe, ['-NoProfile', '-NonInteractive', '-Command', ps], { windowsHide: true, timeout: 15000 }, (err, out) => {
+    try { resolve(JSON.parse(out)); } catch { resolve({}); }
+  }));
+}
+setTimeout(() => { if (!sysStatic) readSysStatic().then((r) => { sysStatic = sysStatic || r; }); }, 6000);
+ipcMain.handle('sysinfo', async () => {
+  if (!sysStatic) sysStatic = await readSysStatic();
+  const { screen } = require('electron');
+  const cpus = os.cpus();
+  return {
+    ...sysStatic,
+    user: os.userInfo().username, host: os.hostname(),
+    kernel: os.release(), uptime: os.uptime(),
+    cpu: cpus[0].model.trim(), threads: cpus.length,
+    ram: { total: os.totalmem(), free: os.freemem() },
+    displays: screen.getAllDisplays().map((d) => ({ w: Math.round(d.size.width * d.scaleFactor), h: Math.round(d.size.height * d.scaleFactor), hz: d.displayFrequency, primary: d.id === screen.getPrimaryDisplay().id })),
+    shell: core.config.shell || 'pwsh', themeSource: (core.config.theme || {}).source,
+    locale: app.getLocale(), electron: process.versions.electron, version: app.getVersion(),
+    disks: latest ? latest.disks : [],
+  };
+});
+
 // Top des applis (RAM / CPU), avec icones
 const iconCache = new Map();
 async function iconFor(p) {

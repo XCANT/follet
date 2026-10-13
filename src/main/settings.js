@@ -22,6 +22,15 @@ execFile(REG, ['query', RUN_KEY, '/v', 'Island'], { windowsHide: true }, (err) =
   execFile(REG, ['delete', RUN_KEY, '/v', 'Island', '/f'], { windowsHide: true }, () => setLogin(true));
 });
 
+// Version installee : si l'entree de demarrage pointe ailleurs (dossier de dev, ancien chemin
+// d'installation), on la refait vers cet exe.
+if (app.isPackaged) execFile(REG, ['query', RUN_KEY, '/v', 'Follet'], { windowsHide: true }, (err, out) => {
+  if (!err && !String(out).toLowerCase().includes(process.execPath.toLowerCase())) {
+    core.log('info', 'demarrage : entree corrigee vers', process.execPath);
+    setLogin(true);
+  }
+});
+
 function displays() {
   const primary = screen.getPrimaryDisplay().id;
   return screen.getAllDisplays().map((d, i) => ({

@@ -9,7 +9,19 @@ const act = (kind, data) => { if (core.config.activities[kind] !== false) core.s
 
 // ---------- musique ----------
 let media = { present: false }, thumb = null, thumbVer = null, mediaKey = null, posBase = null;
+// Captures de documentation : FOLLET_FAKE_MEDIA=<fichier.json> remplace la lecture en cours
+// ({ title, artist, album, art: chemin d'image, duration, position, appName })
+let fake = null;
+if (process.env.FOLLET_FAKE_MEDIA) {
+  const f = JSON.parse(require('fs').readFileSync(process.env.FOLLET_FAKE_MEDIA, 'utf8'));
+  const img = f.art ? require('electron').nativeImage.createFromPath(f.art) : null;
+  const t0 = Date.now();
+  fake = () => ({ present: true, key: 'fake', status: 'Playing', canPrev: true, canNext: true, canShuffle: true, canRepeat: true, repeat: 'None',
+    title: f.title, artist: f.artist, album: f.album || '', duration: f.duration || 180, appName: f.appName || '',
+    position: (f.position || 0) + (Date.now() - t0) / 1000, thumb: img && !img.isEmpty() ? img.resize({ width: 600 }).toDataURL() : null });
+}
 async function pollMedia() {
+  if (fake) { media = fake(); if (!thumb) { thumb = media.thumb; theme.setArt(thumb, true); } core.send('media', media); return; }
   // on dit au helper quelle version de la pochette on a deja : il ne renvoie l'image que si elle a change
   const m = await helper.call('media', thumbVer);
   if (!m.present) {

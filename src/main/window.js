@@ -10,6 +10,8 @@ const WIN_W = 900, WIN_H = 600;
 let win = null;
 let notchRect = null;        // rectangle de l'encoche dans la fenetre (px CSS), null = rien a capturer
 let inside = false;
+let dwell = 0, hovered = false, last = null;
+const HOVER_DELAY = { fast: 120, normal: 280, slow: 550 }; // ms de presence lente avant l'apercu
 let coveredByMax = false, revealed = false, tucked = false, hiddenForFullscreen = false;
 
 function targetDisplay() {
@@ -81,6 +83,15 @@ function trackCursor() {
     inside = now;
     win.setIgnoreMouseEvents(!now, { forward: true });
     core.send('pointer', now);
+    dwell = 0; hovered = false;
+  }
+  // Intention de survol : l'apercu ne s'ouvre que si la souris s'attarde (lente) dans l'encoche,
+  // pas quand elle la traverse pour aller vers un onglet de navigateur.
+  const speed = last ? Math.hypot(p.x - last.x, p.y - last.y) / 40 : 0;
+  last = p;
+  if (inside && !hovered) {
+    if (speed < 0.5) dwell += 40; else dwell = Math.max(0, dwell - 40);
+    if (dwell >= (HOVER_DELAY[core.config.behavior.hover] || 280)) { hovered = true; core.send('hover'); }
   }
   // Rangee : le haut de l'ecran au milieu la fait ressortir
   if (tucked) {

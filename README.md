@@ -1,40 +1,32 @@
-<p align="center">
-  <img src="build/icon.png" width="112" alt="Follet">
-</p>
-
-<h1 align="center">Follet</h1>
-
-<p align="center">
-  Une encoche façon <i>Dynamic Island</i> pour Windows, avec une petite flamme qui y habite.<br>
-  Musique, agenda, stats du PC, fichiers, presse-papiers, terminal et IA, à un survol de souris.
-</p>
+<p align="center"><img src="docs/hero.png" width="860" alt="Follet : l'encoche ouverte sur l'accueil, avec My Castle Town de XCANT en lecture"></p>
 
 <p align="center">
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?logo=windows&logoColor=white">
   <img alt="Electron 37" src="https://img.shields.io/badge/Electron-37-47848f?logo=electron&logoColor=white">
   <img alt="Material 3" src="https://img.shields.io/badge/Material%203-Material%20You-6750a4">
-  <a href="../../releases"><img alt="Télécharger" src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger-installateur-ff8b8b"></a>
+  <a href="../../releases/latest"><img alt="Télécharger" src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger-installateur-ff8b8b"></a>
 </p>
 
-<p align="center"><img src="docs/mascotte.gif" width="720" alt="Follet au repos, en musique, en réflexion et quand la réponse arrive"></p>
+<table>
+  <tr>
+    <td width="50%"><img src="docs/stats.png" alt="Stats : courbes CPU, GPU, RAM, applis qui consomment, réseau, stockage"></td>
+    <td width="50%"><img src="docs/systeme.png" alt="Fiche système façon fastfetch"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/follet.png" alt="Onglet Follet : utilisation de l'IA, fenêtre de 5 h, jetons par modèle et par projet"></td>
+    <td width="50%" valign="top"><img src="docs/depot.png" alt="Glisser un fichier sur l'encoche : Étagère ou Demander à Follet"><br><br><img src="docs/mascotte.gif" alt="Follet au repos, en musique, en réflexion et quand la réponse arrive"></td>
+  </tr>
+</table>
 
-*Un feu follet : la petite flamme du folklore québécois, cousine du hitodama japonais.*
-
-## Aperçu
-
-<p align="center"><img src="docs/accueil.png" width="760" alt="Accueil : musique en cours, volume, luminosité, raccourcis"></p>
-
-| Stats | Follet (IA) |
-|---|---|
-| <img src="docs/stats.png" alt="Stats : courbes CPU, GPU, RAM, applis qui consomment, réseau, stockage"> | <img src="docs/follet.png" alt="Onglet Follet : mascotte, fenêtre de 5 h, discussion"> |
-
-<p align="center"><img src="docs/depot.png" width="520" alt="Glisser un fichier sur l'encoche : Étagère ou Demander à Follet"></p>
+*Un feu follet : la petite flamme du folklore québécois, cousine du hitodama japonais. Musique de démonstration : My Castle Town (Lofi), XCANT.*
 
 ## Installation
 
 1. Télécharge **`Follet-Setup-x.y.z.exe`** dans les [releases](../../releases).
 2. Lance-le : installation pour ton utilisateur, sans droits administrateur. L'installateur n'est pas signé : à l'écran « Windows a protégé votre ordinateur », clique **Informations complémentaires → Exécuter quand même**.
 3. Follet apparaît en haut de l'écran et se présente. Active **Démarrer avec Windows** dans Réglages → Comportement.
+
+Follet vérifie les nouvelles versions toutes les 6 heures et s'installe à jour depuis Réglages → À propos (dépôt privé : il faut `gh` connecté sur le PC).
 
 En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 
@@ -44,7 +36,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 |---|---|
 | **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec visualiseur, volume, sortie audio, luminosité des écrans (DDC/CI et écran intégré), Wi-Fi, Bluetooth, raccourcis |
 | **Aujourd'hui** | Horloge, météo heure par heure et sur 4 jours (position par IP), agenda de la semaine (iCal), minuteur affiché dans l'encoche, tâches |
-| **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage |
+| **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage. Bouton terminal : fiche système façon fastfetch |
 | **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli |
 | **Copié** | Les 50 derniers textes copiés, en mémoire seulement |
 | **Apps** | Lanceur avec recherche et favoris, basé sur le menu Démarrer |
@@ -58,7 +50,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 **Follet a des humeurs.** Écouteurs quand la musique joue, auréole quand l'IA réfléchit, clin d'œil quand la réponse arrive, bonnet de nuit après 5 minutes sans activité, grands yeux pour les alertes.
 
 **Gestes.**
-- Survol : aperçu. Molette vers le bas ou clic : panneau complet. Échap ou sortir la souris : refermer.
+- Survol : aperçu, seulement si la souris s'attarde (un simple passage vers un onglet de navigateur ne l'ouvre pas ; délai réglable). Molette vers le bas ou clic : panneau complet. Échap ou sortir la souris : refermer.
 - **Ctrl+Alt+Espace** (modifiable) ouvre et ferme Follet de n'importe où.
 - Encoche ouverte : **1 à 9** pour choisir un onglet, **← / →** ou la molette sur les onglets.
 - Devant une fenêtre maximisée, l'encoche se range ; elle ressort quand la souris touche le haut de l'écran, au milieu. Elle disparaît pendant un jeu en plein écran.
@@ -101,6 +93,7 @@ GitHub Actions construit l'installateur et publie la release avec le texte du CH
 - `FOLLET_DEMO=<onglet>` ouvre Follet déployée sur un onglet (`home`, `today`, `stats`, `shelf`, `clip`, `apps`, `term`, `ai`, `power`, `settings`, ou `welcome`) ; `FOLLET_DEMO=1` les fait défiler.
 - `FOLLET_EVAL="<expression JS>"` écrit le résultat dans le journal, par exemple `I.activity({kind:'volume', level:42})`.
 - `FOLLET_CAPTURE=chemin.png` (avec `FOLLET_EVAL`) enregistre une capture de l'encoche, comme celles de ce README.
+- `FOLLET_FAKE_MEDIA=piste.json` remplace la lecture en cours (`title`, `artist`, `art`, `duration`, `position`) et colore le thème d'après la pochette.
 
 ### Structure
 

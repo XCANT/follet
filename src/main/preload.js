@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('follet', {
   collapsed: sendTo('collapsed'),
   focusWindow: sendTo('focus-window'),
   idleTime: invoke('idle-time'), setTrayIcon: sendTo('tray-icon'),
-  onPointer: on('pointer'), onTuck: on('tuck'), onReveal: on('reveal'), onToggle: on('toggle'), onOpenTab: on('open-tab'),
+  onPointer: on('pointer'), onHover: on('hover'), onTuck: on('tuck'), onReveal: on('reveal'), onToggle: on('toggle'), onOpenTab: on('open-tab'),
   onTheme: on('theme'), onActivity: on('activity'),
 
   // media / son / ecrans
@@ -25,7 +25,7 @@ contextBridge.exposeInMainWorld('follet', {
   brightness: invoke('brightness-get'), setBrightness: invoke('brightness-set'),
 
   // stats
-  stats: invoke('stats'), procs: invoke('procs'), statsActive: sendTo('stats-active'),
+  stats: invoke('stats'), sysinfo: invoke('sysinfo'), procs: invoke('procs'), statsActive: sendTo('stats-active'),
   speedtest: invoke('speedtest'), speedtestLast: invoke('speedtest-last'), onSpeedtest: on('speedtest-progress'),
 
   // aujourd'hui
@@ -50,4 +50,5 @@ contextBridge.exposeInMainWorld('follet', {
 
   // reglages
   configGet: invoke('config-get'), configSet: invoke('config-set'), loginSet: invoke('login-set'),
+  updateStatus: invoke('update-status'), updateCheck: invoke('update-check'), updateInstall: invoke('update-install'), onUpdate: on('update-status'),
 });

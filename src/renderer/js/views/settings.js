@@ -60,6 +60,7 @@ I.view('settings', {
     const c = this.data.config;
     const disp = this.data.displays.map((d) => `<option value="${d.primary ? 'primary' : d.id}" ${(c.display === 'primary' && d.primary) || c.display === d.id ? 'selected' : ''}>${esc(d.label)}</option>`).join('');
     return this.row('Écran', 'Où l\'encoche s\'affiche.', `<select class="field disp">${disp}</select>`)
+      + this.row('Ouverture au survol', 'Combien de temps la souris doit s\'attarder avant l\'aperçu. Un simple passage ne l\'ouvre pas.', '<div class="seg-hover"></div>')
       + this.row('Se ranger devant une fenêtre maximisée', 'Elle ressort quand la souris touche le haut de l\'écran, au milieu.', this.sw('tuck', c.behavior.tuck))
       + this.row('Masquer pendant les jeux en plein écran', '', this.sw('hideFullscreen', c.behavior.hideFullscreen))
       + this.row('Raccourci clavier', 'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)
@@ -68,6 +69,7 @@ I.view('settings', {
   b_behavior(body) {
     $('.disp', body).addEventListener('change', (e) => this.save({ display: e.target.value }, 'Écran changé'));
     this.bindSwitches(body, (k, v) => this.save({ behavior: { [k]: v } }));
+    segmented($('.seg-hover', body), [['fast', 'Rapide'], ['normal', 'Normale'], ['slow', 'Lente']], this.data.config.behavior.hover || 'normal', (v) => this.save({ behavior: { hover: v } }));
     $('.login', body).addEventListener('change', async (e) => { this.data.login = await follet.loginSet(e.target.checked); snack(this.data.login ? 'Follet démarrera avec Windows' : 'Démarrage automatique désactivé'); });
     const sc = $('.shortcut', body);
     sc.addEventListener('focus', () => { sc.value = 'Appuie sur la combinaison…'; });
@@ -206,9 +208,35 @@ I.view('settings', {
 
   // ---------- A propos ----------
   r_about() {
-    return this.row('Follet', `Version ${esc(this.data.version)} · Material You · open source`, '')
+    return this.row('Follet', `Version ${esc(this.data.version)} · Material You`, '')
+      + `<div class="set-row upd-row"><div class="txt"><div class="hl">Mises à jour</div><div class="sup upd-sup">…</div></div><div class="upd-ctrl"></div></div>`
       + this.row('Données personnelles', esc(this.data.dataDir) + '<br>Config, tâches, étagère et conversations Claude restent sur ce PC.', `<button class="btn tonal sm state open-data">${ms('folder_open')}Ouvrir</button>`)
       + this.row('Services contactés', 'ipwho.is / geojs.io (position par IP), Open-Meteo (météo), speed.cloudflare.com (test de vitesse, sur demande), tes agendas iCal.', '');
   },
-  b_about(body) { $('.open-data', body).addEventListener('click', () => follet.openDataFolder()); },
+  b_about(body) {
+    $('.open-data', body).addEventListener('click', () => follet.openDataFolder());
+    const paint = (s) => {
+      const sup = $('.upd-sup', body), ctrl = $('.upd-ctrl', body);
+      if (!sup) return;
+      const L = s.latest;
+      const txt = {
+        idle: 'Vérifiée automatiquement toutes les 6 heures.',
+        checking: 'Recherche…',
+        none: `Tu as la dernière version${L ? ` (${esc(L.version)})` : ''}.`,
+        available: `Version ${esc(L && L.version)} disponible.`,
+        downloading: `Téléchargement… ${Math.round(s.progress * 100)} %`,
+        ready: 'Lancement de l\'installateur…',
+        error: esc(s.error || 'Erreur'),
+      }[s.state];
+      sup.innerHTML = txt;
+      ctrl.innerHTML = s.state === 'available'
+        ? `<button class="btn filled sm state upd-go">${ms('download')}Installer</button>`
+        : `<button class="btn tonal sm state upd-check" ${s.state === 'checking' || s.state === 'downloading' ? 'disabled' : ''}>${ms('refresh')}Vérifier</button>`;
+      $('.upd-go', ctrl)?.addEventListener('click', () => follet.updateInstall());
+      $('.upd-check', ctrl)?.addEventListener('click', () => follet.updateCheck());
+    };
+    follet.updateStatus().then(paint);
+    this.offUpdate && this.offUpdate();
+    this.offUpdate = follet.onUpdate(paint);
+  },
 });

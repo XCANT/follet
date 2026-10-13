@@ -2,6 +2,17 @@
 
 Les versions suivent [SemVer](https://semver.org/lang/fr/). Pour publier : ajouter une section ici, monter la version dans `package.json` (`npm version x.y.z --no-git-tag-version`), committer, puis pousser un tag `vx.y.z`. GitHub Actions construit l'installateur et crée la release avec le texte de cette section.
 
+## [1.3.0] - 2026-10-13
+
+### Ajouté
+- Mises à jour : Follet vérifie les nouvelles versions et les installe depuis Réglages → À propos (ou le menu de l'icône).
+- Fiche système façon fastfetch dans Stats (bouton terminal).
+- Réglage Comportement → Ouverture au survol : rapide, normale ou lente.
+
+### Modifié
+- L'aperçu ne s'ouvre plus quand la souris ne fait que passer (vers un onglet de navigateur, par exemple) : il faut qu'elle s'attarde.
+- La version installée répare toute seule son démarrage avec Windows s'il pointe vers un autre emplacement.
+- README : nouveaux visuels, sans données personnelles.
 ## [1.2.1] - 2026-10-13
 
 ### Corrigé

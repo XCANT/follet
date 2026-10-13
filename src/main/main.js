@@ -16,6 +16,7 @@ require('./today');
 require('./tools');
 require('./terminal');
 require('./ai');
+const update = require('./update');
 
 // ---------- raccourci global ----------
 let shortcut = null;
@@ -44,6 +45,7 @@ function createTray() {
     { label: 'Réglages…', click: () => { windowMod.reveal(); core.send('open-tab', 'settings'); windowMod.win.focus(); } },
     { label: 'Recharger', click: () => { core.reloadConfig(); windowMod.place(); windowMod.win.reload(); } },
     { label: 'Ouvrir le dossier des données', click: () => shell.openPath(core.DATA) },
+    { label: 'Rechercher les mises à jour', click: () => { windowMod.reveal(); core.send('open-tab', 'settings:about'); windowMod.win.focus(); update.check(true); } },
     { label: 'Démarrer avec Windows', type: 'checkbox', checked: await settings.loginEnabled(), click: async (m) => { await settings.setLogin(m.checked); rebuild(); } },
     { type: 'separator' },
     { label: 'Quitter', click: () => app.quit() },
@@ -63,6 +65,7 @@ app.whenReady().then(() => {
   monitors.start();
   createTray();
   registerShortcut();
+  update.start();
 });
 app.on('second-instance', () => { windowMod.reveal(); core.send('toggle'); });
 app.on('will-quit', () => globalShortcut.unregisterAll());

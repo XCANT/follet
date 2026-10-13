@@ -45,9 +45,7 @@ let pointerIn = false, leaveTimer = null, peekTimer = null;
 follet.onPointer((inside) => {
   pointerIn = inside;
   clearTimeout(leaveTimer); clearTimeout(peekTimer);
-  if (inside) {
-    if (I.mode === 'collapsed' || I.mode === 'activity') peekTimer = setTimeout(() => { if (I.mode === 'collapsed' || I.mode === 'activity') setMode('peek'); }, 90);
-  } else {
+  if (!inside) {
     leaveTimer = setTimeout(() => {
       if (pointerIn) return;
       if (I.mode === 'peek') setMode('collapsed');
@@ -55,6 +53,8 @@ follet.onPointer((inside) => {
     }, I.mode === 'expanded' ? 600 : 220);
   }
 });
+// La souris s'attarde dans l'encoche (le main filtre les simples passages)
+follet.onHover(() => { if (pointerIn && (I.mode === 'collapsed' || I.mode === 'activity')) setMode('peek'); });
 function typing() {
   const a = document.activeElement;
   return document.hasFocus() && a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && a.type !== 'range' && a.type !== 'checkbox'));
@@ -77,7 +77,11 @@ document.addEventListener('keydown', (e) => {
 let navWheel = 0;
 $('#nav').addEventListener('wheel', (e) => { e.stopPropagation(); if (Date.now() - navWheel < 220) return; navWheel = Date.now(); stepTab(e.deltaY > 0 ? 1 : -1); }, { passive: true });
 follet.onToggle(() => { if (I.mode === 'expanded') setMode('collapsed'); else { setMode('expanded'); follet.focusWindow(); } });
-follet.onOpenTab((t) => { setMode('expanded'); showTab(t); });
+follet.onOpenTab((t) => {           // 'settings:about' ouvre aussi une section des reglages
+  const [tab, sec] = String(t).split(':');
+  setMode('expanded'); showTab(tab);
+  if (sec && I.views[tab] && I.views[tab].open) setTimeout(() => I.views[tab].open(sec), 50);
+});
 follet.onTuck((on) => { if (I.demo) return; I.tucked = on; document.body.classList.toggle('tucked', on); reportRect(); });
 follet.onReveal(() => { setMode('peek'); setTimeout(() => { if (!pointerIn && I.mode === 'peek') setMode('collapsed'); }, 1600); });
 $('#btn-settings').addEventListener('click', () => showTab(I.tab === 'settings' ? (localStorage.getItem('lastTab') || 'home') : 'settings'));
@@ -186,6 +190,9 @@ I.activity = (a) => {
       ? `<div class="a-ico warn">${ms('battery_alert', 'fill s20')}</div><div class="a-txt"><div class="title-s">Batterie faible</div><div class="body-s variant">Branche le chargeur</div></div><div class="a-val">${a.percent} %</div>`
       : `<div class="a-ico">${ms(a.plugged ? 'battery_charging_full' : 'battery_full', 'fill s20')}</div><div class="a-txt"><div class="title-s">${a.plugged ? 'En charge' : 'Sur batterie'}</div></div><div class="a-val">${a.percent} %</div>`;
     showActivity(html, 'battery', 3200);
+  } else if (a.kind === 'update') {
+    I.flashMood('happy', 2500);
+    showActivity(`<div class="a-ico">${ms('system_update_alt', 'fill s20')}</div><div class="a-txt"><div class="title-s">Mise à jour ${esc(a.version)}</div><div class="body-s variant">Réglages → À propos pour l'installer</div></div>`, 'update', 5000);
   }
 };
 follet.onActivity(I.activity);

@@ -48,11 +48,11 @@ async function tokensFor(seed, variant) {
   return vars;
 }
 
-let currentArt = null, lastKey = '';
+let currentArt = null, lastKey = '', forceArt = false;
 async function apply() {
   const t = core.config.theme || {};
-  let seed = null, source = t.source;
-  if (t.source === 'art' && currentArt) seed = await seedFromImage(currentArt).catch(() => null);
+  let seed = null, source = forceArt ? 'art' : t.source;
+  if (source === 'art' && currentArt) seed = await seedFromImage(currentArt).catch(() => null);
   if (seed == null) seed = t.source === 'custom' ? hexArgb(t.color) : accentArgb();
   if (seed == null) { seed = accentArgb(); source = 'accent'; }
   const key = seed + '|' + t.variant;
@@ -62,7 +62,7 @@ async function apply() {
 }
 
 // La pochette change : on recolore si la source est "pochette"
-function setArt(dataUrl) { currentArt = dataUrl || null; if ((core.config.theme || {}).source === 'art') apply().catch(() => { }); }
+function setArt(dataUrl, force) { currentArt = dataUrl || null; if (force) forceArt = true; if (forceArt || (core.config.theme || {}).source === 'art') apply().catch(() => { }); }
 systemPreferences.on?.('accent-color-changed', () => apply().catch(() => { }));
 core.events.on('config', (c, before) => { if (JSON.stringify(c.theme) !== JSON.stringify(before.theme)) { lastKey = ''; apply().catch(() => { }); } });
 
