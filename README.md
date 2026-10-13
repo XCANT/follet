@@ -26,6 +26,8 @@
 2. Lance-le : installation pour ton utilisateur, sans droits administrateur. L'installateur n'est pas signé : à l'écran « Windows a protégé votre ordinateur », clique **Informations complémentaires → Exécuter quand même**.
 3. Follet apparaît en haut de l'écran et se présente. Active **Démarrer avec Windows** dans Réglages → Comportement.
 
+Pour que les notifications n'apparaissent que dans Follet, coupe les bannières des applis dans Paramètres Windows → Notifications (ou active Ne pas déranger) : Follet les lit dans le centre de notifications.
+
 Follet vérifie les nouvelles versions toutes les 6 heures et s'installe à jour depuis Réglages → À propos (dépôt privé : il faut `gh` connecté sur le PC).
 
 En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
@@ -45,7 +47,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
 | **Réglages** | Couleurs, couleur de Follet, écran, raccourci, activités, onglets visibles, météo, agendas, IA |
 
-**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : volume, nouvelle chanson, casque connecté, chargeur, batterie faible, minuteur terminé, fichier déposé.
+**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, volume, nouvelle chanson, casque connecté, chargeur, batterie faible, minuteur terminé, fichier déposé.
 
 **Follet a des humeurs.** Écouteurs quand la musique joue, auréole quand l'IA réfléchit, clin d'œil quand la réponse arrive, bonnet de nuit après 5 minutes sans activité, grands yeux pour les alertes.
 
