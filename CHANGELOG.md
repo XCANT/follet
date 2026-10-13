@@ -2,7 +2,7 @@
 
 Les versions suivent [SemVer](https://semver.org/lang/fr/). Pour publier : ajouter une section ici, monter la version dans `package.json` (`npm version x.y.z --no-git-tag-version`), committer, puis pousser un tag `vx.y.z`. GitHub Actions construit l'installateur et crée la release avec le texte de cette section.
 
-## [Non publié]
+## [1.2.1] - 2026-10-13
 
 ### Corrigé
 - Glisser-déposer : l'encoche restait en aperçu sous les cibles de dépôt. Elle passe maintenant en mode dépôt pendant tout le geste, puis confirme le dépôt.
