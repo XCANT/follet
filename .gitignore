@@ -9,3 +9,4 @@ config.json
 state.json
 claude-chat/
 .env
+src/main/bin/

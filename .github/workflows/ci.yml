@@ -8,10 +8,12 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: node scripts/check.js
+      - run: node scripts/build-helper.js --force
+      - run: node scripts/helper-test.js exe

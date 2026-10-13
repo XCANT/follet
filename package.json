@@ -16,7 +16,10 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win",
-    "check": "node scripts/check.js"
+    "check": "node scripts/check.js",
+    "prestart": "node scripts/build-helper.js",
+    "predist": "node scripts/build-helper.js --force",
+    "test:helper": "node scripts/helper-test.js"
   },
   "type": "commonjs",
   "dependencies": {
@@ -54,7 +57,8 @@
     ],
     "asarUnpack": [
       "src/main/helper.ps1",
-      "node_modules/@lydell/**"
+      "node_modules/@lydell/**",
+      "src/main/bin/**"
     ],
     "npmRebuild": false,
     "win": {

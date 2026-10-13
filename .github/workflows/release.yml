@@ -27,6 +27,8 @@ jobs:
 
       - run: npm ci
       - run: node scripts/check.js
+      - run: node scripts/build-helper.js --force
+      - run: node scripts/helper-test.js exe
       - run: npx electron-builder --win --publish never
 
       - name: Publier la release
