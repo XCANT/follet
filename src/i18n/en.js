@@ -107,7 +107,7 @@ const FOLLET_EN = {
     'Normale': 'Normal', 'Lente': 'Slow',
     'Se ranger devant une fenêtre maximisée': 'Hide behind maximized windows', "Elle ressort quand la souris touche le haut de l'écran, au milieu.": 'It comes back when the mouse touches the top middle of the screen.',
     'Masquer pendant les jeux en plein écran': 'Hide during full-screen games', 'Accélération graphique': 'Hardware acceleration',
-    'Animations plus fluides, mais environ 60 Mo de mémoire en plus. Effet au prochain démarrage de Follet.': 'Smoother animations, but about 60 MB more memory. Applies the next time Follet starts.', 'Raccourci clavier': 'Keyboard shortcut',
+    'Recommandée : animations fluides et moins de travail pour le processeur. Désactivée, Follet économise environ 70 Mo de mémoire. Effet au prochain démarrage de Follet.': 'Recommended: smooth animations and less work for the processor. When off, Follet saves about 70 MB of memory. Applies the next time Follet starts.', 'Raccourci clavier': 'Keyboard shortcut',
     'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.': 'Opens or closes Follet from anywhere. Click, then press the keys.',
     'Démarrer avec Windows': 'Start with Windows', 'Écran changé': 'Display changed', 'Follet démarrera avec Windows': 'Follet will start with Windows',
     'Démarrage automatique désactivé': 'Autostart disabled', 'Appuie sur la combinaison…': 'Press the keys…', 'Raccourci :': 'Shortcut:',

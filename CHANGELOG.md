@@ -2,6 +2,11 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.6.1] - 2026-10-13
+
+### Fixed
+- Hardware acceleration is back on by default, including for installs that had it off since 1.5.0. Drawing the notch with the processor made animations less smooth and added heat while music played. It can still be turned off in Settings → Behavior to save ~70 MB.
+
 ## [1.6.0] - 2026-10-13
 
 ### Changed

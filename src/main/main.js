@@ -7,8 +7,10 @@ app.setAppUserModelId('Follet');
 
 const core = require('./core');
 const { t } = require('./i18n');
-// Sans acceleration graphique, Follet economise ~60 Mo (le processus GPU) ; reglable dans Comportement
-if (!core.config.behavior.gpu) app.disableHardwareAcceleration();
+// Acceleration graphique : active par defaut (rendu fluide, moins de processeur donc moins de chaleur).
+// Desactivee, Follet economise ~70 Mo mais dessine avec le processeur. Reglable dans Comportement.
+// (cle 'accel' : l'ancienne cle 'gpu', desactivee par defaut en 1.5, est volontairement ignoree)
+if (core.config.behavior.accel === false) app.disableHardwareAcceleration();
 const helper = require('./helper');
 const windowMod = require('./window');
 const theme = require('./theme');

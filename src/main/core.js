@@ -23,7 +23,7 @@ const DEFAULTS = {
   calendars: [],
   weather: { mode: 'ip', fallback: null },
   theme: { source: 'art', color: '#6750a4', variant: 'tonal' },
-  behavior: { tuck: true, hideFullscreen: true, hover: 'normal', gpu: false },
+  behavior: { tuck: true, hideFullscreen: true, hover: 'normal', accel: true },
   activities: { volume: true, media: true, battery: true, audioDevice: true, notif: true },
   tabs: { home: true, today: true, stats: true, shelf: true, clip: true, apps: true, term: true, ai: true, power: true },
   ai: { provider: 'claude-code', models: {}, effort: 'low', customBase: '' },
