@@ -46,7 +46,7 @@ contextBridge.exposeInMainWorld('follet', {
 
   // Claude
   aiAsk: invoke('ai-ask'), aiStop: invoke('ai-stop'), onAi: on('ai-event'), aiModels: invoke('ai-models'), aiInfo: invoke('ai-info'), aiKeySet: invoke('ai-key-set'),
-  claudeUsage: invoke('claude-usage'),
+  claudeUsage: invoke('claude-usage'), aiUsage: invoke('ai-usage'), aiReadFiles: invoke('ai-read-files'),
 
   // reglages
   configGet: invoke('config-get'), configSet: invoke('config-set'), loginSet: invoke('login-set'),

@@ -63,7 +63,11 @@ function askCli(messages) {
       const line = buf.slice(0, i); buf = buf.slice(i + 1);
       let m; try { m = JSON.parse(line); } catch { continue; }
       if (m.type === 'stream_event' && m.event?.type === 'content_block_delta' && m.event.delta?.type === 'text_delta') send('delta', m.event.delta.text);
-      else if (m.type === 'result' && m.is_error) send('error', m.result || 'Erreur de Claude Code');
+      else if (m.type === 'result') {
+        if (m.is_error) send('error', m.result || 'Erreur de Claude Code');
+        const u = m.usage || {};
+        record({ provider: 'claude-code', model: model || 'défaut', inp: (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0), out: u.output_tokens || 0, ms: m.duration_ms || 0 });
+      }
     }
   });
   proc.stderr.setEncoding('utf8'); proc.stderr.on('data', (d) => (err += d));
@@ -89,7 +93,8 @@ async function askAnthropic(messages) {
     : client.messages.stream(params);
   current = { abort: () => stream.abort() };
   stream.on('text', (t) => send('delta', t));
-  const final = await stream.finalMessage();
+  const t0 = Date.now(), final = await stream.finalMessage();
+  record({ provider: 'anthropic', model: final.model || model, inp: final.usage?.input_tokens || 0, out: final.usage?.output_tokens || 0, ms: Date.now() - t0 });
   if (final.stop_reason === 'refusal') send('error', 'Claude a décliné cette demande.');
 }
 
@@ -113,8 +118,8 @@ async function askOpenAI(p, messages) {
     let msg = t; try { msg = JSON.parse(t).error?.message || t; } catch { }
     throw new Error(`${PROVIDERS[p].label} : ${res.status} ${msg.slice(0, 300)}`);
   }
-  const reader = res.body.getReader(), dec = new TextDecoder();
-  let buf = '';
+  const reader = res.body.getReader(), dec = new TextDecoder(), t0 = Date.now();
+  let buf = '', chars = 0, usage = null;
   for (; ;) {
     const { value, done } = await reader.read(); if (done) break;
     buf += dec.decode(value, { stream: true });
@@ -123,9 +128,11 @@ async function askOpenAI(p, messages) {
       const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
       if (!line.startsWith('data:')) continue;
       const data = line.slice(5).trim(); if (data === '[DONE]') continue;
-      try { const j = JSON.parse(data); const t = j.choices?.[0]?.delta?.content; if (t) send('delta', t); } catch { }
+      try { const j = JSON.parse(data); const t = j.choices?.[0]?.delta?.content; if (j.usage) usage = j.usage; if (t) { chars += t.length; send('delta', t); } } catch { }
     }
   }
+  // sans compte exact du serveur : ~4 caracteres par jeton
+  record({ provider: p, model, inp: usage?.prompt_tokens || 0, out: usage?.completion_tokens || Math.round(chars / 4), ms: Date.now() - t0 });
 }
 
 ipcMain.handle('ai-ask', async (_e, messages) => {
@@ -164,6 +171,19 @@ ipcMain.handle('ai-info', () => ({
 }));
 ipcMain.handle('ai-key-set', (_e, p, key) => { if (!PROVIDERS[p]) return false; setKey(p, (key || '').trim()); return true; });
 
+// ---------- fichiers deposes sur Follet : texte seulement, taille limitee ----------
+ipcMain.handle('ai-read-files', async (_e, paths) => Promise.all((paths || []).slice(0, 8).map(async (p) => {
+  const name = path.basename(p);
+  try {
+    const st = await fs.promises.stat(p);
+    if (st.isDirectory()) return { name, path: p, skip: 'dossier' };
+    if (st.size > 300 * 1024) return { name, path: p, skip: 'trop gros' };
+    const buf = await fs.promises.readFile(p);
+    if (buf.subarray(0, 8192).includes(0)) return { name, path: p, skip: 'pas du texte' };
+    return { name, path: p, text: buf.toString('utf8') };
+  } catch (e) { return { name, path: p, skip: 'illisible' }; }
+})));
+
 // ---------- consommation Claude Code (journaux locaux ~/.claude/projects/**/*.jsonl) ----------
 const fileCache = new Map();
 ipcMain.handle('claude-usage', async () => {
@@ -188,18 +208,51 @@ ipcMain.handle('claude-usage', async () => {
         if (!line.includes('"usage"')) continue;
         try {
           const j = JSON.parse(line), u = j.message?.usage; if (!u || !j.timestamp) continue;
-          entries.push({ key: (j.message.id || '') + ':' + (j.requestId || ''), t: Date.parse(j.timestamp), model: j.message.model || '?', out: u.output_tokens || 0, cr: u.cache_read_input_tokens || 0, session: j.sessionId });
+          entries.push({ key: (j.message.id || '') + ':' + (j.requestId || ''), t: Date.parse(j.timestamp), model: j.message.model || '?', out: u.output_tokens || 0, inp: (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0), cr: u.cache_read_input_tokens || 0, session: j.sessionId, project: j.cwd ? path.basename(j.cwd) : path.basename(path.dirname(f.p)) });
         } catch { }
       }
       c = { mtime: f.mtime, entries }; fileCache.set(f.p, c);
     }
-    for (const e of c.entries) if (e.t >= since && !seen.has(e.key)) { seen.add(e.key); all.push(e); }
+    for (const e of c.entries) if (e.t >= since && !seen.has(e.key) && e.model !== '<synthetic>') { seen.add(e.key); all.push(e); }
   }
+  all.sort((a, b) => a.t - b.t);
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const sum = (arr) => arr.reduce((a, e) => ({ out: a.out + e.out, cr: a.cr + e.cr, n: a.n + 1 }), { out: 0, cr: 0, n: 0 });
+  const T0 = today.getTime(), now = Date.now();
+  const sum = (arr) => arr.reduce((a, e) => ({ out: a.out + e.out, inp: a.inp + e.inp, cr: a.cr + e.cr, n: a.n + 1 }), { out: 0, inp: 0, cr: 0, n: 0 });
   const days = [];
-  for (let i = 6; i >= 0; i--) { const d0 = today.getTime() - i * 864e5; days.push({ day: d0, ...sum(all.filter((e) => e.t >= d0 && e.t < d0 + 864e5)) }); }
-  const todayE = all.filter((e) => e.t >= today.getTime());
-  const last5 = all.filter((e) => e.t >= Date.now() - 5 * 3600e3);
-  return { today: sum(todayE), last5h: sum(last5), windowStart: last5.length ? Math.min(...last5.map((e) => e.t)) : null, sessionsToday: new Set(todayE.map((e) => e.session)).size, days };
+  for (let i = 6; i >= 0; i--) { const d0 = T0 - i * 864e5; days.push({ day: d0, ...sum(all.filter((e) => e.t >= d0 && e.t < d0 + 864e5)) }); }
+  const todayE = all.filter((e) => e.t >= T0);
+  const hours = Array.from({ length: 24 }, (_, h) => todayE.filter((e) => new Date(e.t).getHours() === h).reduce((s, e) => s + e.out, 0));
+  // Fenetres de 5 h de l'abonnement : une fenetre commence au premier message apres la fin de la precedente
+  let wStart = null;
+  for (const e of all) if (wStart === null || e.t >= wStart + 5 * 3600e3) wStart = e.t;
+  const inWindow = wStart !== null && now < wStart + 5 * 3600e3;
+  const group = (key) => {
+    const m = new Map();
+    for (const e of all) { const k = e[key]; const g = m.get(k) || { name: k, out: 0, n: 0 }; g.out += e.out; g.n++; m.set(k, g); }
+    return [...m.values()].sort((a, b) => b.out - a.out);
+  };
+  return {
+    today: sum(todayE), week: sum(all), days, hours,
+    window: inWindow ? { start: wStart, end: wStart + 5 * 3600e3, ...sum(all.filter((e) => e.t >= wStart)) } : null,
+    sessionsToday: new Set(todayE.map((e) => e.session)).size, sessionsWeek: new Set(all.map((e) => e.session)).size,
+    byModel: group('model').slice(0, 5), byProject: group('project').slice(0, 5),
+    last: all.length ? all[all.length - 1].t : null,
+  };
+});
+
+// ---------- ce que Follet lui-meme a consomme, tous fournisseurs confondus ----------
+const USAGE = path.join(core.DATA, 'ai-usage.json');
+function record(entry) {
+  let list = []; try { list = JSON.parse(fs.readFileSync(USAGE, 'utf8')); } catch { }
+  list.push({ t: Date.now(), ...entry });
+  list = list.filter((e) => e.t > Date.now() - 30 * 864e5).slice(-2000);
+  try { fs.writeFileSync(USAGE, JSON.stringify(list)); } catch { }
+}
+ipcMain.handle('ai-usage', () => {
+  let list = []; try { list = JSON.parse(fs.readFileSync(USAGE, 'utf8')); } catch { }
+  const T0 = new Date().setHours(0, 0, 0, 0);
+  const pick = (arr) => ({ n: arr.length, inp: arr.reduce((s, e) => s + (e.inp || 0), 0), out: arr.reduce((s, e) => s + (e.out || 0), 0), ms: arr.length ? Math.round(arr.reduce((s, e) => s + (e.ms || 0), 0) / arr.length) : 0 });
+  const p = providerId();
+  return { provider: p, today: pick(list.filter((e) => e.t >= T0 && e.provider === p)), month: pick(list.filter((e) => e.provider === p)), all: pick(list) };
 });

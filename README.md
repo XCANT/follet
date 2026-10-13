@@ -14,12 +14,12 @@ Gratuit, local, sans abonnement ni clé d'API.
 |---|---|
 | **Accueil** | Lecture en cours (pochette, barre ondulée, avance au clic) pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…), volume, luminosité de chaque écran (DDC/CI et écran intégré), raccourcis système, état (batterie, météo, prochain événement) |
 | **Aujourd'hui** | Horloge, météo heure par heure et sur 4 jours (position par IP), agenda de la semaine (iCal), minuteur affiché dans l'encoche, tâches |
-| **Stats** | Anneaux CPU (fréquence réelle), GPU NVIDIA, RAM ; top des applis par RAM ou CPU ; disques ; débit réseau et test de vitesse |
-| **Étagère** | Dépose des fichiers sur l'encoche (même repliée) pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli |
+| **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min ; top des applis par RAM ou CPU ; disques ; débit réseau et test de vitesse |
+| **Étagère** | Glisse des fichiers sur l'encoche (même repliée) puis sur la cible « Étagère » pour les garder sous la main, et fais-les glisser vers n'importe quelle appli |
 | **Copié** | Historique des 50 derniers textes copiés, en mémoire seulement |
 | **Apps** | Lanceur avec recherche et favoris, basé sur le menu Démarrer |
 | **Terminal** | Shell complet (PowerShell 7 par défaut) via xterm.js + node-pty |
-| **Claude** | Questions rapides via [Claude Code](https://claude.com/claude-code) (`claude -p`) et suivi de la consommation locale |
+| **Follet** | La mascotte et ton IA au choix (Claude Code, API Claude, OpenAI, Gemini, Ollama, OpenRouter, serveur compatible) ; dépose un fichier texte sur la cible « Demander à Follet » pour qu'il le lise ; tableau de bord d'utilisation (fenêtre de 5 h, jetons, messages, heure par heure, par modèle, par projet) |
 | **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
 | **Réglages** | Tout se règle dans l'appli : couleurs, écran, raccourci, activités, onglets visibles, météo, agendas, disques, shell, modèle Claude |
 
@@ -32,6 +32,7 @@ Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : 
 - **Survol** : aperçu (pochette, titre, contrôles ; sinon date, prochain événement et météo).
 - **Molette vers le bas ou clic** : panneau complet. **Échap** ou sortir la souris : refermer.
 - **Ctrl+Alt+Espace** (modifiable) : ouvrir / fermer de n'importe où.
+- Encoche ouverte : **1 à 9** pour choisir un onglet, **← / →** ou la molette sur les onglets pour passer au voisin.
 - Devant une fenêtre **maximisée**, l'encoche se range au-dessus de l'écran ; elle ressort quand la souris touche le haut, au milieu.
 - Masquée complètement pendant un jeu en plein écran.
 

@@ -75,7 +75,7 @@
   transition: font-variation-settings .2s var(--effects);
 }
 .ms.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-.ms.s18 { font-size: 18px; } .ms.s20 { font-size: 20px; } .ms.s28 { font-size: 28px; } .ms.s32 { font-size: 32px; } .ms.s40 { font-size: 40px; }
+.ms.s16 { font-size: 16px; } .ms.s18 { font-size: 18px; } .ms.s20 { font-size: 20px; } .ms.s28 { font-size: 28px; } .ms.s32 { font-size: 32px; } .ms.s40 { font-size: 40px; }
 
 /* ---------- couche d'etat (survol / pression) ---------- */
 .state { position: relative; overflow: hidden; isolation: isolate; }

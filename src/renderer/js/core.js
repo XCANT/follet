@@ -61,7 +61,19 @@ window.addEventListener('blur', () => { if (I.mode === 'expanded' && !pointerIn)
 $('#compact').addEventListener('click', (e) => { if (!e.target.closest('button')) { setMode('expanded'); } });
 $('#compact').addEventListener('wheel', (e) => { if (e.deltaY > 0) setMode('expanded'); }, { passive: true });
 $('.topbar').addEventListener('wheel', (e) => { if (e.deltaY < 0) setMode('peek'); }, { passive: true });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && I.mode === 'expanded') setMode('collapsed'); });
+// Clavier (encoche ouverte) : Echap ferme, 1-9 choisit un onglet, fleches gauche/droite passent au voisin
+const visibleTabs = () => $$('#nav button').map((b) => b.dataset.tab);
+function stepTab(d) { const t = visibleTabs(), i = t.indexOf(I.tab); showTab(t[(i + d + t.length) % t.length] || t[0]); }
+document.addEventListener('keydown', (e) => {
+  if (I.mode !== 'expanded') return;
+  if (e.key === 'Escape') { setMode('collapsed'); return; }
+  const a = document.activeElement;
+  if (typing() || (a && a.closest && a.closest('.xterm')) || e.ctrlKey || e.altKey || e.metaKey) return;
+  if (/^[1-9]$/.test(e.key)) { const t = visibleTabs()[+e.key - 1]; if (t) { e.preventDefault(); showTab(t); } }
+  else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); stepTab(e.key === 'ArrowRight' ? 1 : -1); }
+});
+let navWheel = 0;
+$('#nav').addEventListener('wheel', (e) => { e.stopPropagation(); if (Date.now() - navWheel < 220) return; navWheel = Date.now(); stepTab(e.deltaY > 0 ? 1 : -1); }, { passive: true });
 follet.onToggle(() => { if (I.mode === 'expanded') setMode('collapsed'); else { setMode('expanded'); follet.focusWindow(); } });
 follet.onOpenTab((t) => { setMode('expanded'); showTab(t); });
 follet.onTuck((on) => { if (I.demo) return; I.tucked = on; document.body.classList.toggle('tucked', on); reportRect(); });
@@ -74,7 +86,7 @@ function reportRect() {
   if (rectQueued) return; rectQueued = true;
   requestAnimationFrame(() => {
     rectQueued = false;
-    if (I.tucked && I.mode !== 'activity' && I.mode !== 'peek' && I.mode !== 'expanded') return follet.setRect(null);
+    if (I.tucked && I.mode === 'collapsed') return follet.setRect(null);
     const r = notchEl.getBoundingClientRect();
     follet.setRect({ x: Math.round(r.left), y: 0, w: Math.round(r.width), h: Math.round(r.bottom) });
   });
@@ -113,7 +125,7 @@ I.renderCompact = renderCompact;
 
 // ---------- la mascotte et son humeur ----------
 // Priorites : alerte (temporaire) > reflexion de l'IA > musique > sommeil (inactif) > repos
-I.mascot = Follet.create($('.c-mascot'), { size: 24 });
+I.mascot = Follet.create($('.c-mascot'), { size: 24, active: () => I.mode !== 'expanded' });
 I.moodState = { alert: false, think: false, idle: 0 };
 function updateMood() {
   const s = I.moodState, playing = I.media.present && I.media.status === 'Playing';
@@ -177,26 +189,58 @@ I.activity = (a) => {
 };
 follet.onActivity(I.activity);
 
-// ---------- depot de fichiers sur l'encoche -> etagere ----------
-let dragDepth = 0;
+// ---------- depot de fichiers sur l'encoche ----------
+// Pas de compteur dragenter/dragleave (il se desynchronise des que le contenu change sous la souris) :
+// le glisser est "actif" tant que des dragover arrivent, et l'encoche passe dans un mode dedie
+// qui ne change plus de taille pendant le geste.
+const dropEl = $('#dropzone');
+let dragging = false, dragWatch = null, modeBeforeDrop = null;
 const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
-notchEl.addEventListener('dragenter', (e) => {
-  if (!hasFiles(e) || I.dragOut) return;
-  e.preventDefault(); dragDepth++;
+function dragBegin() {
+  dragging = true;
   document.body.classList.add('dropping');
-  if (I.mode !== 'expanded') { setMode('expanded'); }
-  showTab('shelf');
+  modeBeforeDrop = I.mode;
+  if (I.mode !== 'expanded') setMode('drop');
+  I.mascot.setMood('happy');
+}
+function dragEnd() {
+  if (!dragging) return;
+  dragging = false; clearTimeout(dragWatch);
+  document.body.classList.remove('dropping');
+  $$('.dz', dropEl).forEach((z) => z.classList.remove('hot'));
+  if (I.mode === 'drop') setMode(pointerIn ? 'peek' : 'collapsed');
+  updateMood();
+}
+document.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  if (!hasFiles(e) || I.dragOut) return;
+  if (!dragging) dragBegin();
+  e.dataTransfer.dropEffect = 'copy';
+  const z = e.target.closest && e.target.closest('.dz');
+  $$('.dz', dropEl).forEach((d) => d.classList.toggle('hot', d === z || (!z && d.dataset.dz === 'shelf')));
+  clearTimeout(dragWatch); dragWatch = setTimeout(dragEnd, 700);   // Chromium relance dragover au moins toutes les ~350 ms
 });
-notchEl.addEventListener('dragover', (e) => { if (hasFiles(e) && !I.dragOut) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
-notchEl.addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; document.body.classList.remove('dropping'); } });
-notchEl.addEventListener('drop', async (e) => {
-  e.preventDefault(); dragDepth = 0; document.body.classList.remove('dropping');
-  if (I.dragOut) return;
+document.addEventListener('dragleave', (e) => { if (!e.relatedTarget && (e.clientX <= 0 || e.clientY <= 0 || e.clientX >= innerWidth || e.clientY >= innerHeight)) dragEnd(); });
+document.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  if (!dragging || I.dragOut) return dragEnd();
+  const zone = (e.target.closest && e.target.closest('.dz')?.dataset.dz) || 'shelf';
   const paths = [...e.dataTransfer.files].map((f) => follet.pathForFile(f)).filter(Boolean);
-  if (paths.length) { await follet.shelfAdd(paths); I.views.shelf.refresh && I.views.shelf.refresh(); snack(`${paths.length} élément${paths.length > 1 ? 's' : ''} ajouté${paths.length > 1 ? 's' : ''} à l'étagère`); }
+  const wasExpanded = modeBeforeDrop === 'expanded' || I.mode === 'expanded';
+  dragEnd();
+  if (!paths.length) return;
+  if (zone === 'ai') {
+    setMode('expanded'); showTab('ai'); follet.focusWindow();
+    I.views.ai.attachFiles(paths);
+    return;
+  }
+  await follet.shelfAdd(paths);
+  I.views.shelf.refresh && I.views.shelf.refresh();
+  I.mascot.bump(); I.flashMood('happy', 1800);
+  const n = paths.length, label = `${n} élément${n > 1 ? 's' : ''} sur l'étagère`;
+  if (wasExpanded) { showTab('shelf'); snack(label); }
+  else showActivity(`<div class="a-ico">${ms('inventory_2', 'fill s20')}</div><div class="a-txt"><div class="title-s">${label}</div><div class="body-s variant ellipsis">${esc(paths.map((p) => p.split(/[\\/]/).pop()).join(', '))}</div></div>`, 'shelf', 2600);
 });
-document.addEventListener('dragover', (e) => e.preventDefault());
-document.addEventListener('drop', (e) => e.preventDefault());
 
 // ---------- minuteur (affiche dans l'encoche) ----------
 I.timer = JSON.parse(localStorage.getItem('timer') || 'null');   // { end, total } ou { left, total, paused: true }
