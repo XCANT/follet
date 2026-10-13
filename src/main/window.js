@@ -47,6 +47,8 @@ function create() {
   const demo = process.env.FOLLET_DEMO;
   win.loadFile(path.join(core.RENDERER, 'index.html'), demo ? { query: { demo } } : undefined);
   win.once('ready-to-show', () => win.showInactive());
+  // a la fermeture, les minuteries ci-dessous voient win = null au lieu d'une fenetre detruite
+  win.on('closed', () => { win = null; });
   // L'interface plante (rare) : on la recharge plutot que de laisser une encoche vide
   win.webContents.on('render-process-gone', (_e, d) => { console.error('interface arrêtée : ' + d.reason); if (d.reason !== 'clean-exit') setTimeout(() => !win.isDestroyed() && win.reload(), 1000); });
   win.webContents.on('console-message', (e) => {

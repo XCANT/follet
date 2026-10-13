@@ -47,6 +47,7 @@ const SHAPES = {
   procs: (d) => has(d, { byMem: 'array', byCpu: 'array', total: 'number' }) && d.byMem.every((x) => has(x, { name: 'string', label: 'string', mem: 'number', cpu: 'number', count: 'number', path: 'string|null' })),
   notifs: (d) => has(d, { access: 'string', ids: 'array', items: 'array' }),
   'cpu-freq': (d) => d === null || type(d) === 'number',
+  'mic-users': (d) => type(d) === 'array' && d.every((x) => has(x, { pid: 'number', name: 'string', label: 'string' })),
 };
 function has(o, shape) {
   if (type(o) !== 'object') return false;
@@ -67,8 +68,8 @@ function has(o, shape) {
     console.log(`  ${good ? 'ok  ' : 'FAIL'} ${op.padEnd(14)} ${String(r.ms).padStart(5)} ms${r.ok ? '' : '  ' + r.error}`);
   };
   // CI runners have no audio device, media session or notification center: protocol checks only
-  const ops = process.env.CI ? ['quns', 'fg', 'net', 'battery', 'procs', 'procs', 'cpu-freq']
-    : ['media', 'volume', 'audio-device', 'audio-devices', 'radios', 'quns', 'fg', 'net', 'battery', 'procs', 'procs', 'notifs', 'cpu-freq'];
+  const ops = process.env.CI ? ['quns', 'fg', 'net', 'battery', 'procs', 'procs', 'cpu-freq', 'mic-users']
+    : ['media', 'volume', 'audio-device', 'audio-devices', 'radios', 'quns', 'fg', 'net', 'battery', 'procs', 'procs', 'notifs', 'cpu-freq', 'mic-users'];
   for (const op of ops) await run(op, op === 'notifs' ? 0 : undefined);
   await run('at', { x: 10, y: 10 });
   const bad = await call('nope');

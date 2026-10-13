@@ -115,6 +115,8 @@ const FOLLET_EN = {
     'Quand le volume change (touches du clavier, Windows…).': 'When the volume changes (keyboard keys, Windows…).', 'Nouvelle chanson': 'New song',
     'Casque ou haut-parleurs connectés.': 'Headphones or speakers connected.', 'Branché, débranché, batterie faible.': 'Plugged in, unplugged, battery low.',
     'Notifications Windows': 'Windows notifications',
+    'Micro utilisé': 'Microphone in use',
+    "Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro.": 'An orange dot stays in the notch while an app is recording your microphone.',
     "Affichées dans l'encoche. Astuce : dans Windows, coupe les bannières d'une appli (Paramètres → Notifications) et laisse Follet les montrer.": 'Shown in the notch. Tip: in Windows, turn off an app\'s banners (Settings → Notifications) and let Follet show them.',
     'Position': 'Location', 'Ville de secours': 'Fallback city', 'Toujours utilisée.': 'Always used.', 'Utilisée si la position par IP échoue.': 'Used if IP location fails.',
     'Adresse IP': 'IP address', 'Ville fixe': 'Fixed city', 'Ville :': 'City:', 'Chercher une ville…': 'Search a city…',

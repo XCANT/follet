@@ -286,6 +286,7 @@ while ($true) {
             }
             'audio-devices' { [Vol]::Devices() }
             'audio-set' { [Vol]::SetDefault([string]$cmd.arg); $true }
+            'mic-users' { ,@() }   # helper C# seulement (sessions de capture WASAPI)
             'radios' {
                 $null = Await ([Windows.Devices.Radios.Radio]::RequestAccessAsync()) ([Windows.Devices.Radios.RadioAccessStatus])
                 $list = Await ([Windows.Devices.Radios.Radio]::GetRadiosAsync()) ([System.Collections.Generic.IReadOnlyList[Windows.Devices.Radios.Radio]])

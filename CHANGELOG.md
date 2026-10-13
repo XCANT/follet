@@ -2,6 +2,14 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.7.0] - 2026-10-13
+
+### Added
+- Microphone indicator: an orange dot stays in the collapsed notch while an app is recording a microphone, and the notch briefly shows which app started. Detected from the active Windows audio capture sessions (the privacy registry Windows used to fill is no longer updated on recent builds). Can be turned off in Settings → Activities.
+
+### Fixed
+- An error was logged each time Follet quit, when the cursor tracker touched the already closed window.
+
 ## [1.6.1] - 2026-10-13
 
 ### Fixed

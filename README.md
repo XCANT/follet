@@ -52,7 +52,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 | **Power** | Lock, sleep, sign out, restart, shut down |
 | **Settings** | Language, colors, Follet's color, display, shortcut, activities, visible tabs, weather, calendars, AI |
 
-**Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, volume, a new song, headphones connected, charger, low battery, timer done, file dropped.
+**Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, volume, a new song, headphones connected, charger, low battery, timer done, file dropped. An orange dot stays in the notch while an app is recording your microphone, like on iPhone.
 
 **Follet has moods.** Headphones while music plays, a halo while the AI thinks, a wink when the answer arrives, a nightcap after 5 idle minutes, big eyes for alerts.
 
@@ -119,6 +119,7 @@ src/main/
   theme.js       Material You colors (material-color-utilities)
   monitors.js    music, volume, audio output, battery -> activities
   notifs.js      Windows notifications -> activities
+  privacy.js     apps recording the microphone -> orange dot
   update.js      updates from GitHub releases
   ai.js          AI providers, encrypted keys, usage
   i18n.js        main-process translation (tray menu)

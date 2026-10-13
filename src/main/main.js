@@ -23,6 +23,7 @@ require('./terminal');
 require('./ai');
 const update = require('./update');
 const notifs = require('./notifs');
+const privacy = require('./privacy');
 
 // ---------- raccourci global ----------
 let shortcut = null;
@@ -74,6 +75,7 @@ app.whenReady().then(() => {
   registerShortcut();
   update.start();
   notifs.start();
+  privacy.start();
   // Dev : FOLLET_MEM=1 journalise la memoire par processus toutes les 15 s
   if (process.env.FOLLET_MEM) setInterval(() => {
     const by = {}; for (const m of app.getAppMetrics()) by[m.type] = (by[m.type] || 0) + Math.round((m.memory.privateBytes || m.memory.workingSetSize) / 1024);

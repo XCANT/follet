@@ -49,6 +49,7 @@ contextBridge.exposeInMainWorld('follet', {
 
   // notifications
   notifs: invoke('notifs-get'), notifRemove: invoke('notif-remove'), onNotifs: on('notifs'),
+  mic: invoke('mic-get'), onMic: on('mic'),
 
   // reglages
   configGet: invoke('config-get'), configSet: invoke('config-set'), loginSet: invoke('login-set'),

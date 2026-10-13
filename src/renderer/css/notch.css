@@ -44,6 +44,10 @@ body.tucked #notch[data-mode=collapsed] { transform: translate(-50%, calc(-100% 
 .c-timer { display: none; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: var(--shape-full); background: var(--md-tertiary-container); color: var(--md-on-tertiary-container); font: 500 12px/22px var(--font); font-variant-numeric: tabular-nums; }
 .c-timer .ms { font-size: 15px; }
 .has-timer .c-timer { display: inline-flex; }
+/* micro utilise : point orange facon iOS */
+.c-mic { display: none; width: 8px; height: 8px; border-radius: 50%; background: #ff9f0a; box-shadow: 0 0 6px #ff9f0a99; flex-shrink: 0; animation: mic-in .3s var(--effects); }
+.has-mic .c-mic { display: block; }
+@keyframes mic-in { from { transform: scale(0); } }
 .eq { display: none; gap: 2px; align-items: center; height: 14px; }
 .playing .eq { display: flex; }
 #notch[data-mode=peek] .eq { display: none; }
@@ -55,6 +59,7 @@ body.tucked #notch[data-mode=collapsed] { transform: translate(-50%, calc(-100% 
 #activity { position: absolute; inset: 0; display: flex; align-items: center; gap: 12px; padding: 0 18px 0 12px; opacity: 0; pointer-events: none; transform: scale(.96); transition: opacity .2s, transform .45s var(--spring-fast); }
 #notch[data-mode=activity] #activity { opacity: 1; transform: none; transition-delay: .1s; }
 #activity .a-ico { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--md-primary-container); color: var(--md-on-primary-container); flex-shrink: 0; }
+#activity .a-ico.mic { background: #ff9f0a; color: #241400; }
 #activity .a-ico.warn { background: var(--md-error-container); color: var(--md-on-error-container); }
 #activity img.a-ico { object-fit: cover; }
 #activity .a-txt { flex: 1; min-width: 0; }

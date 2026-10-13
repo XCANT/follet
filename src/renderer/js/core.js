@@ -195,12 +195,22 @@ I.activity = (a) => {
     const shown = showActivity(`${ico}<div class="a-txt"><div class="title-s ellipsis">${esc(a.title || a.app || 'Notification')}</div>
       <div class="body-s variant ellipsis">${esc([a.title ? a.app : null, a.body].filter(Boolean).join(' · '))}</div></div>`, 'notif', 5500);
     if (!shown) snack(`${a.app ? a.app + ' : ' : ''}${a.title || a.body || 'Notification'}`);
+  } else if (a.kind === 'mic') {
+    showActivity(`<div class="a-ico mic">${ms('mic', 'fill s20')}</div><div class="a-txt"><div class="title-s">Micro utilisé</div><div class="body-s variant ellipsis" data-noi18n>${esc(a.apps.join(', '))}</div></div>`, 'mic', 3500);
   } else if (a.kind === 'update') {
     I.flashMood('happy', 2500);
     showActivity(`<div class="a-ico">${ms('system_update_alt', 'fill s20')}</div><div class="a-txt"><div class="title-s">Mise à jour ${esc(a.version)}</div><div class="body-s variant">Réglages → À propos pour l'installer</div></div>`, 'update', 5000);
   }
 };
 follet.onActivity(I.activity);
+
+// point orange tant qu'une appli enregistre le micro
+function renderMic(list) {
+  notchEl.classList.toggle('has-mic', !!(list && list.length));
+  $('.c-mic').title = list && list.length ? I.t('Micro utilisé') + ' : ' + list.map((u) => u.label).join(', ') : '';
+}
+follet.onMic(renderMic);
+follet.mic().then(renderMic).catch(() => { });
 
 // ---------- depot de fichiers sur l'encoche ----------
 // Pas de compteur dragenter/dragleave (il se desynchronise des que le contenu change sous la souris) :

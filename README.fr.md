@@ -50,7 +50,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
 | **Réglages** | Langue (français ou anglais), couleurs, couleur de Follet, écran, raccourci, activités, onglets visibles, météo, agendas, IA |
 
-**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, volume, nouvelle chanson, casque connecté, chargeur, batterie faible, minuteur terminé, fichier déposé.
+**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, volume, nouvelle chanson, casque connecté, chargeur, batterie faible, minuteur terminé, fichier déposé. Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro, comme sur iPhone.
 
 **Follet a des humeurs.** Écouteurs quand la musique joue, auréole quand l'IA réfléchit, clin d'œil quand la réponse arrive, bonnet de nuit après 5 minutes sans activité, grands yeux pour les alertes.
 
@@ -117,6 +117,7 @@ src/main/
   theme.js       couleurs Material You (material-color-utilities)
   monitors.js    musique, volume, sortie audio, batterie -> activités
   notifs.js      notifications Windows -> activités
+  privacy.js     applis qui enregistrent le micro -> point orange
   update.js      mises à jour depuis les releases GitHub
   ai.js          fournisseurs d'IA, clés chiffrées, consommation
   i18n.js        traduction côté processus principal (menu de l'icône)

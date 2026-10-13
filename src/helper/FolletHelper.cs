@@ -87,6 +87,7 @@ static class Program {
       case "audio-device": return Vol.Device();
       case "audio-devices": return Vol.Devices();
       case "audio-set": Vol.SetDefault((string)arg); return true;
+      case "mic-users": return Vol.Recording();
       case "radios": {
         await W(Radio.RequestAccessAsync());
         var list = await W(Radio.GetRadiosAsync());
@@ -317,6 +318,18 @@ interface IPolicyConfig {
   int SetDefaultEndpoint([MarshalAs(UnmanagedType.LPWStr)] string id, int role);
 }
 [ComImport, Guid("870af99c-171d-4f9e-af0d-e63df40c2bc9")] class PolicyConfigClient { }
+[Guid("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface IAudioSessionManager2 { int a(); int b(); int GetSessionEnumerator(out IAudioSessionEnumerator e); }
+[Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface IAudioSessionEnumerator { int GetCount(out int n); int GetSession(int i, out IAudioSessionControl2 s); }
+[Guid("bfb7ff88-7239-4fc9-8fa2-07c950be9c6d"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+interface IAudioSessionControl2 {
+  int GetState(out int state);   // 1 = active
+  int a(); int b(); int c(); int d(); int e(); int f(); int g(); int h();
+  int i(); int j();
+  int GetProcessId(out uint pid);
+  [PreserveSig] int IsSystemSoundsSession();   // S_OK (0) = system sounds
+}
 
 static class Vol {
   static IMMDevice Dev() { var en = (IMMDeviceEnumerator)new MMDeviceEnumerator(); IMMDevice d; en.GetDefaultAudioEndpoint(0, 1, out d); return d; }
@@ -339,6 +352,34 @@ static class Vol {
     uint n; col.GetCount(out n);
     var list = new List<object>();
     for (uint i = 0; i < n; i++) { IMMDevice d; col.Item(i, out d); string id; d.GetId(out id); list.Add(new Dictionary<string, object> { { "id", id }, { "name", Name(d) }, { "isDefault", id == def } }); }
+    return list;
+  }
+  // Apps qui enregistrent un micro en ce moment : sessions de capture actives, sur tous les micros
+  public static object Recording() {
+    var en = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+    IMMDeviceCollection col; en.EnumAudioEndpoints(1, 1, out col);
+    uint n; col.GetCount(out n);
+    var pids = new HashSet<uint>();
+    for (uint i = 0; i < n; i++) {
+      try {
+        IMMDevice d; col.Item(i, out d);
+        var iid = typeof(IAudioSessionManager2).GUID; object o; d.Activate(ref iid, 23, IntPtr.Zero, out o);
+        IAudioSessionEnumerator se; ((IAudioSessionManager2)o).GetSessionEnumerator(out se);
+        int c; se.GetCount(out c);
+        for (int k = 0; k < c; k++) {
+          IAudioSessionControl2 s; se.GetSession(k, out s);
+          int state; s.GetState(out state);
+          uint pid; s.GetProcessId(out pid);
+          if (state == 1 && pid != 0 && s.IsSystemSoundsSession() != 0) pids.Add(pid);
+        }
+      } catch { }
+    }
+    var list = new List<object>();
+    foreach (var pid in pids) {
+      string name = null, path = null, label = null;
+      try { using (var p = Process.GetProcessById((int)pid)) { name = p.ProcessName; try { path = p.MainModule.FileName; label = FileVersionInfo.GetVersionInfo(path).FileDescription; } catch { } } } catch { continue; }
+      list.Add(new Dictionary<string, object> { { "pid", (int)pid }, { "name", name }, { "label", string.IsNullOrWhiteSpace(label) ? name : label }, { "path", path } });
+    }
     return list;
   }
   public static void SetDefault(string id) { var pc = (IPolicyConfig)new PolicyConfigClient(); for (int role = 0; role < 3; role++) pc.SetDefaultEndpoint(id, role); }
