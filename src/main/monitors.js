@@ -8,24 +8,24 @@ const theme = require('./theme');
 const act = (kind, data) => { if (core.config.activities[kind] !== false) core.send('activity', { kind, ...data }); };
 
 // ---------- musique ----------
-let media = { present: false }, thumb = null, mediaKey = null, posBase = null;
+let media = { present: false }, thumb = null, thumbVer = null, mediaKey = null, posBase = null;
 async function pollMedia() {
-  const m = await helper.call('media', thumb ? mediaKey : null);
+  // on dit au helper quelle version de la pochette on a deja : il ne renvoie l'image que si elle a change
+  const m = await helper.call('media', thumbVer);
   if (!m.present) {
-    if (media.present) { media = m; thumb = null; mediaKey = null; theme.setArt(null); core.send('media', media); }
+    if (media.present) { media = m; thumb = null; thumbVer = null; mediaKey = null; theme.setArt(null); core.send('media', media); }
     return;
   }
   const trackChanged = m.key !== mediaKey;
-  if (trackChanged || (!thumb && m.thumb)) {
-    if (m.thumb || trackChanged) { thumb = m.thumb || null; theme.setArt(thumb); }
-  }
+  if (m.thumbVer !== thumbVer) { thumbVer = m.thumbVer; thumb = m.thumb || null; theme.setArt(thumb); }
   // Position : certaines applis ne mettent a jour la ligne de temps qu'aux changements d'etat
   if (!posBase || posBase.raw !== m.position || trackChanged) posBase = { raw: m.position, at: Date.now() };
   const playing = m.status === 'Playing';
   const position = Math.min(m.duration || Infinity, posBase.raw + (playing ? (Date.now() - posBase.at) / 1000 : 0));
   media = { ...m, thumb, position, appName: appLabel(m.app) };
   // nouvelle chanson (pas au tout premier releve)
-  if (trackChanged && mediaKey !== null && playing) act('media', { title: m.title, artist: m.artist, thumb });
+  // la nouvelle pochette arrive un peu apres le titre : on attend avant d'annoncer la chanson
+  if (trackChanged && mediaKey !== null && playing) { const key = m.key; setTimeout(() => { if (mediaKey === key) act('media', { title: m.title, artist: m.artist, thumb }); }, 1200); }
   mediaKey = m.key;
   core.send('media', media);
 }

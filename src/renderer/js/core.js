@@ -139,8 +139,7 @@ I.flashMood = (key, ms = 2500) => { I.moodState[key] = true; updateMood(); clear
 setInterval(async () => { I.moodState.idle = await follet.idleTime().catch(() => 0); updateMood(); }, 20000);
 $$('#compact [data-media]').forEach((b) => b.addEventListener('click', () => follet.mediaCmd(b.dataset.media)));
 follet.onMedia((m) => {
-  const keep = I.media.thumb && m.present && !m.thumb && m.key === I.media.key ? I.media.thumb : null;
-  I.media = { ...m, thumb: m.thumb || keep };
+  I.media = m;   // le processus principal envoie toujours la pochette courante
   renderCompact();
   updateMood();
   I.emit('media', I.media);

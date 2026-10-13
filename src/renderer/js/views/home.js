@@ -64,9 +64,10 @@ I.view('home', {
 
     // sortie audio
     $('.out-btn', el).addEventListener('click', async (e) => {
+      const anchor = e.currentTarget;   // remis a null par le navigateur apres le premier await
       const list = await follet.audioDevices().catch(() => []);
       const icon = (n) => (/head|casque|buds|airpods|écouteur|jbl|sony|bose/i.test(n) ? 'headphones' : /hdmi|nvidia|display|vx|monitor/i.test(n) ? 'tv' : /virtual|cable|steam|oculus/i.test(n) ? 'settings_input_component' : 'speaker');
-      openMenu(e.currentTarget, [{ header: 'Sortie audio' }, ...list.sort((a, b) => b.isDefault - a.isDefault).map((d) => ({ icon: d.isDefault ? 'check' : icon(d.name), label: d.name.replace(/\s*\((.*)\)$/, ' · $1'), on: d.isDefault, value: d.id }))],
+      openMenu(anchor, [{ header: 'Sortie audio' }, ...list.sort((a, b) => b.isDefault - a.isDefault).map((d) => ({ icon: d.isDefault ? 'check' : icon(d.name), label: d.name.replace(/\s*\((.*)\)$/, ' · $1'), on: d.isDefault, value: d.id }))],
         async (it) => { await follet.setAudioDevice(it.value); this.loadOutput(); snack('Sortie : ' + it.label.split(' · ')[0]); });
     });
     this.loadOutput();

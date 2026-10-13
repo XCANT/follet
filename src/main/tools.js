@@ -38,24 +38,41 @@ function scanStartMenu() {
       if (e.isDirectory() && depth < 3) walk(p, depth + 1);
       else if (/\.(lnk|url)$/i.test(e.name)) {
         const name = e.name.replace(/\.(lnk|url)$/i, '');
-        if (!skip.test(name) && !out.has(name.toLowerCase())) out.set(name.toLowerCase(), { name, path: p });
+        if (skip.test(name) || out.has(name.toLowerCase())) continue;
+        // raccourci mort (programme desinstalle) : on ne l'affiche pas
+        if (/\.lnk$/i.test(e.name)) { try { const t = shell.readShortcutLink(p).target; if (t && /^[a-z]:\\/i.test(t) && !fs.existsSync(t)) continue; } catch { } }
+        out.set(name.toLowerCase(), { name, path: p });
       }
     }
   };
   roots.forEach((r) => walk(r, 0));
   return [...out.values()].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 }
+// Icones : Windows echoue souvent quand on lui en demande des dizaines a la fois,
+// donc file d'attente (4 en parallele), une seconde tentative, et on ne garde en cache que les succes.
 const iconCache = new Map();
+let iconBusy = 0;
+const iconQueue = [];
+function iconSlot() { return new Promise((r) => { if (iconBusy < 4) { iconBusy++; r(); } else iconQueue.push(r); }); }
+function iconFree() { const next = iconQueue.shift(); if (next) next(); else iconBusy--; }
+async function tryIcon(file, size) { try { const i = await app.getFileIcon(file, { size }); return i && !i.isEmpty() ? i : null; } catch { return null; } }
 async function iconFor(p, size = 'large') {
   const key = p + size;
   if (iconCache.has(key)) return iconCache.get(key);
-  let target = p;
-  if (p.toLowerCase().endsWith('.lnk')) { try { target = shell.readShortcutLink(p).target || p; } catch { } }
-  let img = null;
-  try { img = await app.getFileIcon(target, { size }); } catch { }
-  if ((!img || img.isEmpty()) && target !== p) { try { img = await app.getFileIcon(p, { size }); } catch { } }
-  iconCache.set(key, img);
-  return img;
+  await iconSlot();
+  try {
+    let target = null, iconPath = null;
+    if (p.toLowerCase().endsWith('.lnk')) { try { const l = shell.readShortcutLink(p); target = l.target; iconPath = l.icon; } catch { } }
+    // ordre : la cible, l'icone .ico declaree par le raccourci, puis le raccourci lui-meme (raccourcis "annonces", Store)
+    // (une icone dans une DLL n'est pas retenue : Electron ne sait pas choisir l'index et rendrait l'icone generique de la DLL)
+    let img = null;
+    for (const f of [target, /\.ico$/i.test(iconPath || '') ? iconPath : null, p].filter((x, i, a) => x && a.indexOf(x) === i && (x === p || fs.existsSync(x)))) {
+      img = await tryIcon(f, size) || await tryIcon(f, size);
+      if (img) break;
+    }
+    if (img) iconCache.set(key, img);
+    return img;
+  } finally { iconFree(); }
 }
 ipcMain.handle('apps-list', () => { appsCache ||= scanStartMenu(); return { apps: appsCache, favorites: core.state.favorites }; });
 ipcMain.handle('app-icon', async (_e, p) => { const i = await iconFor(p); return i && !i.isEmpty() ? i.toDataURL() : null; });

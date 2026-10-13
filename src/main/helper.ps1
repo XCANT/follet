@@ -151,15 +151,21 @@ public static class Ddc {
 [Shell]::SetProcessDpiAwarenessContext([IntPtr]-4) | Out-Null   # coordonnees physiques
 
 # ---------- media ----------
-$lastThumbKey = $null; $lastThumb = $null
-function Get-Media($knownKey) {
+$lastThumbKey = $null; $lastThumb = $null; $thumbVer = Get-Random; $thumbSig = $null; $keyAt = [DateTime]::MinValue; $thumbReadAt = [DateTime]::MinValue
+function Get-Media($knownVer) {
     $s = $mgr.GetCurrentSession()
     if ($null -eq $s) { return @{ present = $false } }
     $p = Await ($s.TryGetMediaPropertiesAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties])
     $info = $s.GetPlaybackInfo(); $tl = $s.GetTimelineProperties()
     $key = "$($p.Title)|$($p.Artist)"
-    if ($key -ne $script:lastThumbKey -or -not $script:lastThumb) {
-        $script:lastThumbKey = $key; $script:lastThumb = $null
+    $now = [DateTime]::UtcNow
+    if ($key -ne $script:lastThumbKey) { $script:lastThumbKey = $key; $script:keyAt = $now }
+    # Au changement de piste, Windows donne le titre avant la nouvelle image : on relit la pochette
+    # a chaque releve pendant 10 s, puis toutes les 15 s, et on ne la renvoie que si elle a change.
+    $fresh = ($now - $script:keyAt).TotalSeconds -lt 10
+    if ($fresh -or -not $script:lastThumb -or ($now - $script:thumbReadAt).TotalSeconds -gt 15) {
+        $script:thumbReadAt = $now
+        $data = $null
         if ($p.Thumbnail) {
             try {
                 $stream = Await ($p.Thumbnail.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
@@ -167,18 +173,19 @@ function Get-Media($knownKey) {
                 $asStreamForRead.Invoke($null, @($stream)).CopyTo($ms)
                 $bytes = $ms.ToArray()
                 $mime = if ($bytes.Length -gt 3 -and $bytes[0] -eq 0x89) { 'image/png' } else { 'image/jpeg' }
-                if ($bytes.Length) { $script:lastThumb = "data:$mime;base64," + [Convert]::ToBase64String($bytes) }
+                if ($bytes.Length) { $data = "data:$mime;base64," + [Convert]::ToBase64String($bytes) }
             } catch { }
         }
-    }
-    @{
+        $sig = if ($data) { "$($data.Length):$($data.Substring([Math]::Max(0, $data.Length - 64)))" } else { '' }
+        if ($sig -ne $script:thumbSig) { $script:thumbSig = $sig; $script:lastThumb = $data; $script:thumbVer++ }
+    }    @{
         present = $true; title = $p.Title; artist = $p.Artist; album = $p.AlbumTitle; app = $s.SourceAppUserModelId
         status = $info.PlaybackStatus.ToString(); key = $key
         canPrev = $info.Controls.IsPreviousEnabled; canNext = $info.Controls.IsNextEnabled
         canShuffle = $info.Controls.IsShuffleEnabled; canRepeat = $info.Controls.IsRepeatEnabled
         shuffle = [bool]$info.IsShuffleActive; repeat = $(if ($info.AutoRepeatMode) { $info.AutoRepeatMode.ToString() } else { 'None' })
         # la pochette n'est renvoyee que si le client ne l'a pas deja
-        thumb = $(if ($knownKey -ne $key) { $script:lastThumb } else { $null }); hasThumb = [bool]$script:lastThumb
+        thumbVer = $script:thumbVer; thumb = $(if ("$knownVer" -ne "$($script:thumbVer)") { $script:lastThumb } else { $null }); hasThumb = [bool]$script:lastThumb
         position = $tl.Position.TotalSeconds; duration = $tl.EndTime.TotalSeconds
         updated = $tl.LastUpdatedTime.ToUnixTimeMilliseconds()
     }
