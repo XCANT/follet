@@ -46,6 +46,24 @@ fs.mkdirSync(DATA, { recursive: true });
   try { fs.cpSync(path.join(old, 'claude-chat'), path.join(DATA, 'claude-chat'), { recursive: true }); } catch { }
 })();
 const events = new EventEmitter();
+
+// Journal : %APPDATA%\Follet\logs\follet.log (1 Mo max, l'ancien est garde en .old)
+const LOG_DIR = path.join(DATA, 'logs');
+fs.mkdirSync(LOG_DIR, { recursive: true });
+const LOG = path.join(LOG_DIR, 'follet.log');
+function log(level, ...args) {
+  const line = `${new Date().toISOString()} [${level}] ${args.map((a) => (a instanceof Error ? a.stack : typeof a === 'string' ? a : JSON.stringify(a))).join(' ')}\n`;
+  try {
+    if (fs.existsSync(LOG) && fs.statSync(LOG).size > 1e6) fs.renameSync(LOG, LOG + '.old');
+    fs.appendFileSync(LOG, line);
+  } catch { }
+}
+for (const level of ['log', 'warn', 'error']) {
+  const orig = console[level].bind(console);
+  console[level] = (...a) => { orig(...a); log(level === 'log' ? 'info' : level, ...a); };
+}
+process.on('uncaughtException', (e) => log('crash', e));
+process.on('unhandledRejection', (e) => log('rejet', e));
 let config = merge(DEFAULTS, readJson(CONFIG_PATH, {}));
 let state = merge({ todos: [], favorites: [], shelf: [] }, readJson(STATE_PATH, {}));
 // ancien reglage claudeModel -> ai.models['claude-code']
@@ -97,6 +115,6 @@ module.exports = {
   SRC, APP_DIR, RENDERER, DATA, CONFIG_PATH, DEFAULTS,
   get config() { return config; }, setConfig, reloadConfig,
   get state() { return state; }, saveState,
-  events, setWindow, getWindow, send,
+  events, setWindow, getWindow, send, log, LOG_DIR,
   fetchRaw, fetchText, fetchJson,
 };

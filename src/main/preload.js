@@ -25,7 +25,7 @@ contextBridge.exposeInMainWorld('follet', {
   brightness: invoke('brightness-get'), setBrightness: invoke('brightness-set'),
 
   // stats
-  stats: invoke('stats'), procs: invoke('procs'),
+  stats: invoke('stats'), procs: invoke('procs'), statsActive: sendTo('stats-active'),
   speedtest: invoke('speedtest'), speedtestLast: invoke('speedtest-last'), onSpeedtest: on('speedtest-progress'),
 
   // aujourd'hui

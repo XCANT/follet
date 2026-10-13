@@ -25,7 +25,7 @@ I.showTab = showTab;
 
 // ---------- etats : replie / apercu / activite / deploye ----------
 function setMode(m) {
-  if (I.demo && m !== 'expanded') return;
+  if ((I.demo || I.welcoming) && m !== 'expanded') return;
   if (m === I.mode) return;
   const was = I.mode;
   I.mode = m;

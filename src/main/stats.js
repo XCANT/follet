@@ -53,8 +53,33 @@ function lhmCpuTemp() {
   });
 }
 
+// Echantillonnage continu : historique de 5 min pour les courbes (toutes les 2 s quand l'onglet
+// est ouvert, toutes les 6 s sinon, pour rester leger)
+const HISTORY = 150;
+let history = [], latest = null, active = false, sampling = false;
+async function sample() {
+  if (sampling) return; sampling = true;
+  try {
+    latest = await snapshot();
+    const r = latest;
+    history.push({ t: Date.now(), cpu: r.cpu.load, gpu: r.gpu ? r.gpu.util : null, ram: Math.round(100 * (1 - r.ram.free / r.ram.total)),
+      down: r.net ? r.net.down : 0, up: r.net ? r.net.up : 0, cpuTemp: r.cpu.temp, gpuTemp: r.gpu ? r.gpu.temp : null });
+    if (history.length > HISTORY) history.shift();
+  } catch { } finally { sampling = false; }
+}
+(function loop() { sample().finally(() => setTimeout(loop, active ? 2000 : 6000)); })();
+ipcMain.on('stats-active', (_e, on) => { active = !!on; if (on) sample(); });
+ipcMain.handle('stats', async () => { if (!latest) await sample(); return { ...latest, history, self: selfUsage() }; });
+
+// Ce que Follet consomme lui-meme (tous ses processus Electron)
+function selfUsage() {
+  let cpu = 0, mem = 0;
+  for (const m of app.getAppMetrics()) { cpu += m.cpu.percentCPUUsage || 0; mem += (m.memory.workingSetSize || 0) * 1024; }
+  return { cpu: Math.round((cpu / os.cpus().length) * 10) / 10, mem };
+}
+
 let lastNet = null;
-ipcMain.handle('stats', async () => {
+async function snapshot() {
   const [gpu, cpuTemp, net, freq] = await Promise.all([
     nvidia(), lhmCpuTemp(), helper.call('net').catch(() => null), helper.call('cpu-freq').catch(() => null),
   ]);
@@ -74,7 +99,7 @@ ipcMain.handle('stats', async () => {
     ram: { total: os.totalmem(), free: os.freemem() },
     gpu, net: netRate, disks, uptime: os.uptime(),
   };
-});
+}
 
 // Top des applis (RAM / CPU), avec icones
 const iconCache = new Map();
@@ -88,7 +113,8 @@ async function iconFor(p) {
 }
 ipcMain.handle('procs', async () => {
   const r = await helper.call('procs', null, 15000);
-  const withIcons = async (list) => Promise.all((list || []).map(async (p) => ({ ...p, icon: await iconFor(p.path) })));
+  const self = (p) => p.path && p.path.toLowerCase() === process.execPath.toLowerCase();
+  const withIcons = async (list) => Promise.all((list || []).map(async (p) => ({ ...p, label: self(p) ? 'Follet' : p.label, icon: await iconFor(p.path) })));
   return { byMem: await withIcons(r.byMem), byCpu: await withIcons(r.byCpu), total: r.total };
 });
 

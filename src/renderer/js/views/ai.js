@@ -28,7 +28,7 @@ I.view('ai', {
 
   init(el) {
     this.el = el; this.messages = []; this.busy = false; this.attach = false;
-    this.mascot = Follet.create($('.stage-mascot', el), { size: 112 });
+    this.mascot = Follet.create($('.stage-mascot', el), { size: 92 });
     I.on('mood', (m) => { if (!this.busy) this.mascot.setMood(m === 'sleep' && I.tab === 'ai' && I.mode === 'expanded' ? 'idle' : m); });
     I.on('theme', () => this.refreshAvatar());
     this.refreshAvatar();

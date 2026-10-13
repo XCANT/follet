@@ -45,6 +45,8 @@ function create() {
   const demo = process.env.FOLLET_DEMO;
   win.loadFile(path.join(core.RENDERER, 'index.html'), demo ? { query: { demo } } : undefined);
   win.once('ready-to-show', () => win.showInactive());
+  // L'interface plante (rare) : on la recharge plutot que de laisser une encoche vide
+  win.webContents.on('render-process-gone', (_e, d) => { console.error('interface arrêtée : ' + d.reason); if (d.reason !== 'clean-exit') setTimeout(() => !win.isDestroyed() && win.reload(), 1000); });
   win.webContents.on('console-message', (e) => {
     if (e.level === 'error' || e.level === 'warning') console.log(`[renderer ${e.level}] ${e.message} (${e.sourceId}:${e.lineNumber})`);
   });

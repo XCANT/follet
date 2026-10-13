@@ -8,7 +8,7 @@ let proc = null, buf = '', seq = 0, stopping = false;
 const waiting = new Map();
 
 function start() {
-  proc = spawn('powershell.exe', ['-NoProfile', '-NoLogo', '-ExecutionPolicy', 'Bypass', '-File', path.join(__dirname, 'helper.ps1')], { windowsHide: true });
+  proc = spawn('powershell.exe', ['-NoProfile', '-NoLogo', '-ExecutionPolicy', 'Bypass', '-File', path.join(__dirname, 'helper.ps1').replace('app.asar' + path.sep, 'app.asar.unpacked' + path.sep)], { windowsHide: true });
   proc.stdout.setEncoding('utf8');
   proc.stdout.on('data', (chunk) => {
     buf += chunk;
@@ -22,7 +22,8 @@ function start() {
     }
   });
   proc.stderr.on('data', () => { });
-  proc.on('exit', () => {
+  proc.on('exit', (code) => {
+    if (!stopping) console.warn('helper.ps1 arrêté (code ' + code + '), redémarrage');
     for (const w of waiting.values()) { clearTimeout(w.timer); w.reject(new Error('helper arrete')); }
     waiting.clear(); proc = null;
     if (!stopping) setTimeout(start, 2000);

@@ -27,7 +27,32 @@
   const trayIcon = () => { clearTimeout(I.trayT); I.trayT = setTimeout(() => Follet.png(64).then(follet.setTrayIcon).catch(() => { }), 900); };
   I.on('theme', trayIcon); trayIcon();
 
-  if (I.demo) {
+  // Premier lancement : Follet se presente et explique les gestes
+  if (!localStorage.getItem('welcomed') || I.demo === 'welcome') {
+    const w = document.createElement('div');
+    w.id = 'welcome';
+    w.innerHTML = `<div class="w-mascot"></div>
+      <div class="w-title">Salut, moi c'est Follet !</div>
+      <div class="w-sub">Je vis dans cette encoche, en haut de ton écran. Voici comment m'utiliser :</div>
+      <div class="w-steps">
+        <div>${ms('mouse')}<b>Survole</b><span>pour voir la musique et ta journée</span></div>
+        <div>${ms('swipe_down')}<b>Fais défiler</b><span>ou clique pour tout ouvrir</span></div>
+        <div>${ms('keyboard')}<b>Ctrl+Alt+Espace</b><span>m'ouvre de n'importe où</span></div>
+        <div>${ms('move_to_inbox')}<b>Glisse des fichiers</b><span>sur moi pour les garder sous la main</span></div>
+      </div>
+      <div class="w-foot"><span class="variant body-s">Devant une fenêtre plein écran, je me cache : touche le haut de l'écran, au milieu, pour me faire revenir.</span>
+      <button class="btn filled state w-go">C'est parti ${ms('arrow_forward')}</button></div>`;
+    $('#notch').appendChild(w);
+    Follet.create($('.w-mascot', w), { size: 96, mood: 'happy' });
+    I.setMode('expanded'); I.welcoming = true;
+    $('.w-go', w).addEventListener('click', () => {
+      localStorage.setItem('welcomed', '1'); I.welcoming = false;
+      w.classList.add('bye'); setTimeout(() => w.remove(), 400);
+      I.showTab('home');
+    });
+  }
+
+  if (I.demo && I.demo !== 'welcome') {
     I.setMode('expanded');
     const all = [...I.order, 'settings'];
     if (all.includes(I.demo)) I.showTab(I.demo);
