@@ -24,8 +24,10 @@ function showTab(id) {
 I.showTab = showTab;
 
 // ---------- etats : replie / apercu / activite / deploye ----------
-function setMode(m) {
+function setMode(m, force) {
   if ((I.demo || I.welcoming) && m !== 'expanded') return;
+  // pendant un glisser de fichier, rien (survol, activite, minuterie) ne doit quitter le mode depot
+  if (I.dragging && !force && m !== 'drop' && m !== 'expanded') return;
   if (m === I.mode) return;
   const was = I.mode;
   I.mode = m;
@@ -44,7 +46,7 @@ follet.onPointer((inside) => {
   pointerIn = inside;
   clearTimeout(leaveTimer); clearTimeout(peekTimer);
   if (inside) {
-    if (I.mode === 'collapsed' || I.mode === 'activity') peekTimer = setTimeout(() => setMode('peek'), 90);
+    if (I.mode === 'collapsed' || I.mode === 'activity') peekTimer = setTimeout(() => { if (I.mode === 'collapsed' || I.mode === 'activity') setMode('peek'); }, 90);
   } else {
     leaveTimer = setTimeout(() => {
       if (pointerIn) return;
@@ -196,7 +198,8 @@ const dropEl = $('#dropzone');
 let dragging = false, dragWatch = null, modeBeforeDrop = null;
 const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
 function dragBegin() {
-  dragging = true;
+  dragging = I.dragging = true;
+  clearTimeout(peekTimer); clearTimeout(leaveTimer);
   document.body.classList.add('dropping');
   modeBeforeDrop = I.mode;
   if (I.mode !== 'expanded') setMode('drop');
@@ -204,10 +207,10 @@ function dragBegin() {
 }
 function dragEnd() {
   if (!dragging) return;
-  dragging = false; clearTimeout(dragWatch);
+  dragging = I.dragging = false; clearTimeout(dragWatch);
   document.body.classList.remove('dropping');
   $$('.dz', dropEl).forEach((z) => z.classList.remove('hot'));
-  if (I.mode === 'drop') setMode(pointerIn ? 'peek' : 'collapsed');
+  if (I.mode === 'drop') setMode(pointerIn ? 'peek' : 'collapsed', true);
   updateMood();
 }
 document.addEventListener('dragover', (e) => {
@@ -238,7 +241,7 @@ document.addEventListener('drop', async (e) => {
   I.mascot.bump(); I.flashMood('happy', 1800);
   const n = paths.length, label = `${n} élément${n > 1 ? 's' : ''} sur l'étagère`;
   if (wasExpanded) { showTab('shelf'); snack(label); }
-  else showActivity(`<div class="a-ico">${ms('inventory_2', 'fill s20')}</div><div class="a-txt"><div class="title-s">${label}</div><div class="body-s variant ellipsis">${esc(paths.map((p) => p.split(/[\\/]/).pop()).join(', '))}</div></div>`, 'shelf', 2600);
+  else { setMode('collapsed', true); showActivity(`<div class="a-ico">${ms('inventory_2', 'fill s20')}</div><div class="a-txt"><div class="title-s">${label}</div><div class="body-s variant ellipsis">${esc(paths.map((p) => p.split(/[\\/]/).pop()).join(', '))}</div></div>`, 'shelf', 2600); }
 });
 
 // ---------- minuteur (affiche dans l'encoche) ----------
