@@ -119,14 +119,24 @@ I.view('home', {
     this.brightLoaded = Date.now();
     const list = (await follet.brightness().catch(() => [])) || [];
     const box = $('.bright', this.el);
-    box.innerHTML = list.map((_, i) => `<div class="br" data-i="${i}" style="margin-top:8px"></div>`).join('');
-    list.forEach((d, i) => {
-      let t = null;
-      const name = d.kind === 'wmi' ? 'Écran intégré' : (d.name || 'Écran').replace(/\s*\(.*\)$/, '').replace(/-.*$/, '');
-      pillSlider($(`.br[data-i="${i}"]`, box), {
-        value: d.value, icon: 'light_mode', label: name,
-        onInput: (v) => { clearTimeout(t); t = setTimeout(() => follet.setBrightness(d.id, v), 90); },
-      });
+    box.innerHTML = list.length ? '<div class="br" style="margin-top:8px"></div>' : '';
+    if (!list.length) return;
+    const name = (d) => (d.kind === 'wmi' ? 'Écran intégré' : (d.name || 'Écran').replace(/\s*\(.*\)$/, '').replace(/-.*$/, ''));
+    // Un seul curseur, meme avec plusieurs ecrans : l'icone choisit l'ecran vise (ou tous)
+    let target = list.length > 1 ? -1 : 0, t = null;
+    const label = () => (target < 0 ? 'Tous les écrans' : name(list[target]));
+    const value = () => (target < 0 ? Math.round(list.reduce((s, d) => s + d.value, 0) / list.length) : list[target].value);
+    const sl = pillSlider($('.br', box), {
+      value: value(), icon: 'light_mode', label: label(),
+      onInput: (v) => {
+        clearTimeout(t);
+        const ds = target < 0 ? list : [list[target]];
+        ds.forEach((d) => (d.value = v));
+        t = setTimeout(() => ds.forEach((d) => follet.setBrightness(d.id, v)), 90);
+      },
+      onIcon: list.length > 1 ? () => openMenu($('.br', box), [{ header: 'Luminosité de' }, { icon: 'select_all', label: 'Tous les écrans', on: target < 0, value: -1 },
+        ...list.map((d, i) => ({ icon: d.kind === 'wmi' ? 'laptop' : 'desktop_windows', label: `${name(d)} · ${d.value} %`, on: target === i, value: i }))],
+        (it) => { target = it.value; sl.setLabel(label()); sl.set(value()); }) : null,
     });
   },
 
@@ -219,6 +229,7 @@ I.view('home', {
     g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
     if (!this.colors) { const cs = getComputedStyle(document.documentElement); this.colors = [cs.getPropertyValue('--md-primary').trim(), cs.getPropertyValue('--md-tertiary').trim(), cs.getPropertyValue('--md-secondary-container').trim()]; }
     const N = 48, gap = 4, bw = (W - gap * (N - 1)) / N;
+    if (bw <= 0) return;   // canevas pas encore dimensionne (vue cachee)
     const grad = g.createLinearGradient(0, 0, W, 0); grad.addColorStop(0, this.colors[0]); grad.addColorStop(1, this.colors[1]);
     this.levels ||= new Float32Array(N);
     const sr = this.actx ? this.actx.sampleRate : 48000;

@@ -4,7 +4,8 @@
   "description": "Follet : une encoche façon Dynamic Island pour Windows, en Material You — musique, agenda, stats, étagère, presse-papiers, terminal, Claude.",
   "main": "src/main/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder --win"
   },
   "type": "commonjs",
   "dependencies": {
@@ -27,5 +28,40 @@
   "devDependencies": {
     "electron": "^37.10.3",
     "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.xcant.follet",
+    "productName": "Follet",
+    "copyright": "XCANT",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "src/main/helper.ps1",
+      "node_modules/@lydell/**"
+    ],
+    "npmRebuild": false,
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "Follet-Setup-${version}.${ext}",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "createDesktopShortcut": false,
+      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Follet",
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false
+    }
   }
 }

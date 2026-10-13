@@ -37,6 +37,14 @@ Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : 
 
 ## Installation
 
+**Le plus simple :** lancer `Follet-Setup-x.y.z.exe` (installation par utilisateur, sans droits administrateur). L'installateur n'est pas signé : Windows SmartScreen affiche « Windows a protégé votre ordinateur » → **Informations complémentaires → Exécuter quand même**.
+
+Pour générer l'installateur soi-même : `npm run dist` → `dist\Follet-Setup-<version>.exe`.
+
+En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
+
+### Depuis le code
+
 Prérequis : Windows 10/11, [Node.js](https://nodejs.org) 20+. Optionnel : PowerShell 7 (`pwsh`) pour le terminal, [Claude Code](https://claude.com/claude-code) pour l'onglet Claude, [Libre Hardware Monitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) (serveur web activé, port 8085) pour la température du CPU, une carte NVIDIA pour les stats GPU.
 
 ```bash
