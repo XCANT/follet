@@ -190,6 +190,11 @@ I.activity = (a) => {
       ? `<div class="a-ico warn">${ms('battery_alert', 'fill s20')}</div><div class="a-txt"><div class="title-s">Batterie faible</div><div class="body-s variant">Branche le chargeur</div></div><div class="a-val">${a.percent} %</div>`
       : `<div class="a-ico">${ms(a.plugged ? 'battery_charging_full' : 'battery_full', 'fill s20')}</div><div class="a-txt"><div class="title-s">${a.plugged ? 'En charge' : 'Sur batterie'}</div></div><div class="a-val">${a.percent} %</div>`;
     showActivity(html, 'battery', 3200);
+  } else if (a.kind === 'notif') {
+    const ico = a.logo ? `<img class="a-ico" src="${a.logo}">` : `<div class="a-ico">${ms('notifications', 'fill s20')}</div>`;
+    const shown = showActivity(`${ico}<div class="a-txt"><div class="title-s ellipsis">${esc(a.title || a.app || 'Notification')}</div>
+      <div class="body-s variant ellipsis">${esc([a.title ? a.app : null, a.body].filter(Boolean).join(' · '))}</div></div>`, 'notif', 5500);
+    if (!shown) snack(`${a.app ? a.app + ' : ' : ''}${a.title || a.body || 'Notification'}`);
   } else if (a.kind === 'update') {
     I.flashMood('happy', 2500);
     showActivity(`<div class="a-ico">${ms('system_update_alt', 'fill s20')}</div><div class="a-txt"><div class="title-s">Mise à jour ${esc(a.version)}</div><div class="body-s variant">Réglages → À propos pour l'installer</div></div>`, 'update', 5000);

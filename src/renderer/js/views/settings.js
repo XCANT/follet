@@ -92,7 +92,8 @@ I.view('settings', {
       + this.row(`${ms('volume_up', 's20')} Volume`, 'Quand le volume change (touches du clavier, Windows…).', this.sw('volume', a.volume))
       + this.row(`${ms('music_note', 's20')} Nouvelle chanson`, '', this.sw('media', a.media))
       + this.row(`${ms('headphones', 's20')} Sortie audio`, 'Casque ou haut-parleurs connectés.', this.sw('audioDevice', a.audioDevice))
-      + this.row(`${ms('battery_charging_full', 's20')} Batterie`, 'Branché, débranché, batterie faible.', this.sw('battery', a.battery));
+      + this.row(`${ms('battery_charging_full', 's20')} Batterie`, 'Branché, débranché, batterie faible.', this.sw('battery', a.battery))
+      + this.row(`${ms('notifications', 's20')} Notifications Windows`, 'Affichées dans l\'encoche. Astuce : dans Windows, coupe les bannières d\'une appli (Paramètres → Notifications) et laisse Follet les montrer.', this.sw('notif', a.notif !== false));
   },
   b_activities(body) { this.bindSwitches(body, (k, v) => this.save({ activities: { [k]: v } })); },
 

@@ -191,6 +191,54 @@ function Get-Media($knownVer) {
     }
 }
 
+# ---------- notifications Windows (UserNotificationListener) ----------
+# Pas d'evenement sans identite de paquet : le client interroge, on renvoie les ids presents
+# et le detail des notifications plus recentes que $since (ms).
+$notifL = $null; $notifLogos = @{}
+function Get-Notifs($since) {
+    if (-not $script:notifL) {
+        [Windows.UI.Notifications.Management.UserNotificationListener, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+        $script:notifL = [Windows.UI.Notifications.Management.UserNotificationListener]::Current
+    }
+    $l = $script:notifL
+    if ($l.GetAccessStatus().ToString() -ne 'Allowed') {
+        $st = Await ($l.RequestAccessAsync()) ([Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus])
+        if ($st.ToString() -ne 'Allowed') { return @{ access = $st.ToString(); ids = @(); items = @() } }
+    }
+    $list = Await ($l.GetNotificationsAsync([Windows.UI.Notifications.NotificationKinds]::Toast)) ([System.Collections.Generic.IReadOnlyList[Windows.UI.Notifications.UserNotification]])
+    $ids = @(); $items = @()
+    foreach ($n in $list) {
+        $ids += $n.Id
+        $t = $n.CreationTime.ToUnixTimeMilliseconds()
+        if ($t -le [double]$since) { continue }
+        $texts = @()
+        try {
+            $b = $n.Notification.Visual.GetBinding([Windows.UI.Notifications.KnownNotificationBindings]::ToastGeneric)
+            if ($b) { foreach ($e in $b.GetTextElements()) { if ($e.Text) { $texts += $e.Text } } }
+        } catch { }
+        $app = $null; $appId = $null
+        try { $app = $n.AppInfo.DisplayInfo.DisplayName; $appId = $n.AppInfo.AppUserModelId } catch { }
+        $logo = $null
+        if ($appId -and $script:notifLogos.ContainsKey($appId)) { $logo = $script:notifLogos[$appId] }
+        elseif ($appId) {
+            try {
+                $ref = $n.AppInfo.DisplayInfo.GetLogo((New-Object Windows.Foundation.Size(48, 48)))
+                $stream = Await ($ref.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
+                $ms = New-Object IO.MemoryStream
+                $asStreamForRead.Invoke($null, @($stream)).CopyTo($ms)
+                if ($ms.Length) { $logo = 'data:image/png;base64,' + [Convert]::ToBase64String($ms.ToArray()) }
+            } catch { }
+            $script:notifLogos[$appId] = $logo
+        }
+        $items += @{ id = $n.Id; time = $t; app = $app; appId = $appId; title = $(if ($texts.Count) { $texts[0] } else { '' }); body = (($texts | Select-Object -Skip 1) -join "`n"); logo = $logo }
+    }
+    @{ access = 'Allowed'; ids = $ids; items = $items }
+}
+function Remove-Notif($id) {
+    if ($script:notifL) { $script:notifL.RemoveNotification([uint32]$id) }
+    $true
+}
+
 # ---------- processus (top RAM / CPU) ----------
 $prevCpu = @{}; $prevAt = $null
 $cores = [Environment]::ProcessorCount
@@ -301,6 +349,8 @@ while ($true) {
                 }
             }
             'procs' { Get-Procs }
+        'notifs' { Get-Notifs $cmd.arg }
+        'notif-remove' { Remove-Notif $cmd.arg }
             'cpu-freq' { if ($cpuPerf -and $cpuBaseMhz) { [math]::Round($cpuBaseMhz * $cpuPerf.NextValue() / 100) } else { $null } }
             'brightness' {
                 $list = @([Ddc]::List() | ForEach-Object { @{ id = "ddc:$($_.id)"; name = $_.name; value = $_.value; x = $_.x; y = $_.y; kind = 'ddc' } })

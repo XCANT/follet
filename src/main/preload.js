@@ -48,6 +48,9 @@ contextBridge.exposeInMainWorld('follet', {
   aiAsk: invoke('ai-ask'), aiStop: invoke('ai-stop'), onAi: on('ai-event'), aiModels: invoke('ai-models'), aiInfo: invoke('ai-info'), aiKeySet: invoke('ai-key-set'),
   claudeUsage: invoke('claude-usage'), aiUsage: invoke('ai-usage'), aiReadFiles: invoke('ai-read-files'),
 
+  // notifications
+  notifs: invoke('notifs-get'), notifRemove: invoke('notif-remove'), onNotifs: on('notifs'),
+
   // reglages
   configGet: invoke('config-get'), configSet: invoke('config-set'), loginSet: invoke('login-set'),
   updateStatus: invoke('update-status'), updateCheck: invoke('update-check'), updateInstall: invoke('update-install'), onUpdate: on('update-status'),

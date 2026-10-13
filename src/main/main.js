@@ -17,6 +17,7 @@ require('./tools');
 require('./terminal');
 require('./ai');
 const update = require('./update');
+const notifs = require('./notifs');
 
 // ---------- raccourci global ----------
 let shortcut = null;
@@ -66,6 +67,7 @@ app.whenReady().then(() => {
   createTray();
   registerShortcut();
   update.start();
+  notifs.start();
 });
 app.on('second-instance', () => { windowMod.reveal(); core.send('toggle'); });
 app.on('will-quit', () => globalShortcut.unregisterAll());
