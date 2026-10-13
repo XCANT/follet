@@ -2,6 +2,11 @@
 
 Les versions suivent [SemVer](https://semver.org/lang/fr/). Pour publier : ajouter une section ici, monter la version dans `package.json` (`npm version x.y.z --no-git-tag-version`), committer, puis pousser un tag `vx.y.z`. GitHub Actions construit l'installateur et crée la release avec le texte de cette section.
 
+## [1.4.1] - 2026-10-13
+
+### Retiré
+- Curseur de luminosité des écrans : les commandes DDC/CI dérangeaient certains moniteurs. Follet ne leur parle plus du tout.
+
 ## [1.4.0] - 2026-10-13
 
 ### Ajouté

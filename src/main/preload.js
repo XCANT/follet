@@ -22,7 +22,6 @@ contextBridge.exposeInMainWorld('follet', {
   radios: invoke('radios'), setRadio: invoke('radio-set'),
   volume: invoke('volume-get'), onVolume: on('volume'), setVolume: invoke('volume-set'), mute: invoke('mute'),
   battery: invoke('battery-get'), onBattery: on('battery'),
-  brightness: invoke('brightness-get'), setBrightness: invoke('brightness-set'),
 
   // stats
   stats: invoke('stats'), sysinfo: invoke('sysinfo'), procs: invoke('procs'), statsActive: sendTo('stats-active'),

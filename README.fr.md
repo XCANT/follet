@@ -38,7 +38,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 
 | Onglet | Contenu |
 |---|---|
-| **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec visualiseur, volume, sortie audio, luminosité des écrans (DDC/CI et écran intégré), Wi-Fi, Bluetooth, raccourcis |
+| **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec visualiseur, volume, sortie audio, Wi-Fi, Bluetooth, raccourcis |
 | **Aujourd'hui** | Horloge, météo heure par heure et sur 4 jours (position par IP), agenda de la semaine (iCal), minuteur affiché dans l'encoche, tâches |
 | **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage. Bouton terminal : fiche système façon fastfetch |
 | **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli |
@@ -112,7 +112,7 @@ src/main/
   window.js      fenêtre, capture de la souris, intention de survol, rangement, plein écran
   helper.js      pont vers helper.ps1
   helper.ps1     Windows PowerShell 5.1 : média WinRT, volume, sortie audio, batterie,
-                 luminosité DDC/CI, radios, processus, fenêtres, notifications (ASCII seulement)
+                 radios, processus, fenêtres, notifications (ASCII seulement)
   theme.js       couleurs Material You (material-color-utilities)
   monitors.js    musique, volume, sortie audio, batterie -> activités
   notifs.js      notifications Windows -> activités

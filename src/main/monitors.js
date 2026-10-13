@@ -105,7 +105,5 @@ ipcMain.handle('audio-set', async (_e, id) => { await helper.call('audio-set', i
 ipcMain.handle('radios', () => helper.call('radios', null, 10000));
 ipcMain.handle('radio-set', (_e, kind, on) => helper.call('radio-set', { kind, on }, 10000));
 ipcMain.handle('battery-get', () => battery);
-ipcMain.handle('brightness-get', () => helper.call('brightness', null, 15000));
-ipcMain.handle('brightness-set', (_e, id, value) => helper.call('brightness-set', { id, value }));
 
 module.exports = { start };

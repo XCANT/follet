@@ -26,7 +26,6 @@ I.view('home', {
       <div class="card sound">
         <div class="vol"></div>
         <button class="out-btn state" title="Changer de sortie audio">${ms('headphones')}<span class="nm">Sortie audio</span>${ms('expand_more')}</button>
-        <div class="bright"></div>
       </div>
       <div class="tiles"></div>
       <div class="status-row"></div>
@@ -97,7 +96,7 @@ I.view('home', {
   },
 
   visible() { return I.mode === 'expanded' && I.tab === 'home'; },
-  show() { this.loadBrightness(); this.loadRadios(); this.loadOutput(); this.renderStatus(); this.renderProgress(); this.startViz(); },
+  show() { this.loadRadios(); this.loadOutput(); this.renderStatus(); this.renderProgress(); this.startViz(); },
   hide() { cancelAnimationFrame(this.raf); this.stopViz(); },
 
   volIcon(level, muted) { return muted || level === 0 ? 'volume_off' : level < 40 ? 'volume_down' : 'volume_up'; },
@@ -115,32 +114,6 @@ I.view('home', {
     const list = await follet.radios().catch(() => []);
     for (const r of list || []) { const t = $(`.tile[data-k="radio:${r.kind}"]`, this.el); if (t) t.classList.toggle('on', r.on); }
   },
-  async loadBrightness() {
-    if (this.brightLoaded && Date.now() - this.brightLoaded < 60000) return;
-    this.brightLoaded = Date.now();
-    const list = (await follet.brightness().catch(() => [])) || [];
-    const box = $('.bright', this.el);
-    box.innerHTML = list.length ? '<div class="br" style="margin-top:8px"></div>' : '';
-    if (!list.length) return;
-    const name = (d) => (d.kind === 'wmi' ? 'Écran intégré' : (d.name || 'Écran').replace(/\s*\(.*\)$/, '').replace(/-.*$/, ''));
-    // Un seul curseur, meme avec plusieurs ecrans : l'icone choisit l'ecran vise (ou tous)
-    let target = list.length > 1 ? -1 : 0, t = null;
-    const label = () => (target < 0 ? 'Tous les écrans' : name(list[target]));
-    const value = () => (target < 0 ? Math.round(list.reduce((s, d) => s + d.value, 0) / list.length) : list[target].value);
-    const sl = pillSlider($('.br', box), {
-      value: value(), icon: 'light_mode', label: label(),
-      onInput: (v) => {
-        clearTimeout(t);
-        const ds = target < 0 ? list : [list[target]];
-        ds.forEach((d) => (d.value = v));
-        t = setTimeout(() => ds.forEach((d) => follet.setBrightness(d.id, v)), 90);
-      },
-      onIcon: list.length > 1 ? () => openMenu($('.br', box), [{ header: 'Luminosité de' }, { icon: 'select_all', label: 'Tous les écrans', on: target < 0, value: -1 },
-        ...list.map((d, i) => ({ icon: d.kind === 'wmi' ? 'laptop' : 'desktop_windows', label: `${name(d)} · ${d.value} %`, on: target === i, value: i }))],
-        (it) => { target = it.value; sl.setLabel(label()); sl.set(value()); }) : null,
-    });
-  },
-
   renderStatus() {
     const chips = [], b = this.battery;
     if (b && b.present) chips.push(`<span class="chip">${ms(b.plugged ? 'battery_charging_full' : b.percent < 20 ? 'battery_alert' : 'battery_full', 'fill')}${b.percent} %${b.plugged ? ' · branché' : ''}</span>`);

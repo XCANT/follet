@@ -114,38 +114,6 @@ public static class Shell {
   }
 }
 
-// Luminosite des ecrans externes par DDC/CI (comme Twinkle Tray)
-public static class Ddc {
-  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-  public struct PHYSICAL_MONITOR { public IntPtr h; [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)] public string desc; }
-  delegate bool MonitorEnumProc(IntPtr hMon, IntPtr hdc, ref Shell.RECT r, IntPtr data);
-  [DllImport("user32.dll")] static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr clip, MonitorEnumProc cb, IntPtr data);
-  [DllImport("dxva2.dll")] static extern bool GetNumberOfPhysicalMonitorsFromHMONITOR(IntPtr hMon, out uint n);
-  [DllImport("dxva2.dll")] static extern bool GetPhysicalMonitorsFromHMONITOR(IntPtr hMon, uint n, [Out] PHYSICAL_MONITOR[] arr);
-  [DllImport("dxva2.dll")] static extern bool DestroyPhysicalMonitors(uint n, PHYSICAL_MONITOR[] arr);
-  [DllImport("dxva2.dll")] static extern bool GetMonitorBrightness(IntPtr h, out uint min, out uint cur, out uint max);
-  [DllImport("dxva2.dll")] static extern bool SetMonitorBrightness(IntPtr h, uint v);
-  static void Each(Action<int, Shell.RECT, PHYSICAL_MONITOR> fn) {
-    int idx = 0;
-    EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMon, IntPtr hdc, ref Shell.RECT r, IntPtr data) => {
-      uint n; if (GetNumberOfPhysicalMonitorsFromHMONITOR(hMon, out n) && n > 0) {
-        var arr = new PHYSICAL_MONITOR[n];
-        if (GetPhysicalMonitorsFromHMONITOR(hMon, n, arr)) { foreach (var m in arr) fn(idx++, r, m); DestroyPhysicalMonitors(n, arr); }
-      }
-      return true;
-    }, IntPtr.Zero);
-  }
-  public static List<object> List() {
-    var list = new List<object>();
-    Each((i, r, m) => { uint min, cur, max; if (GetMonitorBrightness(m.h, out min, out cur, out max)) list.Add(new { id = i, name = m.desc, x = r.L, y = r.T, value = (int)Math.Round(100.0 * (cur - min) / Math.Max(1, max - min)) }); });
-    return list;
-  }
-  public static bool Set(int id, int pct) {
-    bool ok = false;
-    Each((i, r, m) => { if (i == id) { uint min, cur, max; if (GetMonitorBrightness(m.h, out min, out cur, out max)) ok = SetMonitorBrightness(m.h, (uint)(min + (max - min) * pct / 100.0)); } });
-    return ok;
-  }
-}
 "@
 
 [Shell]::SetProcessDpiAwarenessContext([IntPtr]-4) | Out-Null   # coordonnees physiques
@@ -349,25 +317,9 @@ while ($true) {
                 }
             }
             'procs' { Get-Procs }
-        'notifs' { Get-Notifs $cmd.arg }
-        'notif-remove' { Remove-Notif $cmd.arg }
+            'notifs' { Get-Notifs $cmd.arg }
+            'notif-remove' { Remove-Notif $cmd.arg }
             'cpu-freq' { if ($cpuPerf -and $cpuBaseMhz) { [math]::Round($cpuBaseMhz * $cpuPerf.NextValue() / 100) } else { $null } }
-            'brightness' {
-                $list = @([Ddc]::List() | ForEach-Object { @{ id = "ddc:$($_.id)"; name = $_.name; value = $_.value; x = $_.x; y = $_.y; kind = 'ddc' } })
-                try {
-                    $b = Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightness -ErrorAction Stop | Select-Object -First 1
-                    if ($b) { $list += @{ id = 'wmi'; name = $null; value = [int]$b.CurrentBrightness; kind = 'wmi' } }
-                } catch { }
-                $list
-            }
-            'brightness-set' {
-                $v = [int]$cmd.arg.value
-                if ($cmd.arg.id -eq 'wmi') {
-                    $m = Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightnessMethods | Select-Object -First 1
-                    Invoke-CimMethod -InputObject $m -MethodName WmiSetBrightness -Arguments @{ Timeout = [uint32]1; Brightness = [byte]$v } | Out-Null
-                    $true
-                } else { [Ddc]::Set([int]($cmd.arg.id -replace 'ddc:', ''), $v) }
-            }
             default { throw "op inconnue: $($cmd.op)" }
         }
         [Console]::Out.WriteLine((@{ id = $id; ok = $true; data = $data } | ConvertTo-Json -Compress -Depth 6))

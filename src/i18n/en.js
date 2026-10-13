@@ -35,7 +35,7 @@ const FOLLET_EN = {
     'Rien en lecture': 'Nothing playing', 'Lance de la musique ou une vidéo': 'Play some music or a video', 'Sans titre': 'Untitled',
     'Volume': 'Volume', 'Sortie :': 'Output:', 'Tâches': 'Task view', 'Paramètres': 'Settings', 'Capture': 'Screenshot',
     'Fichiers': 'Files', 'Calcul': 'Calculator', 'Wi-Fi': 'Wi-Fi', 'Bluetooth': 'Bluetooth',
-    'Windows a refusé le changement': 'Windows refused the change', 'Tous les écrans': 'All displays', 'Luminosité de': 'Brightness of',
+    'Windows a refusé le changement': 'Windows refused the change',
     'Écran intégré': 'Built-in display', 'Écran': 'Display', 'branché': 'plugged in',
     'Cliquer pour avancer': 'Click to seek', 'Aléatoire': 'Shuffle', 'Répéter': 'Repeat', 'Changer de sortie audio': 'Change audio output',
 
@@ -177,7 +177,6 @@ const FOLLET_EN = {
     ['^(\\d+) échanges?$', '$1 exchange(s)'],
     ['^Raccourci : (.+)$', 'Shortcut: $1'],
     ['^Sortie : (.+)$', 'Output: $1'],
-    ['^Luminosité de$', 'Brightness of'],
     ['^(.+) · (\\d+) %$', '$1 · $2 %'],
     ['^(\\d+) % · branché$', '$1 % · plugged in'],
     ['^ressenti (.+)$', 'feels like $1'],

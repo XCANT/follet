@@ -40,7 +40,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 
 | Tab | Contents |
 |---|---|
-| **Home** | Now playing for any app that talks to Windows (Spotify, YouTube Music, browser…) with a visualizer, volume, audio output, display brightness (DDC/CI and built-in screen), Wi-Fi, Bluetooth, shortcuts |
+| **Home** | Now playing for any app that talks to Windows (Spotify, YouTube Music, browser…) with a visualizer, volume, audio output, Wi-Fi, Bluetooth, shortcuts |
 | **Today** | Clock, hourly and 4-day weather (location by IP), this week's calendar (iCal), a timer shown in the notch, tasks |
 | **Stats** | 5-minute CPU (real clock speed), NVIDIA GPU and RAM charts, top apps, network throughput and speed test, storage. Terminal button: fastfetch-style system info |
 | **Shelf** | Drop files on the notch, even collapsed, to keep them handy, then drag them into any app |
@@ -114,7 +114,7 @@ src/main/
   window.js      window, mouse capture, hover intent, tucking, full screen
   helper.js      bridge to helper.ps1
   helper.ps1     Windows PowerShell 5.1: WinRT media, volume, audio output, battery,
-                 DDC/CI brightness, radios, processes, windows, notifications (ASCII only)
+                 radios, processes, windows, notifications (ASCII only)
   theme.js       Material You colors (material-color-utilities)
   monitors.js    music, volume, audio output, battery -> activities
   notifs.js      Windows notifications -> activities
