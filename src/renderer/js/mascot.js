@@ -81,6 +81,7 @@ const Follet = (() => {
     alert: 'M30.4 49.6 Q32 46.6 33.6 49.6 Q32 51.4 30.4 49.6 Z',
   };
 
+  const EYE_CSS = '.e-arc, .e-line { display: none; } .eye.arc .e-open, .eye.closed .e-open { display: none; } .eye.arc .e-arc, .eye.closed .e-line { display: inline; }';
   let uid = 0;
   const all = new Set();
 
@@ -243,7 +244,7 @@ const Follet = (() => {
     const cs = getComputedStyle(document.documentElement);
     const resolve = (s) => s.replace(/var\((--md-[a-z-]+)\)/g, (_, v) => cs.getPropertyValue(v).trim());
     // l'icone n'a pas besoin des braises ni du halo flou (illisible en 16 px)
-    const s = resolve(f.el.outerHTML).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" ')
+    const s = resolve(f.el.outerHTML).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" ').replace('<defs>', `<style>${EYE_CSS}</style><defs>`)
       .replace(/<g class="f-(embers|sparks|z)"[\s\S]*?<\/g>/g, '');
     host.remove();
     const img = new Image();
@@ -255,10 +256,7 @@ const Follet = (() => {
   }
 
   const style = document.createElement('style');
-  style.textContent = `.follet { display: block; overflow: visible; }
-    .follet .e-arc, .follet .e-line { display: none; }
-    .follet .eye.arc .e-open, .follet .eye.closed .e-open { display: none; }
-    .follet .eye.arc .e-arc, .follet .eye.closed .e-line { display: inline; }`;
+  style.textContent = '.follet { display: block; overflow: visible; }' + EYE_CSS;
   document.head.appendChild(style);
 
   return { create, png };
