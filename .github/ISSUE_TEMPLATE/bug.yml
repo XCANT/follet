@@ -1,0 +1,31 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: A screenshot helps a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Open the tab…\n2. Click on…"
+  - type: input
+    id: version
+    attributes:
+      label: Follet version
+      placeholder: "1.4.2 (Settings → About)"
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: The last lines of %APPDATA%\Follet\logs\follet.log, if useful.
+      render: text

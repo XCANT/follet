@@ -6,6 +6,7 @@
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?logo=windows&logoColor=white">
   <img alt="Electron 37" src="https://img.shields.io/badge/Electron-37-47848f?logo=electron&logoColor=white">
   <img alt="Material 3" src="https://img.shields.io/badge/Material%203-Material%20You-6750a4">
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-3da639">
   <a href="../../releases/latest"><img alt="Download" src="https://img.shields.io/badge/Download-installer-ff8b8b"></a>
 </p>
 
@@ -32,7 +33,7 @@ The interface follows the Windows language (French or English). Change it in Set
 
 To see notifications only in Follet, turn off app banners in Windows Settings → Notifications (or turn on Do not disturb): Follet reads them from the notification center.
 
-Follet checks for new versions every 6 hours and updates itself from Settings → About (private repository: `gh` must be signed in on the PC).
+Follet checks for new versions every 6 hours and updates itself from Settings → About.
 
 If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 
@@ -133,6 +134,14 @@ src/renderer/
   js/views/      one file per tab
 scripts/         checks, release notes, translation extraction
 ```
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Security issues: [SECURITY.md](SECURITY.md).
+
+## License
+
+[MIT](LICENSE) © XCANT
 
 ## Inspiration
 

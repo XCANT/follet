@@ -1,67 +1,77 @@
-# Journal des versions
+# Changelog
 
-Les versions suivent [SemVer](https://semver.org/lang/fr/). Pour publier : ajouter une section ici, monter la version dans `package.json` (`npm version x.y.z --no-git-tag-version`), committer, puis pousser un tag `vx.y.z`. GitHub Actions construit l'installateur et crée la release avec le texte de cette section.
+Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
+
+## [1.4.2] - 2026-10-13
+
+### Added
+- MIT license, contributing guide, security policy, English issue templates.
+
+### Changed
+- Updates no longer need `gh`: the public repository answers without an account.
+- README visuals redone without the brightness slider.
 
 ## [1.4.1] - 2026-10-13
 
-### Retiré
-- Curseur de luminosité des écrans : les commandes DDC/CI dérangeaient certains moniteurs. Follet ne leur parle plus du tout.
+### Removed
+- Display brightness slider: its DDC/CI commands disturbed some monitors. Follet no longer talks to them at all.
 
 ## [1.4.0] - 2026-10-13
 
-### Ajouté
-- Interface en anglais : Réglages → Apparence → Langue (automatique selon Windows, français ou English). Le menu de l'icône suit aussi.
-- `scripts/i18n-extract.js` liste les textes sans traduction ; `I.i18nMissing()` liste ceux vus à l'écran.
+### Added
+- English interface: Settings → Appearance → Language (automatic from Windows, French or English). The tray menu follows too.
+- `scripts/i18n-extract.js` lists untranslated strings; `I.i18nMissing()` lists the ones seen on screen.
 
 ## [1.3.1] - 2026-10-13
 
-### Ajouté
-- Notifications Windows dans l'encoche : icône de l'appli, titre et texte pendant quelques secondes. Réglages → Activités → Notifications Windows.
+### Added
+- Windows notifications in the notch: app icon, title and text for a few seconds. Settings → Activities → Windows notifications.
 
 ## [1.3.0] - 2026-10-13
 
-### Ajouté
-- Mises à jour : Follet vérifie les nouvelles versions et les installe depuis Réglages → À propos (ou le menu de l'icône).
-- Fiche système façon fastfetch dans Stats (bouton terminal).
-- Réglage Comportement → Ouverture au survol : rapide, normale ou lente.
+### Added
+- Updates: Follet checks for new versions and installs them from Settings → About (or the tray menu).
+- fastfetch-style system info in Stats (terminal button).
+- Settings → Behavior → Open on hover: fast, normal or slow.
 
-### Modifié
-- L'aperçu ne s'ouvre plus quand la souris ne fait que passer (vers un onglet de navigateur, par exemple) : il faut qu'elle s'attarde.
-- La version installée répare toute seule son démarrage avec Windows s'il pointe vers un autre emplacement.
-- README : nouveaux visuels, sans données personnelles.
+### Changed
+- The preview no longer opens when the mouse just passes by (on its way to a browser tab, for example): it has to linger.
+- The installed version repairs its Start with Windows entry if it points somewhere else.
+- README: new visuals, without personal data.
+
 ## [1.2.1] - 2026-10-13
 
-### Corrigé
-- Glisser-déposer : l'encoche restait en aperçu sous les cibles de dépôt. Elle passe maintenant en mode dépôt pendant tout le geste, puis confirme le dépôt.
+### Fixed
+- Drag and drop: the notch stayed in preview under the drop targets. It now stays in drop mode for the whole gesture, then confirms the drop.
 
-### Ajouté
-- Build et release automatiques avec GitHub Actions ; vérification du code à chaque push.
+### Added
+- Automatic build and release with GitHub Actions; code check on every push.
 
 ## [1.2.0] - 2026-10-13
 
-### Ajouté
-- Nouvelle mascotte, dessinée d'après le croquis de XCANT : petite flamme corail lumineuse, grands yeux brillants, bouche « :3 », joues roses et flammèche.
-- Humeurs : écouteurs quand la musique joue, auréole et points pendant que l'IA réfléchit, clin d'œil et étincelles quand la réponse arrive, bonnet de nuit après 5 min d'inactivité, grands yeux et « ! » pour les alertes.
-- Réglage Apparence → Couleur de Follet : corail ou couleurs de l'appli.
+### Added
+- New mascot, drawn from XCANT's sketch: a small glowing coral flame, big shiny eyes, a ":3" mouth, pink cheeks and a wisp.
+- Moods: headphones while music plays, halo and dots while the AI thinks, wink and sparkles when the answer arrives, nightcap after 5 idle minutes, big eyes and "!" for alerts.
+- Settings → Appearance → Follet's color: coral or app colors.
 
-### Corrigé
-- Le sélecteur de sortie audio ne s'ouvrait pas.
-- Des icônes d'applis ne se chargeaient pas ; les raccourcis morts sont retirés.
-- La pochette restait parfois celle de la chanson précédente.
+### Fixed
+- The audio output picker did not open.
+- Some app icons did not load; dead shortcuts are removed.
+- The album art sometimes stayed on the previous song.
 
 ## [1.1.0] - 2026-10-13
 
-### Ajouté
-- Onglet Follet : vues Discussion et Utilisation (fenêtre de 5 h de Claude Code, jetons, messages, sessions, heure par heure, par modèle, par projet).
-- Dépôt de fichiers avec deux cibles : Étagère et Demander à Follet (lecture des fichiers texte).
-- Navigation au clavier (1 à 9, flèches) et à la molette sur les onglets.
+### Added
+- Follet tab: Chat and Usage views (Claude Code 5-hour window, tokens, messages, sessions, hour by hour, by model, by project).
+- File drop with two targets: Shelf and Ask Follet (reads text files).
+- Keyboard (1 to 9, arrows) and scroll-wheel navigation on the tabs.
 
-### Modifié
-- Panneau à taille fixe : plus de recalcul de mise en page pendant l'ouverture.
-- Luminosité : un seul curseur, l'icône choisit l'écran.
+### Changed
+- Fixed-size panel: no more layout recalculation while opening.
+- Brightness: a single slider, the icon picks the display.
 
 ## [1.0.0] - 2026-10-13
 
-### Ajouté
-- Première version installable : encoche Material You avec musique, agenda et météo, stats, étagère, presse-papiers, lanceur, terminal, IA au choix et alimentation.
-- Journal dans `%APPDATA%\Follet\logs`, écran de bienvenue, démarrage avec Windows.
+### Added
+- First installable version: Material You notch with music, calendar and weather, stats, shelf, clipboard, launcher, terminal, AI of your choice and power.
+- Log in `%APPDATA%\Follet\logs`, welcome screen, start with Windows.

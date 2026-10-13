@@ -1,0 +1,16 @@
+name: Feature idea
+description: A feature or an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What Follet should do, and in which tab.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The situation where it would help you.

@@ -1,6 +1,6 @@
 // Mises a jour : compare la version avec la derniere release GitHub, telecharge l'installateur
-// et le lance. Le depot est prive : on utilise le jeton de `gh` s'il est connecte sur ce PC
-// (envoye seulement a api.github.com). Sans jeton, seul un depot public repond.
+// et le lance. Si `gh` est connecte, son jeton (envoye seulement a api.github.com) evite la limite
+// de 60 requetes/heure de l'API anonyme ; sinon on interroge sans compte.
 const { ipcMain, app, shell } = require('electron');
 const { execFile } = require('child_process');
 const fs = require('fs');
@@ -24,7 +24,7 @@ async function api(url, accept = 'application/vnd.github+json') {
   const headers = { Accept: accept, 'User-Agent': 'Follet/' + app.getVersion(), 'X-GitHub-Api-Version': '2022-11-28' };
   if (token) headers.Authorization = 'Bearer ' + token;
   const r = await fetch(url, { headers });
-  if (!r.ok) throw new Error(r.status === 404 ? (token ? 'Aucune release trouvée' : 'Dépôt privé : connecte « gh » pour vérifier les mises à jour') : 'GitHub ' + r.status);
+  if (!r.ok) throw new Error(r.status === 404 ? 'Aucune release trouvée' : 'GitHub ' + r.status);
   return r;
 }
 const newer = (a, b) => {

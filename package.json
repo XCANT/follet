@@ -1,7 +1,17 @@
 {
   "name": "follet",
-  "version": "1.4.1",
-  "description": "Follet : une encoche façon Dynamic Island pour Windows, en Material You — musique, agenda, stats, étagère, presse-papiers, terminal, Claude.",
+  "version": "1.4.2",
+  "description": "Follet: a Dynamic Island-style notch for Windows in Material You — music, calendar, stats, shelf, clipboard, terminal and AI.",
+  "author": "XCANT",
+  "license": "MIT",
+  "homepage": "https://github.com/XCANT/follet#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/XCANT/follet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/XCANT/follet/issues"
+  },
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",

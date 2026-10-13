@@ -6,6 +6,7 @@
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?logo=windows&logoColor=white">
   <img alt="Electron 37" src="https://img.shields.io/badge/Electron-37-47848f?logo=electron&logoColor=white">
   <img alt="Material 3" src="https://img.shields.io/badge/Material%203-Material%20You-6750a4">
+  <img alt="Licence MIT" src="https://img.shields.io/badge/licence-MIT-3da639">
   <a href="../../releases/latest"><img alt="Télécharger" src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger-installateur-ff8b8b"></a>
 </p>
 
@@ -30,7 +31,7 @@
 
 Pour que les notifications n'apparaissent que dans Follet, coupe les bannières des applis dans Paramètres Windows → Notifications (ou active Ne pas déranger) : Follet les lit dans le centre de notifications.
 
-Follet vérifie les nouvelles versions toutes les 6 heures et s'installe à jour depuis Réglages → À propos (dépôt privé : il faut `gh` connecté sur le PC).
+Follet vérifie les nouvelles versions toutes les 6 heures et s'installe à jour depuis Réglages → À propos.
 
 En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 
@@ -131,6 +132,14 @@ src/renderer/
   js/views/      un fichier par onglet
 scripts/         vérification, notes de release, extraction des textes à traduire
 ```
+
+## Contribuer
+
+Rapports de bogues, idées et pull requests sont les bienvenus : voir [CONTRIBUTING.md](CONTRIBUTING.md) (en anglais, comme les commits). Failles de sécurité : [SECURITY.md](SECURITY.md).
+
+## Licence
+
+[MIT](LICENSE) © XCANT
 
 ## Inspiration
 
