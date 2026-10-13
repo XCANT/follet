@@ -45,7 +45,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | **Terminal** | Shell complet (PowerShell 7 par défaut) |
 | **Follet** | Ton IA au choix : Claude Code (ton abonnement), API Claude, OpenAI, Gemini, Ollama (local), OpenRouter ou un serveur compatible. Lit les fichiers texte que tu lui glisses. Tableau de bord d'utilisation : fenêtre de 5 h, jetons, messages, heure par heure, par modèle, par projet |
 | **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
-| **Réglages** | Couleurs, couleur de Follet, écran, raccourci, activités, onglets visibles, météo, agendas, IA |
+| **Réglages** | Langue (français ou anglais), couleurs, couleur de Follet, écran, raccourci, activités, onglets visibles, météo, agendas, IA |
 
 **Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, volume, nouvelle chanson, casque connecté, chargeur, batterie faible, minuteur terminé, fichier déposé.
 

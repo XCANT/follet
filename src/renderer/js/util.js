@@ -13,7 +13,7 @@ const fmtBytes = (b, dec) => { const u = ['o', 'Ko', 'Mo', 'Go', 'To']; let i = 
 const fmtTok = (n) => n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + ' M' : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e4 ? 0 : 1) + ' k' : String(n);
 const fmtMbps = (v) => v == null ? '—' : v >= 100 ? v.toFixed(0) : v.toFixed(1);
 const ms = (name, cls = '') => `<span class="ms ${cls}">${name}</span>`;
-const dayName = (d, opts = { weekday: 'long' }) => d.toLocaleDateString('fr-CA', opts);
+const dayName = (d, opts = { weekday: 'long' }) => d.toLocaleDateString(I.locale || 'fr-CA', opts);
 function ago(t) { const s = (Date.now() - t) / 1000; return s < 60 ? "à l'instant" : s < 3600 ? `il y a ${Math.floor(s / 60)} min` : s < 86400 ? `il y a ${Math.floor(s / 3600)} h` : `il y a ${Math.floor(s / 86400)} j`; }
 
 // Icones meteo Material Symbols a partir des codes WMO d'Open-Meteo

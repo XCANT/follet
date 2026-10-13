@@ -105,7 +105,7 @@ I.view('today', {
     const days = w.daily.time.slice(0, 4).map((d, k) => {
       const mn = w.daily.temperature_2m_min[k], mx = w.daily.temperature_2m_max[k];
       const l = ((mn - lo) / (hi - lo || 1)) * 100, r = ((mx - lo) / (hi - lo || 1)) * 100;
-      return `<div class="w-day"><span>${k === 0 ? 'Auj.' : new Date(d + 'T12:00').toLocaleDateString('fr-CA', { weekday: 'short' })}</span>${ms(weatherIcon(w.daily.weather_code[k]), 'fill')}
+      return `<div class="w-day"><span>${k === 0 ? 'Auj.' : new Date(d + 'T12:00').toLocaleDateString(I.locale, { weekday: 'short' })}</span>${ms(weatherIcon(w.daily.weather_code[k]), 'fill')}
         <div class="rng"><i style="left:${l}%;right:${100 - r}%"></i></div><span>${Math.round(mn)}° / ${Math.round(mx)}°</span></div>`;
     }).join('');
     el.innerHTML = `<div class="card-title"><span>${w.source === 'ip' ? ms('near_me', 'fill') : ms('location_on', 'fill')} ${esc(w.city || 'Météo')}</span><span>${c.relative_humidity_2m ?? ''}${c.relative_humidity_2m != null ? ' %' : ''} ${ms('water_drop')}</span></div>

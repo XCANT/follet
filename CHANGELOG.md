@@ -2,6 +2,12 @@
 
 Les versions suivent [SemVer](https://semver.org/lang/fr/). Pour publier : ajouter une section ici, monter la version dans `package.json` (`npm version x.y.z --no-git-tag-version`), committer, puis pousser un tag `vx.y.z`. GitHub Actions construit l'installateur et crée la release avec le texte de cette section.
 
+## [1.4.0] - 2026-10-13
+
+### Ajouté
+- Interface en anglais : Réglages → Apparence → Langue (automatique selon Windows, français ou English). Le menu de l'icône suit aussi.
+- `scripts/i18n-extract.js` liste les textes sans traduction ; `I.i18nMissing()` liste ceux vus à l'écran.
+
 ## [1.3.1] - 2026-10-13
 
 ### Ajouté

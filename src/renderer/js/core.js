@@ -271,7 +271,7 @@ function tickTimer() {
     notchEl.classList.remove('has-timer');
     I.flashMood('alert', 3000);
     showActivity(`<div class="a-ico">${ms('timer', 'fill s20')}</div><div class="a-txt"><div class="title-s">Minuteur terminé</div><div class="body-s variant">${fmtDur(t.total)}</div></div>`, 'timer', 6000);
-    follet.notify('Minuteur terminé', `${fmtDur(t.total)} écoulé${t.total >= 120 ? 'es' : ''}`);
+    follet.notify(I.t('Minuteur terminé'), I.lang === 'en' ? `${fmtDur(t.total)} elapsed` : `${fmtDur(t.total)} écoulé${t.total >= 120 ? 'es' : ''}`);
   }
   I.emit('timer');
 }
@@ -304,7 +304,7 @@ function tick() {
   const now = new Date();
   $('.c-clock').textContent = hhmm(now);
   $('#tb-clock').textContent = hhmm(now);
-  $('#tb-date').textContent = dayName(now, { weekday: 'long', day: 'numeric', month: 'long' });
+  $('#tb-date').textContent = dayName(now, I.lang === 'en' ? { weekday: 'short', day: 'numeric', month: 'short' } : { weekday: 'long', day: 'numeric', month: 'long' });
   tickTimer();
   if (I.mode === 'peek' && !I.media.present) renderCompact();
   I.emit('tick', now);

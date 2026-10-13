@@ -36,13 +36,15 @@ I.view('settings', {
   // ---------- Apparence ----------
   r_look() {
     const t = this.data.config.theme;
-    return this.row('Source des couleurs', 'Material You construit tout le thème à partir d\'une seule couleur.', '<div class="seg-src"></div>')
+    return this.row('Langue', 'Langue de l\'interface. Automatique suit Windows.', '<div class="seg-lang"></div>')
+      + this.row('Source des couleurs', 'Material You construit tout le thème à partir d\'une seule couleur.', '<div class="seg-src"></div>')
       + `<div class="set-row custom-row" style="${t.source === 'custom' ? '' : 'display:none'}"><div class="txt"><div class="hl">Couleur</div></div><div class="swatches"></div><input type="color" class="color-pick" value="${esc(t.color)}" style="width:36px;height:32px;border:0;background:none;cursor:pointer"></div>`
       + this.row('Style', 'Intensité et variété des couleurs dérivées.', '<div class="seg-var"></div>')
       + this.row('Couleur de Follet', 'La mascotte garde son corail, ou prend les couleurs de l\'appli.', '<div class="seg-mascot"></div>');
   },
   b_look(body) {
     const t = this.data.config.theme;
+    segmented($('.seg-lang', body), [['auto', 'Automatique'], ['fr', 'Français'], ['en', 'English']], this.data.config.language || 'auto', async (v) => { await this.save({ language: v }); location.reload(); });
     segmented($('.seg-src', body), [['art', 'Pochette'], ['accent', 'Accent Windows'], ['custom', 'Choisie']], t.source, (v) => {
       $('.custom-row', body).style.display = v === 'custom' ? '' : 'none';
       this.save({ theme: { source: v } });

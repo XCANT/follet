@@ -1,6 +1,6 @@
 /* Demarrage : construit la navigation et les vues, puis applique le mode demo si demande. */
 (async function boot() {
-  try { Follet.setPalette(((await follet.configGet()).config.mascot || {}).color); } catch { }
+  try { const { config } = await follet.configGet(); I.setLang(config.language); Follet.setPalette((config.mascot || {}).color); } catch { }
   const views = $('#views');
   for (const v of Object.values(I.views)) {
     const el = document.createElement('section');

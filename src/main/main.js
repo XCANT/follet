@@ -6,6 +6,7 @@ if (!app.requestSingleInstanceLock()) { app.quit(); process.exit(0); }
 app.setAppUserModelId('Follet');
 
 const core = require('./core');
+const { t } = require('./i18n');
 const helper = require('./helper');
 const windowMod = require('./window');
 const theme = require('./theme');
@@ -42,16 +43,17 @@ function createTray() {
   tray = new Tray(icon.resize({ width: 16, height: 16 }));
   tray.setToolTip('Follet');
   const rebuild = async () => tray.setContextMenu(Menu.buildFromTemplate([
-    { label: windowMod.win.isVisible() ? 'Masquer Follet' : 'Afficher Follet', click: () => { const w = windowMod.win; w.isVisible() ? w.hide() : w.showInactive(); rebuild(); } },
-    { label: 'Réglages…', click: () => { windowMod.reveal(); core.send('open-tab', 'settings'); windowMod.win.focus(); } },
-    { label: 'Recharger', click: () => { core.reloadConfig(); windowMod.place(); windowMod.win.reload(); } },
-    { label: 'Ouvrir le dossier des données', click: () => shell.openPath(core.DATA) },
-    { label: 'Rechercher les mises à jour', click: () => { windowMod.reveal(); core.send('open-tab', 'settings:about'); windowMod.win.focus(); update.check(true); } },
-    { label: 'Démarrer avec Windows', type: 'checkbox', checked: await settings.loginEnabled(), click: async (m) => { await settings.setLogin(m.checked); rebuild(); } },
+    { label: t(windowMod.win.isVisible() ? 'Masquer Follet' : 'Afficher Follet'), click: () => { const w = windowMod.win; w.isVisible() ? w.hide() : w.showInactive(); rebuild(); } },
+    { label: t('Réglages…'), click: () => { windowMod.reveal(); core.send('open-tab', 'settings'); windowMod.win.focus(); } },
+    { label: t('Recharger'), click: () => { core.reloadConfig(); windowMod.place(); windowMod.win.reload(); } },
+    { label: t('Ouvrir le dossier des données'), click: () => shell.openPath(core.DATA) },
+    { label: t('Rechercher les mises à jour'), click: () => { windowMod.reveal(); core.send('open-tab', 'settings:about'); windowMod.win.focus(); update.check(true); } },
+    { label: t('Démarrer avec Windows'), type: 'checkbox', checked: await settings.loginEnabled(), click: async (m) => { await settings.setLogin(m.checked); rebuild(); } },
     { type: 'separator' },
-    { label: 'Quitter', click: () => app.quit() },
+    { label: t('Quitter'), click: () => app.quit() },
   ]));
   tray.on('click', () => { windowMod.reveal(); core.send('toggle'); });
+  core.events.on('config', (c, before) => { if (c.language !== before.language) rebuild(); });
   rebuild();
 }
 
