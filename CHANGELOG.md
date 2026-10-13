@@ -2,6 +2,15 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.5.0] - 2026-10-13
+
+### Changed
+- About a third less memory at rest (~420 MB instead of ~630 MB for all processes).
+- Claude Code usage is read incrementally, in a short-lived worker thread: the main process no longer keeps tens of MB after reading the logs.
+- Hardware acceleration is off by default (the GPU process drops from ~90 MB to ~20 MB). Turn it back on in Settings → Behavior for smoother animations.
+- The terminal (xterm) loads the first time its tab opens.
+- The PowerShell helper reads the battery without loading WinForms.
+
 ## [1.4.2] - 2026-10-13
 
 ### Added

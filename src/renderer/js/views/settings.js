@@ -65,6 +65,7 @@ I.view('settings', {
       + this.row('Ouverture au survol', 'Combien de temps la souris doit s\'attarder avant l\'aperçu. Un simple passage ne l\'ouvre pas.', '<div class="seg-hover"></div>')
       + this.row('Se ranger devant une fenêtre maximisée', 'Elle ressort quand la souris touche le haut de l\'écran, au milieu.', this.sw('tuck', c.behavior.tuck))
       + this.row('Masquer pendant les jeux en plein écran', '', this.sw('hideFullscreen', c.behavior.hideFullscreen))
+      + this.row('Accélération graphique', 'Animations plus fluides, mais environ 60 Mo de mémoire en plus. Effet au prochain démarrage de Follet.', this.sw('gpu', !!c.behavior.gpu))
       + this.row('Raccourci clavier', 'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)
       + this.row('Démarrer avec Windows', '', `<input type="checkbox" class="switch login" ${this.data.login ? 'checked' : ''}>`);
   },

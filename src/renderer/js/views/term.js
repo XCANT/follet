@@ -14,13 +14,21 @@ I.view('term', {
       brightBlack: '#585b70', brightRed: '#f38ba8', brightGreen: '#a6e3a1', brightYellow: '#f9e2af', brightBlue: '#89b4fa', brightMagenta: '#f5c2e7', brightCyan: '#94e2d5', brightWhite: '#a6adc8',
     };
   },
-  show() {
+  // xterm n'est charge qu'a la premiere ouverture de l'onglet (economise la memoire au repos)
+  load() {
+    const base = '../../node_modules/@xterm/';
+    const one = (src) => new Promise((ok, ko) => { const s = document.createElement('script'); s.src = base + src; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
+    if (!document.querySelector('link[data-xterm]')) document.head.insertAdjacentHTML('beforeend', `<link rel="stylesheet" data-xterm href="${base}xterm/css/xterm.css">`);
+    return (this.loading ||= one('xterm/lib/xterm.js').then(() => Promise.all([one('addon-fit/lib/addon-fit.js'), one('addon-webgl/lib/addon-webgl.js')])));
+  },
+  async show() {
+    if (!window.Terminal) { await this.load(); if (I.tab !== 'term') return; }
     if (this.term) { setTimeout(() => { this.fit.fit(); this.term.focus(); if (!this.running) this.start(); }, 60); return; }
     const term = (this.term = new Terminal({ fontFamily: '"JetBrainsMono Nerd Font", "Cascadia Mono", monospace', fontSize: 13, lineHeight: 1.15, cursorStyle: 'bar', cursorBlink: true, theme: this.theme(), allowProposedApi: true, scrollback: 5000 }));
     this.fit = new FitAddon.FitAddon(); term.loadAddon(this.fit);
     const wrap = $('.term-wrap', this.el);
     term.open(wrap);
-    try { const gl = new WebglAddon.WebglAddon(); gl.onContextLoss(() => gl.dispose()); term.loadAddon(gl); } catch { /* rendu DOM */ }
+    if (I.gpu) try { const gl = new WebglAddon.WebglAddon(); gl.onContextLoss(() => gl.dispose()); term.loadAddon(gl); } catch { /* rendu DOM */ }
     term.attachCustomKeyEventHandler((e) => {
       if (e.type !== 'keydown') return true;
       if (e.ctrlKey && e.key === 'c' && term.hasSelection()) { navigator.clipboard.writeText(term.getSelection()); term.clearSelection(); return false; }

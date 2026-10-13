@@ -5,7 +5,6 @@ $ErrorActionPreference = 'Stop'
 
 # ---------- WinRT : session media ----------
 Add-Type -AssemblyName System.Runtime.WindowsRuntime
-Add-Type -AssemblyName System.Windows.Forms
 $asTaskGeneric = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object {
     $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and
     $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' })[0]
@@ -114,6 +113,15 @@ public static class Shell {
   }
 }
 
+// Batterie (sans charger WinForms, qui coutait des dizaines de Mo au helper)
+public static class Power {
+  [StructLayout(LayoutKind.Sequential)] struct SPS { public byte AC; public byte Flag; public byte Pct; public byte Saver; public int Life; public int Full; }
+  [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out SPS s);
+  public static object Status() {
+    SPS s; GetSystemPowerStatus(out s);
+    return new { present = s.Flag != 255 && (s.Flag & 128) == 0, percent = s.Pct == 255 ? 0 : (int)s.Pct, plugged = s.AC == 1, charging = (s.Flag & 8) != 0, remaining = s.Life };
+  }
+}
 "@
 
 [Shell]::SetProcessDpiAwarenessContext([IntPtr]-4) | Out-Null   # coordonnees physiques
@@ -306,16 +314,7 @@ while ($true) {
                 }
                 @{ rx = $rx; tx = $tx }
             }
-            'battery' {
-                $ps = [System.Windows.Forms.SystemInformation]::PowerStatus
-                @{
-                    present = -not ($ps.BatteryChargeStatus -band [System.Windows.Forms.BatteryChargeStatus]::NoSystemBattery)
-                    percent = [math]::Round($ps.BatteryLifePercent * 100)
-                    plugged = ($ps.PowerLineStatus -eq 'Online')
-                    charging = [bool]($ps.BatteryChargeStatus -band [System.Windows.Forms.BatteryChargeStatus]::Charging)
-                    remaining = $ps.BatteryLifeRemaining
-                }
-            }
+            'battery' { [Power]::Status() }
             'procs' { Get-Procs }
             'notifs' { Get-Notifs $cmd.arg }
             'notif-remove' { Remove-Notif $cmd.arg }

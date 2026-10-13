@@ -185,8 +185,48 @@ ipcMain.handle('ai-read-files', async (_e, paths) => Promise.all((paths || []).s
 })));
 
 // ---------- consommation Claude Code (journaux locaux ~/.claude/projects/**/*.jsonl) ----------
-const fileCache = new Map();
-ipcMain.handle('claude-usage', async () => {
+// Les journaux ne font que grandir : on garde pour chaque fichier la position deja lue et on ne lit
+// que la suite. La lecture se fait dans un thread jetable : les lignes de journal sont enormes et
+// laissaient des dizaines de Mo de dechets dans le processus principal ; ici ils partent avec le thread.
+const fileCache = new Map();   // chemin -> { pos, entries }
+const READER = `
+const fs = require('fs'), path = require('path'), { parentPort, workerData } = require('worker_threads');
+const out = [];
+for (const { p, pos: start } of workerData) {
+  const entries = []; let pos = start;
+  try {
+    const fd = fs.openSync(p, 'r'), size = fs.fstatSync(fd).size, buf = Buffer.alloc(1 << 20);
+    if (size < pos) pos = 0;
+    const project = path.basename(path.dirname(p));
+    let rest = '';
+    while (pos < size) {
+      const n = fs.readSync(fd, buf, 0, Math.min(buf.length, size - pos), pos);
+      if (!n) break;
+      pos += n;
+      const lines = (rest + buf.toString('utf8', 0, n)).split('\\n');
+      rest = lines.pop();
+      for (const line of lines) {
+        if (!line.includes('"usage"')) continue;
+        try {
+          const j = JSON.parse(line), u = j.message && j.message.usage; if (!u || !j.timestamp) continue;
+          entries.push({ key: (j.message.id || '') + ':' + (j.requestId || ''), t: Date.parse(j.timestamp), model: j.message.model || '?', out: u.output_tokens || 0, inp: (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0), cr: u.cache_read_input_tokens || 0, session: j.sessionId, project: j.cwd ? path.basename(j.cwd) : project });
+        } catch { }
+      }
+    }
+    pos -= Buffer.byteLength(rest, 'utf8');
+    fs.closeSync(fd);
+  } catch { }
+  out.push({ p, pos, reset: pos < start, entries });
+}
+parentPort.postMessage(out);`;
+function readNew(jobs) {
+  return new Promise((resolve) => {
+    const { Worker } = require('worker_threads');
+    const w = new Worker(READER, { eval: true, workerData: jobs });
+    w.once('message', (r) => { resolve(r); w.terminate(); });
+    w.once('error', () => resolve([]));
+  });
+}ipcMain.handle('claude-usage', async () => {
   const base = path.join(os.homedir(), '.claude', 'projects');
   if (!fs.existsSync(base)) return null;
   const since = Date.now() - 7 * 864e5, files = [];
@@ -195,27 +235,23 @@ ipcMain.handle('claude-usage', async () => {
     for (const e of ents) {
       const p = path.join(dir, e.name);
       if (e.isDirectory()) walk(p);
-      else if (e.name.endsWith('.jsonl')) { try { const st = fs.statSync(p); if (st.mtimeMs >= since) files.push({ p, mtime: st.mtimeMs }); } catch { } }
+      else if (e.name.endsWith('.jsonl')) { try { const st = fs.statSync(p); if (st.mtimeMs >= since) files.push({ p, mtime: st.mtimeMs, size: st.size }); } catch { } }
     }
   })(base);
+  for (const k of fileCache.keys()) if (!files.some((f) => f.p === k)) fileCache.delete(k);
   const seen = new Set(), all = [];
-  for (const f of files) {
-    let c = fileCache.get(f.p);
-    if (!c || c.mtime !== f.mtime) {
-      const entries = [];
-      const text = await fs.promises.readFile(f.p, 'utf8').catch(() => '');
-      for (const line of text.split('\n')) {
-        if (!line.includes('"usage"')) continue;
-        try {
-          const j = JSON.parse(line), u = j.message?.usage; if (!u || !j.timestamp) continue;
-          entries.push({ key: (j.message.id || '') + ':' + (j.requestId || ''), t: Date.parse(j.timestamp), model: j.message.model || '?', out: u.output_tokens || 0, inp: (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0), cr: u.cache_read_input_tokens || 0, session: j.sessionId, project: j.cwd ? path.basename(j.cwd) : path.basename(path.dirname(f.p)) });
-        } catch { }
-      }
-      c = { mtime: f.mtime, entries }; fileCache.set(f.p, c);
-    }
-    for (const e of c.entries) if (e.t >= since && !seen.has(e.key) && e.model !== '<synthetic>') { seen.add(e.key); all.push(e); }
+  for (const f of files) if (!fileCache.has(f.p)) fileCache.set(f.p, { pos: 0, entries: [] });
+  const jobs = files.filter((f) => fileCache.get(f.p).pos !== f.size).map((f) => ({ p: f.p, pos: fileCache.get(f.p).pos }));
+  if (jobs.length) for (const r of await readNew(jobs)) {
+    const c = fileCache.get(r.p); if (!c) continue;
+    if (r.reset) c.entries = [];
+    c.pos = r.pos; c.entries.push(...r.entries);
   }
-  all.sort((a, b) => a.t - b.t);
+  for (const f of files) {
+    const c = fileCache.get(f.p);
+    c.entries = c.entries.filter((e) => e.t >= since);
+    for (const e of c.entries) if (!seen.has(e.key) && e.model !== '<synthetic>') { seen.add(e.key); all.push(e); }
+  }  all.sort((a, b) => a.t - b.t);
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const T0 = today.getTime(), now = Date.now();
   const sum = (arr) => arr.reduce((a, e) => ({ out: a.out + e.out, inp: a.inp + e.inp, cr: a.cr + e.cr, n: a.n + 1 }), { out: 0, inp: 0, cr: 0, n: 0 });

@@ -7,6 +7,8 @@ app.setAppUserModelId('Follet');
 
 const core = require('./core');
 const { t } = require('./i18n');
+// Sans acceleration graphique, Follet economise ~60 Mo (le processus GPU) ; reglable dans Comportement
+if (!core.config.behavior.gpu) app.disableHardwareAcceleration();
 const helper = require('./helper');
 const windowMod = require('./window');
 const theme = require('./theme');
@@ -70,6 +72,11 @@ app.whenReady().then(() => {
   registerShortcut();
   update.start();
   notifs.start();
+  // Dev : FOLLET_MEM=1 journalise la memoire par processus toutes les 15 s
+  if (process.env.FOLLET_MEM) setInterval(() => {
+    const by = {}; for (const m of app.getAppMetrics()) by[m.type] = (by[m.type] || 0) + Math.round((m.memory.privateBytes || m.memory.workingSetSize) / 1024);
+    core.log('info', '[mem]', JSON.stringify({ ...by, heap: Math.round(process.memoryUsage().heapUsed / 1048576), rss: Math.round(process.memoryUsage().rss / 1048576) }));
+  }, 15000);
 });
 app.on('second-instance', () => { windowMod.reveal(); core.send('toggle'); });
 app.on('will-quit', () => globalShortcut.unregisterAll());
