@@ -2,6 +2,15 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.6.0] - 2026-10-13
+
+### Changed
+- The Windows helper is rewritten in C#: a 33 KB exe using ~45 MB instead of ~110 MB for Windows PowerShell, faster answers, and commands no longer wait for each other. If it fails to start, Follet falls back to the PowerShell helper.
+- Follet uses about 270 MB at rest, down from ~630 MB in 1.4.
+
+### Added
+- `scripts/helper-test.js`: helper protocol test, run on every push.
+
 ## [1.5.0] - 2026-10-13
 
 ### Changed
