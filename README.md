@@ -1,137 +1,139 @@
-<p align="center"><img src="docs/hero.png" width="860" alt="Follet : l'encoche ouverte sur l'accueil, avec My Castle Town de XCANT en lecture"></p>
+<p align="center"><img src="docs/hero.webp" width="860" alt="Follet: the notch open on Home, playing My Castle Town by XCANT"></p>
 
-<p align="center"><b>Français</b> · <a href="README.en.md">English</a></p>
+<p align="center"><b>English</b> · <a href="README.fr.md">Français</a></p>
 
 <p align="center">
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?logo=windows&logoColor=white">
   <img alt="Electron 37" src="https://img.shields.io/badge/Electron-37-47848f?logo=electron&logoColor=white">
   <img alt="Material 3" src="https://img.shields.io/badge/Material%203-Material%20You-6750a4">
-  <a href="../../releases/latest"><img alt="Télécharger" src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger-installateur-ff8b8b"></a>
+  <a href="../../releases/latest"><img alt="Download" src="https://img.shields.io/badge/Download-installer-ff8b8b"></a>
 </p>
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/stats.png" alt="Stats : courbes CPU, GPU, RAM, applis qui consomment, réseau, stockage"></td>
-    <td width="50%"><img src="docs/systeme.png" alt="Fiche système façon fastfetch"></td>
+    <td width="50%"><img src="docs/stats.webp" alt="Stats: CPU, GPU and RAM charts, top apps, network, storage"></td>
+    <td width="50%"><img src="docs/systeme.webp" alt="fastfetch-style system info"></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/follet.png" alt="Onglet Follet : utilisation de l'IA, fenêtre de 5 h, jetons par modèle et par projet"></td>
-    <td width="50%" valign="top"><img src="docs/depot.png" alt="Glisser un fichier sur l'encoche : Étagère ou Demander à Follet"><br><br><img src="docs/mascotte.gif" alt="Follet au repos, en musique, en réflexion et quand la réponse arrive"></td>
+    <td width="50%"><img src="docs/follet.webp" alt="Follet tab: AI usage, 5-hour window, tokens by model and by project"></td>
+    <td width="50%" valign="top"><img src="docs/depot.webp" alt="Drop a file on the notch: Shelf or Ask Follet"><br><br><img src="docs/mascotte.gif" alt="Follet idle, listening to music, thinking, and when the answer arrives"></td>
   </tr>
 </table>
 
-*Un feu follet : la petite flamme du folklore québécois, cousine du hitodama japonais. Musique de démonstration : My Castle Town (Lofi), XCANT.*
+*A Dynamic Island for Windows, with a little flame living in it. A* feu follet *is the will-o'-the-wisp of Québec folklore, a cousin of the Japanese hitodama. Follet speaks English and French. Demo music: My Castle Town (Lofi), XCANT.*
 
-## Installation
+## Install
 
-1. Télécharge **`Follet-Setup-x.y.z.exe`** dans les [releases](../../releases).
-2. Lance-le : installation pour ton utilisateur, sans droits administrateur. L'installateur n'est pas signé : à l'écran « Windows a protégé votre ordinateur », clique **Informations complémentaires → Exécuter quand même**.
-3. Follet apparaît en haut de l'écran et se présente. Active **Démarrer avec Windows** dans Réglages → Comportement.
+1. Download **`Follet-Setup-x.y.z.exe`** from the [releases](../../releases).
+2. Run it: it installs for your user, no admin rights needed. The installer is not signed: on the "Windows protected your PC" screen, click **More info → Run anyway**.
+3. Follet appears at the top of the screen and introduces itself. Turn on **Start with Windows** in Settings → Behavior.
 
-Pour que les notifications n'apparaissent que dans Follet, coupe les bannières des applis dans Paramètres Windows → Notifications (ou active Ne pas déranger) : Follet les lit dans le centre de notifications.
+The interface follows the Windows language (French or English). Change it in Settings → Appearance → Language.
 
-Follet vérifie les nouvelles versions toutes les 6 heures et s'installe à jour depuis Réglages → À propos (dépôt privé : il faut `gh` connecté sur le PC).
+To see notifications only in Follet, turn off app banners in Windows Settings → Notifications (or turn on Do not disturb): Follet reads them from the notification center.
 
-En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
+Follet checks for new versions every 6 hours and updates itself from Settings → About (private repository: `gh` must be signed in on the PC).
 
-## Ce qu'elle fait
+If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 
-| Onglet | Contenu |
+## What it does
+
+| Tab | Contents |
 |---|---|
-| **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec visualiseur, volume, sortie audio, luminosité des écrans (DDC/CI et écran intégré), Wi-Fi, Bluetooth, raccourcis |
-| **Aujourd'hui** | Horloge, météo heure par heure et sur 4 jours (position par IP), agenda de la semaine (iCal), minuteur affiché dans l'encoche, tâches |
-| **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage. Bouton terminal : fiche système façon fastfetch |
-| **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli |
-| **Copié** | Les 50 derniers textes copiés, en mémoire seulement |
-| **Apps** | Lanceur avec recherche et favoris, basé sur le menu Démarrer |
-| **Terminal** | Shell complet (PowerShell 7 par défaut) |
-| **Follet** | Ton IA au choix : Claude Code (ton abonnement), API Claude, OpenAI, Gemini, Ollama (local), OpenRouter ou un serveur compatible. Lit les fichiers texte que tu lui glisses. Tableau de bord d'utilisation : fenêtre de 5 h, jetons, messages, heure par heure, par modèle, par projet |
-| **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
-| **Réglages** | Langue (français ou anglais), couleurs, couleur de Follet, écran, raccourci, activités, onglets visibles, météo, agendas, IA |
+| **Home** | Now playing for any app that talks to Windows (Spotify, YouTube Music, browser…) with a visualizer, volume, audio output, display brightness (DDC/CI and built-in screen), Wi-Fi, Bluetooth, shortcuts |
+| **Today** | Clock, hourly and 4-day weather (location by IP), this week's calendar (iCal), a timer shown in the notch, tasks |
+| **Stats** | 5-minute CPU (real clock speed), NVIDIA GPU and RAM charts, top apps, network throughput and speed test, storage. Terminal button: fastfetch-style system info |
+| **Shelf** | Drop files on the notch, even collapsed, to keep them handy, then drag them into any app |
+| **Copied** | The last 50 copied texts, in memory only |
+| **Apps** | Launcher with search and favorites, based on the Start menu |
+| **Terminal** | Full shell (PowerShell 7 by default) |
+| **Follet** | The AI of your choice: Claude Code (your subscription), Claude API, OpenAI, Gemini, Ollama (local), OpenRouter or a compatible server. Reads the text files you drop on it. Usage dashboard: 5-hour window, tokens, messages, hour by hour, by model, by project |
+| **Power** | Lock, sleep, sign out, restart, shut down |
+| **Settings** | Language, colors, Follet's color, display, shortcut, activities, visible tabs, weather, calendars, AI |
 
-**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, volume, nouvelle chanson, casque connecté, chargeur, batterie faible, minuteur terminé, fichier déposé.
+**Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, volume, a new song, headphones connected, charger, low battery, timer done, file dropped.
 
-**Follet a des humeurs.** Écouteurs quand la musique joue, auréole quand l'IA réfléchit, clin d'œil quand la réponse arrive, bonnet de nuit après 5 minutes sans activité, grands yeux pour les alertes.
+**Follet has moods.** Headphones while music plays, a halo while the AI thinks, a wink when the answer arrives, a nightcap after 5 idle minutes, big eyes for alerts.
 
-**Gestes.**
-- Survol : aperçu, seulement si la souris s'attarde (un simple passage vers un onglet de navigateur ne l'ouvre pas ; délai réglable). Molette vers le bas ou clic : panneau complet. Échap ou sortir la souris : refermer.
-- **Ctrl+Alt+Espace** (modifiable) ouvre et ferme Follet de n'importe où.
-- Encoche ouverte : **1 à 9** pour choisir un onglet, **← / →** ou la molette sur les onglets.
-- Devant une fenêtre maximisée, l'encoche se range ; elle ressort quand la souris touche le haut de l'écran, au milieu. Elle disparaît pendant un jeu en plein écran.
+**Gestures.**
+- Hover: preview, only if the mouse lingers (just passing by on the way to a browser tab does not open it; the delay is adjustable). Scroll down or click: full panel. Esc or move the mouse away: close.
+- **Ctrl+Alt+Space** (configurable) opens and closes Follet from anywhere.
+- With the notch open: **1 to 9** to pick a tab, **← / →** or the scroll wheel on the tabs.
+- In front of a maximized window the notch tucks away; it comes back when the mouse touches the top middle of the screen. It disappears during full-screen games.
 
-**Material You.** Tout le thème vient de la pochette en cours, de la couleur d'accent de Windows ou d'une couleur choisie.
+**Material You.** The whole theme comes from the current album art, the Windows accent color, or a color you pick.
 
-## Vie privée
+## Privacy
 
-- Les données personnelles (config, tâches, étagère, favoris, conversations, clés d'API chiffrées par Windows) restent dans `%APPDATA%\Follet`, jamais dans le dossier du projet.
-- Le presse-papiers n'est jamais écrit sur le disque.
-- Services externes : [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (position approximative par IP, désactivable), [Open-Meteo](https://open-meteo.com) (météo), [speed.cloudflare.com](https://speed.cloudflare.com) (test de vitesse, sur demande), les agendas iCal que tu ajoutes et le fournisseur d'IA que tu choisis.
+- Personal data (config, tasks, shelf, favorites, chats, API keys encrypted by Windows) stays in `%APPDATA%\Follet`, never in the project folder.
+- The clipboard is never written to disk.
+- External services: [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (approximate location by IP, can be turned off), [Open-Meteo](https://open-meteo.com) (weather), [speed.cloudflare.com](https://speed.cloudflare.com) (speed test, on demand), the iCal calendars you add, and the AI provider you choose.
 
-## Développement
+## Development
 
-Prérequis : Windows 10/11 et [Node.js](https://nodejs.org) 20+. Optionnel : PowerShell 7 (`pwsh`) pour le terminal, [Claude Code](https://claude.com/claude-code) pour l'IA par abonnement, [Libre Hardware Monitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) (serveur web, port 8085) pour la température du CPU, une carte NVIDIA pour les stats GPU.
+Requirements: Windows 10/11 and [Node.js](https://nodejs.org) 20+. Optional: PowerShell 7 (`pwsh`) for the terminal, [Claude Code](https://claude.com/claude-code) for subscription AI, [Libre Hardware Monitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) (web server, port 8085) for CPU temperature, an NVIDIA card for GPU stats.
 
 ```bash
 npm install
 npm start
 ```
 
-| Commande | Effet |
+| Command | Effect |
 |---|---|
-| `npm start` | Lance Follet depuis le code |
-| `npm run check` | Vérifie la syntaxe, `helper.ps1` en ASCII et les versions (aussi lancé par GitHub Actions) |
-| `npm run dist` | Construit `dist\Follet-Setup-<version>.exe` |
+| `npm start` | Runs Follet from source |
+| `npm run check` | Checks syntax, ASCII-only `helper.ps1` and versions (also run by GitHub Actions) |
+| `npm run dist` | Builds `dist\Follet-Setup-<version>.exe` |
 
-Si npm bloque le script d'installation d'Electron : `npm install-scripts approve electron`.
+If npm blocks Electron's install script: `npm install-scripts approve electron`.
 
-### Traductions
+### Translations
 
-Le code est écrit en français ; l'anglais vient de [`src/i18n/en.js`](src/i18n/en.js) (textes exacts et motifs pour les textes avec des nombres). En ajoutant un texte à l'interface, ajoute sa traduction. `node scripts/i18n-extract.js` liste les textes sans traduction, et `FOLLET_EVAL="I.i18nMissing()"` ceux vus à l'écran avec l'appli en anglais.
+The source is written in French. The English UI comes from [`src/i18n/en.js`](src/i18n/en.js): exact strings, plus patterns for text with numbers. When you add French text to the interface, add its English there. `node scripts/i18n-extract.js` lists strings with no translation, and `FOLLET_EVAL="I.i18nMissing()"` lists the ones seen on screen with the app in English.
 
-### Publier une version
+### Releasing
 
-1. Ajoute une section à [CHANGELOG.md](CHANGELOG.md).
-2. `npm version x.y.z --no-git-tag-version`, puis commit.
-3. `git push`, puis `git tag vx.y.z` et `git push origin vx.y.z`.
+1. Add a section to [CHANGELOG.md](CHANGELOG.md).
+2. `npm version x.y.z --no-git-tag-version`, then commit.
+3. `git push`, then `git tag vx.y.z` and `git push origin vx.y.z`.
 
-GitHub Actions construit l'installateur et publie la release avec le texte du CHANGELOG.
+GitHub Actions builds the installer and publishes the release with the CHANGELOG text.
 
-### Tester sans souris
+### Testing without a mouse
 
-- `FOLLET_DEMO=<onglet>` ouvre Follet déployée sur un onglet (`home`, `today`, `stats`, `shelf`, `clip`, `apps`, `term`, `ai`, `power`, `settings`, ou `welcome`) ; `FOLLET_DEMO=1` les fait défiler.
-- `FOLLET_EVAL="<expression JS>"` écrit le résultat dans le journal, par exemple `I.activity({kind:'volume', level:42})`.
-- `FOLLET_CAPTURE=chemin.png` (avec `FOLLET_EVAL`) enregistre une capture de l'encoche, comme celles de ce README.
-- `FOLLET_FAKE_MEDIA=piste.json` remplace la lecture en cours (`title`, `artist`, `art`, `duration`, `position`) et colore le thème d'après la pochette.
+- `FOLLET_DEMO=<tab>` opens Follet expanded on a tab (`home`, `today`, `stats`, `shelf`, `clip`, `apps`, `term`, `ai`, `power`, `settings`, or `welcome`); `FOLLET_DEMO=1` cycles through them.
+- `FOLLET_EVAL="<JS expression>"` writes the result to the log, for example `I.activity({kind:'volume', level:42})`.
+- `FOLLET_CAPTURE=path.png` (with `FOLLET_EVAL`) saves a screenshot of the notch; add `FOLLET_CAPTURE_FRAMES=60` (and `FOLLET_CAPTURE_MS=66`) for a frame sequence, like the animations in this README.
+- `FOLLET_FAKE_MEDIA=track.json` replaces what is playing (`title`, `artist`, `art`, `duration`, `position`) and colors the theme from the art.
 
-### Structure
+### Layout
 
 ```
 src/main/
-  main.js        démarrage, icône de notification, raccourci global
-  core.js        chemins, config, état, journal, utilitaires réseau
-  window.js      fenêtre, capture de la souris, intention de survol, rangement, plein écran
-  helper.js      pont vers helper.ps1
-  helper.ps1     Windows PowerShell 5.1 : média WinRT, volume, sortie audio, batterie,
-                 luminosité DDC/CI, radios, processus, fenêtres, notifications (ASCII seulement)
-  theme.js       couleurs Material You (material-color-utilities)
-  monitors.js    musique, volume, sortie audio, batterie -> activités
-  notifs.js      notifications Windows -> activités
-  update.js      mises à jour depuis les releases GitHub
-  ai.js          fournisseurs d'IA, clés chiffrées, consommation
-  i18n.js        traduction côté processus principal (menu de l'icône)
+  main.js        startup, tray icon, global shortcut
+  core.js        paths, config, state, log, network helpers
+  window.js      window, mouse capture, hover intent, tucking, full screen
+  helper.js      bridge to helper.ps1
+  helper.ps1     Windows PowerShell 5.1: WinRT media, volume, audio output, battery,
+                 DDC/CI brightness, radios, processes, windows, notifications (ASCII only)
+  theme.js       Material You colors (material-color-utilities)
+  monitors.js    music, volume, audio output, battery -> activities
+  notifs.js      Windows notifications -> activities
+  update.js      updates from GitHub releases
+  ai.js          AI providers, encrypted keys, usage
+  i18n.js        main-process translation (tray menu)
   stats.js  today.js  tools.js  terminal.js  settings.js
-  preload.js     pont sécurisé vers l'interface
-src/i18n/en.js   textes anglais
+  preload.js     secure bridge to the interface
+src/i18n/en.js   English strings
 src/renderer/
-  css/m3.css     jetons et composants Material 3
-  css/notch.css  encoche et onglets
-  js/i18n.js     traduction de l'interface
-  js/mascot.js   la mascotte (canvas, humeurs)
-  js/core.js     états de l'encoche, activités, glisser-déposer
-  js/views/      un fichier par onglet
-scripts/         vérification, notes de release, extraction des textes à traduire
+  css/m3.css     Material 3 tokens and components
+  css/notch.css  notch and tabs
+  js/i18n.js     interface translation
+  js/mascot.js   the mascot (canvas, moods)
+  js/core.js     notch states, activities, drag and drop
+  js/views/      one file per tab
+scripts/         checks, release notes, translation extraction
 ```
 
 ## Inspiration
 
-Le look s'inspire de [Hitodama](https://hitodama.in) et des encoches macOS ([boring.notch](https://github.com/TheBoredTeam/boring.notch), NotchNook, Alcove). Follet n'est affilié à aucun de ces projets.
+The look is inspired by [Hitodama](https://hitodama.in) and macOS notches ([boring.notch](https://github.com/TheBoredTeam/boring.notch), NotchNook, Alcove). Follet is not affiliated with any of these projects.

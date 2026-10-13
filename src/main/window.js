@@ -55,11 +55,23 @@ function create() {
   if (process.env.FOLLET_EVAL) setTimeout(async () => {
     try { console.log('[eval]', JSON.stringify(await win.webContents.executeJavaScript(process.env.FOLLET_EVAL))); } catch (e) { console.log('[eval error]', e.message); }
     // capture PNG (avec transparence) de l'encoche seule, pour la documentation
+    // FOLLET_CAPTURE_FRAMES=n : n images (chemin-000.png...) toutes les FOLLET_CAPTURE_MS ms, pour les animations
     if (process.env.FOLLET_CAPTURE) setTimeout(async () => {
       const r = notchRect || { x: 0, y: 0, w: WIN_W, h: WIN_H };
-      const img = await win.webContents.capturePage({ x: r.x, y: 0, width: r.w, height: r.h });
-      require('fs').writeFileSync(process.env.FOLLET_CAPTURE, img.toPNG());
-      console.log('[capture]', process.env.FOLLET_CAPTURE);
+      const n = +(process.env.FOLLET_CAPTURE_FRAMES || 0), every = +(process.env.FOLLET_CAPTURE_MS || 80);
+      const out = process.env.FOLLET_CAPTURE, fs = require('fs');
+      if (!n) fs.writeFileSync(out, (await win.webContents.capturePage({ x: r.x, y: 0, width: r.w, height: r.h })).toPNG());
+      else {
+        const t0 = Date.now();
+        for (let i = 0; i < n; i++) {
+          const img = await win.webContents.capturePage({ x: r.x, y: 0, width: r.w, height: r.h });
+          fs.writeFileSync(out.replace(/\.png$/, `-${String(i).padStart(3, '0')}.png`), img.toPNG());
+          const wait = t0 + (i + 1) * every - Date.now();
+          if (wait > 0) await new Promise((res) => setTimeout(res, wait));
+        }
+        fs.writeFileSync(out, '');                 // marqueur de fin pour les scripts
+      }
+      console.log('[capture]', out);
     }, 1200);
   }, +(process.env.FOLLET_EVAL_DELAY || 8000));
   for (const ev of ['display-metrics-changed', 'display-added', 'display-removed']) screen.on(ev, place);
