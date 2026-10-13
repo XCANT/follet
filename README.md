@@ -1,5 +1,7 @@
 <p align="center"><img src="docs/hero.png" width="860" alt="Follet : l'encoche ouverte sur l'accueil, avec My Castle Town de XCANT en lecture"></p>
 
+<p align="center"><b>Français</b> · <a href="README.en.md">English</a></p>
+
 <p align="center">
   <img alt="Windows 10/11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?logo=windows&logoColor=white">
   <img alt="Electron 37" src="https://img.shields.io/badge/Electron-37-47848f?logo=electron&logoColor=white">
@@ -82,6 +84,10 @@ npm start
 
 Si npm bloque le script d'installation d'Electron : `npm install-scripts approve electron`.
 
+### Traductions
+
+Le code est écrit en français ; l'anglais vient de [`src/i18n/en.js`](src/i18n/en.js) (textes exacts et motifs pour les textes avec des nombres). En ajoutant un texte à l'interface, ajoute sa traduction. `node scripts/i18n-extract.js` liste les textes sans traduction, et `FOLLET_EVAL="I.i18nMissing()"` ceux vus à l'écran avec l'appli en anglais.
+
 ### Publier une version
 
 1. Ajoute une section à [CHANGELOG.md](CHANGELOG.md).
@@ -103,22 +109,27 @@ GitHub Actions construit l'installateur et publie la release avec le texte du CH
 src/main/
   main.js        démarrage, icône de notification, raccourci global
   core.js        chemins, config, état, journal, utilitaires réseau
-  window.js      fenêtre, capture de la souris, rangement, plein écran
+  window.js      fenêtre, capture de la souris, intention de survol, rangement, plein écran
   helper.js      pont vers helper.ps1
   helper.ps1     Windows PowerShell 5.1 : média WinRT, volume, sortie audio, batterie,
-                 luminosité DDC/CI, radios, processus, fenêtres (ASCII seulement)
+                 luminosité DDC/CI, radios, processus, fenêtres, notifications (ASCII seulement)
   theme.js       couleurs Material You (material-color-utilities)
   monitors.js    musique, volume, sortie audio, batterie -> activités
+  notifs.js      notifications Windows -> activités
+  update.js      mises à jour depuis les releases GitHub
   ai.js          fournisseurs d'IA, clés chiffrées, consommation
+  i18n.js        traduction côté processus principal (menu de l'icône)
   stats.js  today.js  tools.js  terminal.js  settings.js
   preload.js     pont sécurisé vers l'interface
+src/i18n/en.js   textes anglais
 src/renderer/
   css/m3.css     jetons et composants Material 3
   css/notch.css  encoche et onglets
+  js/i18n.js     traduction de l'interface
   js/mascot.js   la mascotte (canvas, humeurs)
   js/core.js     états de l'encoche, activités, glisser-déposer
   js/views/      un fichier par onglet
-scripts/         vérification et notes de release
+scripts/         vérification, notes de release, extraction des textes à traduire
 ```
 
 ## Inspiration
