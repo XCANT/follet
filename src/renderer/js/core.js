@@ -8,6 +8,14 @@ I.media = { present: false };
 I.tucked = false;
 
 // ---------- vues (onglets) ----------
+// ordre des onglets choisi dans les reglages (les onglets absents de la liste gardent leur place par defaut)
+// et taille de l'encoche repliee
+I.applyLayout = (config) => {
+  const want = config.tabOrder || [], base = I.baseOrder || (I.baseOrder = [...I.order]);
+  const rank = (id) => { const i = want.indexOf(id); return i < 0 ? want.length + base.indexOf(id) : i; };
+  I.order.sort((a, b) => rank(a) - rank(b));
+  document.body.dataset.size = (config.notch || {}).size || 'normal';
+};
 I.view = (id, def) => { I.views[id] = { id, nav: true, ...def }; if (def.nav !== false) I.order.push(id); };
 function showTab(id) {
   if (!I.views[id]) id = 'home';

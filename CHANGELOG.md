@@ -2,6 +2,12 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.8.0] - 2026-10-13
+
+### Added
+- Settings → Appearance: collapsed notch size (small, normal, large) and position (slide it anywhere along the top edge, for example over an off-center webcam; the button recenters it).
+- Settings → Tabs: arrows to reorder the tabs in the bar.
+
 ## [1.7.0] - 2026-10-13
 
 ### Added

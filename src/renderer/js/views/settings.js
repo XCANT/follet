@@ -40,6 +40,8 @@ I.view('settings', {
       + this.row('Source des couleurs', 'Material You construit tout le thème à partir d\'une seule couleur.', '<div class="seg-src"></div>')
       + `<div class="set-row custom-row" style="${t.source === 'custom' ? '' : 'display:none'}"><div class="txt"><div class="hl">Couleur</div></div><div class="swatches"></div><input type="color" class="color-pick" value="${esc(t.color)}" style="width:36px;height:32px;border:0;background:none;cursor:pointer"></div>`
       + this.row('Style', 'Intensité et variété des couleurs dérivées.', '<div class="seg-var"></div>')
+      + this.row("Taille de l'encoche", 'Encoche repliée.', '<div class="seg-size"></div>')
+      + this.row("Position de l'encoche", "Glisse pour décaler l'encoche, par exemple pour la placer au-dessus de ta webcam.", `<div style="display:flex;gap:6px;align-items:center"><div class="pos-slider" style="width:180px"></div><button class="icon-btn sm state pos-reset" title="Recentrer">${ms('align_horizontal_center')}</button></div>`)
       + this.row('Couleur de Follet', 'La mascotte garde son corail, ou prend les couleurs de l\'appli.', '<div class="seg-mascot"></div>');
   },
   b_look(body) {
@@ -51,6 +53,10 @@ I.view('settings', {
     });
     segmented($('.seg-var', body), [['tonal', 'Doux'], ['vibrant', 'Vif'], ['expressive', 'Expressif'], ['fidelity', 'Fidèle']], t.variant, (v) => this.save({ theme: { variant: v } }));
     segmented($('.seg-mascot', body), [['corail', 'Corail'], ['theme', 'Couleurs de l\'appli']], (this.data.config.mascot || {}).color || 'corail', (v) => { Follet.setPalette(v); this.save({ mascot: { color: v } }); I.emit('mascot-palette'); });
+    segmented($('.seg-size', body), [['small', 'Petite'], ['normal', 'Normale'], ['large', 'Grande']], (this.data.config.notch || {}).size || 'normal', async (v) => { await this.save({ notch: { size: v } }); I.applyLayout(this.data.config); });
+    // appliquee au relachement : l'encoche bouge sous la souris, on ne la deplace pas pendant le glisser
+    const pos = slider($('.pos-slider', body), { value: (this.data.config.notch || {}).pos ?? 50, onChange: (v) => this.save({ notch: { pos: Math.abs(v - 50) < 3 ? 50 : v } }) });
+    $('.pos-reset', body).addEventListener('click', () => { pos.set(50); this.save({ notch: { pos: 50 } }); });
     const sw = ['#6750a4', '#0b57d0', '#146c2e', '#b3261e', '#e8a33d', '#7d5260', '#006a6a', '#5f6368'];
     $('.swatches', body).innerHTML = sw.map((c) => `<button style="background:${c}" class="${c === t.color ? 'on' : ''}" data-c="${c}"></button>`).join('');
     $('.swatches', body).addEventListener('click', (e) => { const b = e.target.closest('[data-c]'); if (b) { this.save({ theme: { color: b.dataset.c } }); this.open('look'); } });
@@ -104,9 +110,22 @@ I.view('settings', {
   // ---------- Onglets ----------
   r_tabs() {
     const t = this.data.config.tabs;
-    return I.order.map((id) => this.row(`${ms(I.views[id].icon, 's20')} ${I.views[id].label}`, '', this.sw(id, t[id] !== false))).join('');
+    const last = I.order.length - 1;
+    return `<div class="body-s variant" style="margin:0 8px 12px">Les flèches changent l'ordre des onglets dans la barre.</div>`
+      + I.order.map((id, i) => this.row(`${ms(I.views[id].icon, 's20')} ${I.views[id].label}`, '',
+        `<div style="display:flex;gap:2px;align-items:center"><button class="icon-btn sm state" data-move="${id}" data-d="-1" title="Monter" ${i ? '' : 'disabled'}>${ms('arrow_upward')}</button><button class="icon-btn sm state" data-move="${id}" data-d="1" title="Descendre" ${i < last ? '' : 'disabled'}>${ms('arrow_downward')}</button><span style="width:8px"></span>${this.sw(id, t[id] !== false)}</div>`)).join('');
   },
-  b_tabs(body) { this.bindSwitches(body, async (k, v) => { await this.save({ tabs: { [k]: v } }); I.buildNav(); }); },
+  b_tabs(body) {
+    this.bindSwitches(body, async (k, v) => { await this.save({ tabs: { [k]: v } }); I.buildNav(); });
+    $$('[data-move]', body).forEach((b) => b.addEventListener('click', async () => {
+      const order = [...I.order], i = order.indexOf(b.dataset.move), j = i + +b.dataset.d;
+      if (j < 0 || j >= order.length) return;
+      [order[i], order[j]] = [order[j], order[i]];
+      await this.save({ tabOrder: order });
+      await I.buildNav();
+      this.open('tabs');
+    }));
+  },
 
   // ---------- Meteo ----------
   r_weather() {

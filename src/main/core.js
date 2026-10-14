@@ -28,6 +28,8 @@ const DEFAULTS = {
   tabs: { home: true, today: true, stats: true, shelf: true, clip: true, apps: true, term: true, ai: true, power: true },
   ai: { provider: 'claude-code', models: {}, effort: 'low', customBase: '' },
   mascot: { color: 'corail' },
+  notch: { size: 'normal', pos: 50 },   // pos : 0 = bord gauche, 50 = centre, 100 = bord droit
+  tabOrder: [],
   language: 'auto',
 };
 

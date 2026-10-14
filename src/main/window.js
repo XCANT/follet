@@ -26,7 +26,9 @@ function targetDisplay() {
 function place() {
   if (!win) return;
   const b = targetDisplay().bounds;
-  win.setBounds({ x: Math.round(b.x + (b.width - WIN_W) / 2), y: b.y, width: WIN_W, height: WIN_H });
+  const pos = Math.max(0, Math.min(100, +((core.config.notch || {}).pos ?? 50)));
+  const free = Math.max(0, b.width - WIN_W);
+  win.setBounds({ x: Math.round(b.x + free * pos / 100), y: b.y, width: WIN_W, height: WIN_H });
 }
 
 function create() {
@@ -77,7 +79,7 @@ function create() {
     }, 1200);
   }, +(process.env.FOLLET_EVAL_DELAY || 8000));
   for (const ev of ['display-metrics-changed', 'display-added', 'display-removed']) screen.on(ev, place);
-  core.events.on('config', (c, before) => { if (c.display !== before.display) place(); applyTuck(); });
+  core.events.on('config', (c, before) => { if (c.display !== before.display || (c.notch || {}).pos !== (before.notch || {}).pos) place(); applyTuck(); });
 
   setInterval(trackCursor, 40);
   setInterval(() => checkCovered().catch(() => { }), 400);

@@ -1,6 +1,6 @@
 /* Demarrage : construit la navigation et les vues, puis applique le mode demo si demande. */
 (async function boot() {
-  try { const { config } = await follet.configGet(); I.setLang(config.language); I.gpu = config.behavior.accel !== false; Follet.setPalette((config.mascot || {}).color); } catch { }
+  try { const { config } = await follet.configGet(); I.setLang(config.language); I.gpu = config.behavior.accel !== false; Follet.setPalette((config.mascot || {}).color); I.applyLayout(config); } catch { }
   const views = $('#views');
   for (const v of Object.values(I.views)) {
     const el = document.createElement('section');
@@ -13,6 +13,7 @@
 
   I.buildNav = async () => {
     const { config } = await follet.configGet();
+    I.applyLayout(config);
     const visible = I.order.filter((id) => config.tabs[id] !== false);
     $('#nav').innerHTML = visible.map((id) => `<button data-tab="${id}"><span class="ind">${ms(I.views[id].icon)}</span><span class="lbl">${esc(I.views[id].label)}</span></button>`).join('');
     $$('#nav button').forEach((b) => b.addEventListener('click', () => I.showTab(b.dataset.tab)));

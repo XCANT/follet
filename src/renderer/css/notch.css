@@ -14,6 +14,11 @@ input, textarea { font: inherit; color: inherit; }
 }
 #notch[data-mode=collapsed] { width: 200px; height: 34px; border-radius: 0 0 17px 17px; }
 #notch[data-mode=collapsed].has-timer { width: 250px; }
+/* taille de l'encoche repliee (Reglages -> Apparence) */
+body[data-size=small] #notch[data-mode=collapsed] { width: 176px; height: 30px; border-radius: 0 0 15px 15px; }
+body[data-size=small] #notch[data-mode=collapsed].has-timer { width: 226px; }
+body[data-size=large] #notch[data-mode=collapsed] { width: 232px; height: 40px; border-radius: 0 0 20px 20px; }
+body[data-size=large] #notch[data-mode=collapsed].has-timer { width: 282px; }
 #notch[data-mode=peek] { width: 480px; height: 72px; border-radius: 0 0 32px 32px; }
 #notch[data-mode=activity] { width: 400px; height: 52px; border-radius: 0 0 26px 26px; }
 #notch[data-mode=expanded] { width: 868px; height: 564px; border-radius: 0 0 36px 36px; }

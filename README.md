@@ -50,7 +50,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 | **Terminal** | Full shell (PowerShell 7 by default) |
 | **Follet** | The AI of your choice: Claude Code (your subscription), Claude API, OpenAI, Gemini, Ollama (local), OpenRouter or a compatible server. Reads the text files you drop on it. Usage dashboard: 5-hour window, tokens, messages, hour by hour, by model, by project |
 | **Power** | Lock, sleep, sign out, restart, shut down |
-| **Settings** | Language, colors, Follet's color, display, shortcut, activities, visible tabs, weather, calendars, AI |
+| **Settings** | Language, colors, Follet's color, notch size and position, display, shortcut, activities, visible tabs and their order, weather, calendars, AI |
 
 **Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, volume, a new song, headphones connected, charger, low battery, timer done, file dropped. An orange dot stays in the notch while an app is recording your microphone, like on iPhone.
 
