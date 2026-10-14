@@ -2,6 +2,12 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.16.0] - 2026-10-14
+
+### Added
+- Follet's outfits: a witch hat all October, a Santa hat until Christmas, a party hat on New Year's, a striped toque when it snows or drops near freezing, an umbrella in the rain, sunglasses on hot sunny days. Turn them off in Settings → Appearance.
+- Little reactions: Follet shivers below −5 °C, yawns now and then late at night, and laughs when you click it.
+
 ## [1.15.0] - 2026-10-14
 
 ### Added

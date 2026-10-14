@@ -21,7 +21,7 @@
   </tr>
 </table>
 
-*A Dynamic Island for Windows, with a little flame living in it. A* feu follet *is the will-o'-the-wisp of Québec folklore, a cousin of the Japanese hitodama. Follet speaks English and French. Demo music: My Castle Town (Lofi), XCANT.*
+*A Dynamic Island for Windows, with a little flame living in it (who dresses for the season and the weather). A* feu follet *is the will-o'-the-wisp of Québec folklore, a cousin of the Japanese hitodama. Follet speaks English and French. Demo music: My Castle Town (Lofi), XCANT.*
 
 ## Install
 

@@ -21,7 +21,7 @@
   </tr>
 </table>
 
-*Un feu follet : la petite flamme du folklore québécois, cousine du hitodama japonais. Musique de démonstration : My Castle Town (Lofi), XCANT.*
+*Un feu follet : la petite flamme du folklore québécois, cousine du hitodama japonais. Elle s'habille selon la saison et la météo. Musique de démonstration : My Castle Town (Lofi), XCANT.*
 
 ## Installation
 

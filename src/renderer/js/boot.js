@@ -1,6 +1,6 @@
 /* Demarrage : construit la navigation et les vues, puis applique le mode demo si demande. */
 (async function boot() {
-  try { const { config } = await follet.configGet(); I.setLang(config.language); I.gpu = config.behavior.accel !== false; Follet.setPalette((config.mascot || {}).color); I.applyLayout(config); } catch { }
+  try { const { config } = await follet.configGet(); I.setLang(config.language); I.gpu = config.behavior.accel !== false; Follet.setPalette((config.mascot || {}).color); I.outfits = (config.mascot || {}).outfits !== false; I.applyLayout(config); } catch { }
   const views = $('#views');
   for (const v of Object.values(I.views)) {
     const el = document.createElement('section');
@@ -24,6 +24,7 @@
   I.showTab(I.tab);
   I.renderCompact();
   I.updateMood();
+  I.updateOutfit();
 
   // L'icone de la zone de notification = la mascotte aux couleurs du theme
   const trayIcon = () => { clearTimeout(I.trayT); I.trayT = setTimeout(() => Follet.png(64).then(follet.setTrayIcon).catch(() => { }), 900); };

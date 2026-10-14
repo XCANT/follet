@@ -196,7 +196,8 @@ I.view('today', {
     const el = $('.weather', this.el);
     if (!w || !w.current) { el.innerHTML = `<div class="empty">${ms('cloud_off')}Météo indisponible<br><span class="body-s">Vérifie la connexion ou règle une ville dans Réglages → Météo</span></div>`; return; }
     const c = w.current;
-    I.weatherNow = { temp: Math.round(c.temperature_2m), icon: weatherIcon(c.weather_code, c.is_day), city: w.city };
+    I.weatherNow = { temp: Math.round(c.temperature_2m), icon: weatherIcon(c.weather_code, c.is_day), city: w.city, code: c.weather_code, isDay: !!c.is_day };
+    I.updateOutfit();
     const nowH = new Date().getHours();
     const hours = (w.hourly?.time || []).slice(0, 12).map((t, i) => {
       const d = new Date(t);

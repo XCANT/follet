@@ -149,6 +149,20 @@ function updateMood() {
   I.mascot.setMood(m);
 }
 I.updateMood = updateMood;
+
+// ---------- tenue de Follet : fetes, saison, meteo, heure ----------
+I.updateOutfit = () => {
+  if (I.outfits === false) return Follet.setOutfit({});
+  const d = new Date(), mo = d.getMonth() + 1, day = d.getDate(), h = d.getHours(), w = I.weatherNow || {};
+  const code = w.code ?? -1, rain = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95, snow = (code >= 71 && code <= 77) || code === 85 || code === 86;
+  let hat = null;
+  if ((mo === 12 && day === 31) || (mo === 1 && day === 1)) hat = 'party';
+  else if (mo === 12 && day <= 26) hat = 'santa';
+  else if (mo === 10) hat = 'witch';
+  else if (snow || (w.temp != null && w.temp <= 2)) hat = 'tuque';
+  Follet.setOutfit({ hat, umbrella: rain, shades: !rain && !snow && w.temp >= 27 && w.isDay && code <= 2, shiver: w.temp != null && w.temp <= -5, night: h < 5 });
+};
+setInterval(I.updateOutfit, 10 * 60e3);
 I.flashMood = (key, ms = 2500) => { I.moodState[key] = true; updateMood(); clearTimeout(I.moodState[key + 'T']); I.moodState[key + 'T'] = setTimeout(() => { I.moodState[key] = false; updateMood(); }, ms); };
 setInterval(async () => { I.moodState.idle = await follet.idleTime().catch(() => 0); updateMood(); }, 20000);
 $$('#compact [data-media]').forEach((b) => b.addEventListener('click', () => follet.mediaCmd(b.dataset.media)));

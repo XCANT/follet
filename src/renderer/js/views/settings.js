@@ -42,6 +42,7 @@ I.view('settings', {
       + this.row('Style', 'Intensité et variété des couleurs dérivées.', '<div class="seg-var"></div>')
       + this.row("Taille de l'encoche", 'Encoche repliée.', '<div class="seg-size"></div>')
       + this.row("Position de l'encoche", "Glisse pour décaler l'encoche, par exemple pour la placer au-dessus de ta webcam.", `<div style="display:flex;gap:6px;align-items:center"><div class="pos-slider" style="width:180px"></div><button class="icon-btn sm state pos-reset" title="Recentrer">${ms('align_horizontal_center')}</button></div>`)
+      + this.row('Tenues de Follet', "Chapeau de sorcière en octobre, tuque quand il fait froid, parapluie sous la pluie, bonnet de Noël…", this.sw('outfits', (this.data.config.mascot || {}).outfits !== false))
       + this.row('Couleur de Follet', 'La mascotte garde son corail, ou prend les couleurs de l\'appli.', '<div class="seg-mascot"></div>');
   },
   b_look(body) {
@@ -57,6 +58,7 @@ I.view('settings', {
     // appliquee au relachement : l'encoche bouge sous la souris, on ne la deplace pas pendant le glisser
     const pos = slider($('.pos-slider', body), { value: (this.data.config.notch || {}).pos ?? 50, onChange: (v) => this.save({ notch: { pos: Math.abs(v - 50) < 3 ? 50 : v } }) });
     $('.pos-reset', body).addEventListener('click', () => { pos.set(50); this.save({ notch: { pos: 50 } }); });
+    $('[data-k=outfits]', body).addEventListener('change', (e) => { I.outfits = e.target.checked; I.updateOutfit(); this.save({ mascot: { outfits: e.target.checked } }); });
     const sw = ['#6750a4', '#0b57d0', '#146c2e', '#b3261e', '#e8a33d', '#7d5260', '#006a6a', '#5f6368'];
     $('.swatches', body).innerHTML = sw.map((c) => `<button style="background:${c}" class="${c === t.color ? 'on' : ''}" data-c="${c}"></button>`).join('');
     $('.swatches', body).addEventListener('click', (e) => { const b = e.target.closest('[data-c]'); if (b) { this.save({ theme: { color: b.dataset.c } }); this.open('look'); } });

@@ -134,6 +134,7 @@ const FOLLET_EN = {
     "Entrée colle dans l'appli d'avant · Maj+Entrée copie seulement": 'Enter pastes into the previous app · Shift+Enter only copies',
     'Historique en mémoire seulement · les épinglés sont gardés · clic pour recopier': 'History kept in memory only · pinned items are saved · click to copy again',
     'Chrono': 'Stopwatch', 'Tour': 'Lap', 'Réinitialiser': 'Reset', 'Autre minuteur': 'Another timer',
+    'Tenues de Follet': "Follet's outfits", "Chapeau de sorcière en octobre, tuque quand il fait froid, parapluie sous la pluie, bonnet de Noël…": 'Witch hat in October, a toque when it is cold, an umbrella in the rain, a Santa hat…',
     'Ouvrir le lecteur': 'Open the player', 'Tout effacer': 'Clear all', 'Les retire aussi du centre de notifications de Windows': 'Also removes them from the Windows notification center',
     "Follet n'a pas accès aux notifications": "Follet can't access notifications", 'Aucune notification': 'No notifications',
     'Pomodoro': 'Pomodoro', '25 min de travail, 5 min de pause, enchaînés': '25 min of work, 5 min break, back to back', "C'est la pause": 'Break time', 'Au travail': 'Back to work',

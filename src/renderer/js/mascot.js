@@ -156,6 +156,74 @@ const Follet = (() => {
     for (let i = 0; i < 2; i++) { const a = (now / 2600 + i * 0.5) % 1; c.globalAlpha = Math.sin(a * Math.PI); c.font = `700 ${0.3 + a * 0.3}px sans-serif`; c.fillText('z', 0.9 + a * 0.5, -1.2 - a * 0.7); }
     c.restore();
   }
+  // ---- tenues : saison, fetes et meteo (Follet.setOutfit) ----
+  let outfit = {};
+  function witchHat(c, t) {
+    const sw = Math.sin(t * 1.4) * 0.06;
+    c.save(); c.rotate(0.12);
+    c.fillStyle = '#3b2b63'; c.beginPath(); c.ellipse(0.08, -0.86, 0.98, 0.2, 0, 0, Math.PI * 2); c.fill();
+    c.beginPath(); c.moveTo(-0.52, -0.9); c.quadraticCurveTo(-0.2, -1.5, 0.3 + sw, -2.15); c.quadraticCurveTo(0.42 + sw, -2.2, 0.5 + sw * 1.4, -2.05); c.quadraticCurveTo(0.36, -1.6, 0.62, -0.9); c.closePath(); c.fill();
+    c.fillStyle = '#ff9a3c'; c.beginPath(); c.moveTo(-0.5, -0.98); c.lineTo(0.6, -0.98); c.lineTo(0.56, -1.16); c.lineTo(-0.42, -1.16); c.closePath(); c.fill();
+    c.strokeStyle = '#ffd36b'; c.lineWidth = 0.05; c.strokeRect(0.0, -1.14, 0.18, 0.14);
+    c.restore();
+  }
+  function santaHat(c, t) {
+    const sw = Math.sin(t * 1.6) * 0.06;
+    c.save(); c.rotate(0.1);
+    c.fillStyle = '#e53950'; c.beginPath(); c.moveTo(-0.7, -0.82); c.quadraticCurveTo(-0.2, -2.0, 0.8 + sw, -1.5); c.quadraticCurveTo(0.45, -1.3, 0.72, -0.82); c.closePath(); c.fill();
+    c.fillStyle = '#fff5f2'; c.beginPath(); c.roundRect(-0.8, -0.96, 1.6, 0.26, 0.13); c.fill();
+    c.beginPath(); c.arc(0.84 + sw, -1.46, 0.16, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+  function tuque(c, t) {
+    // tuque quebecoise : rayures, revers et pompon
+    c.save(); c.rotate(0.06);
+    c.save(); c.beginPath(); c.ellipse(0.02, -0.86, 0.82, 0.82, 0, Math.PI, Math.PI * 2); c.closePath(); c.clip();
+    const cols = ['#d63c4a', '#f6efe9'];
+    for (let i = 0; i < 6; i++) { c.fillStyle = cols[i % 2]; c.fillRect(-0.9, -1.72 + i * 0.16, 1.9, 0.16); }
+    c.restore();
+    c.fillStyle = '#b52d3b'; c.beginPath(); c.roundRect(-0.86, -0.98, 1.76, 0.3, 0.12); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 0.03;
+    for (let x = -0.76; x < 0.86; x += 0.12) { c.beginPath(); c.moveTo(x, -0.95); c.lineTo(x, -0.72); c.stroke(); }
+    c.fillStyle = '#f6efe9'; c.beginPath(); c.arc(0.02 + Math.sin(t * 2) * 0.03, -1.74, 0.2, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+  function partyHat(c, t) {
+    c.save(); c.translate(0.18, 0); c.rotate(0.22);
+    c.fillStyle = '#7c6cff'; c.beginPath(); c.moveTo(-0.42, -0.92); c.lineTo(0.06, -2.0); c.lineTo(0.5, -0.92); c.closePath(); c.fill();
+    c.fillStyle = '#ffd36b'; for (const [x, y] of [[-0.12, -1.1], [0.22, -1.32], [0.0, -1.58], [0.18, -1.05]]) { c.beginPath(); c.arc(x, y, 0.06, 0, Math.PI * 2); c.fill(); }
+    c.fillStyle = '#ff8a95'; c.beginPath(); c.arc(0.06, -2.02, 0.12 + Math.sin(t * 4) * 0.02, 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+  function umbrella(c, t, now) {
+    // tenu sur le cote : le manche longe la flamme a droite, la toile couvre la pointe
+    c.save(); c.translate(0, 0.3 + Math.sin(t * 1.5) * 0.03);
+    c.strokeStyle = '#6a5a62'; c.lineWidth = 0.07; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(1.18, -1.98); c.lineTo(1.18, 0.0); c.quadraticCurveTo(1.18, 0.22, 0.98, 0.2); c.stroke();
+    const g = c.createLinearGradient(-0.4, -2.5, 2.0, -1.9); g.addColorStop(0, '#5ec8c0'); g.addColorStop(1, '#3a8fd6');
+    c.fillStyle = g; c.beginPath(); c.moveTo(-0.55, -1.92);
+    c.quadraticCurveTo(0.6, -2.85, 1.95, -1.92);
+    for (let i = 0; i < 4; i++) { const x0 = 1.95 - i * 0.625; c.quadraticCurveTo(x0 - 0.31, -2.06, x0 - 0.625, -1.92); }
+    c.closePath(); c.fill();
+    c.fillStyle = '#6a5a62'; c.beginPath(); c.arc(0.7, -2.4, 0.06, 0, Math.PI * 2); c.fill();
+    c.restore();
+    // gouttes autour
+    c.save(); c.strokeStyle = 'rgba(130,190,255,.8)'; c.lineWidth = 0.045; c.lineCap = 'round';
+    for (let i = 0; i < 6; i++) {
+      const a = ((now / 900) + i * 0.31) % 1, x = [-1.35, -1.6, -1.2, 2.1, 2.3, -0.9][i], y = -2.2 + a * 2.6;
+      c.globalAlpha = Math.sin(a * Math.PI) * 0.9; c.beginPath(); c.moveTo(x, y); c.lineTo(x - 0.05, y + 0.22); c.stroke();
+    }
+    c.restore();
+  }
+  function shades(c, st) {
+    c.save(); c.translate(st.look[0] * 0.05, st.look[1] * 0.04 + 0.08);
+    c.fillStyle = '#1c1a26'; c.strokeStyle = '#1c1a26'; c.lineWidth = 0.06;
+    for (const x of [-0.42, 0.42]) { c.beginPath(); c.roundRect(x - 0.3, -0.2, 0.6, 0.38, 0.14); c.fill(); }
+    c.beginPath(); c.moveTo(-0.13, -0.08); c.quadraticCurveTo(0, -0.14, 0.13, -0.08); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.35)'; for (const x of [-0.5, 0.34]) { c.beginPath(); c.roundRect(x, -0.14, 0.1, 0.07, 0.03); c.fill(); }
+    c.restore();
+  }
+
   function dots(c, t) {
     for (let i = 0; i < 3; i++) { const b = Math.max(0, Math.sin(t * 5 - i * 0.9)); c.fillStyle = `rgba(255,236,226,${0.45 + 0.55 * b})`; c.beginPath(); c.arc(1.2 + i * 0.3, -1.25 - b * 0.12, 0.085, 0, Math.PI * 2); c.fill(); }
   }
@@ -177,7 +245,7 @@ const Follet = (() => {
       st.size = hs; st.box = Math.round(hs * 1.8);
       Object.assign(st.cv.style, { width: st.box + 'px', height: st.box + 'px', margin: `-${st.box / 2}px 0 0 -${st.box / 2}px` });
     }
-    const o = LOOK[st.mood] || LOOK.idle, rich = st.size >= 40;
+    const o = (st.giggle > now ? LOOK.happy : LOOK[st.mood]) || LOOK.idle, rich = st.size >= 40;
     // ressort (squash & stretch), clignements, regard
     st.t += dt * (st.mood === 'sleep' ? 0.5 : st.mood === 'think' ? 1.6 : 1);
     st.sqv += (-170 * st.sq - 11 * st.sqv) * dt; st.sq += st.sqv * dt;
@@ -192,6 +260,8 @@ const Follet = (() => {
     else if (o.motion === 'sway') rot = Math.sin(t * 1.6) * 0.05;
     else if (o.motion === 'sleep') dy = Math.sin(t * 1.2) * 0.04 + 0.05;
     else if (o.motion === 'shake') rot = Math.sin(now / 45) * 0.05 * Math.max(0, 1 - ((now / 1000) % 2) * 1.2);
+    // grelotte (grand froid) : petits frissons par moments
+    if (outfit.shiver && st.mood === 'idle') { const ph = (now / 1000) % 4; if (ph < 0.8) rot += Math.sin(now / 28) * 0.035; }
     const sq = Math.max(-0.25, Math.min(0.25, st.sq));
 
     const { cv } = st, dpr = Math.min(3, devicePixelRatio || 1), W = st.box, unit = st.size / 2.9;
@@ -206,12 +276,17 @@ const Follet = (() => {
     body(c, t, px);
     if (rich && o.halo) halo(c, t, true, px);
     if (rich && o.cap) nightcap(c, t);
+    else if (outfit.hat && st.size >= 20) ({ witch: witchHat, santa: santaHat, tuque, party: partyHat })[outfit.hat]?.(c, t);
     blush(c);
     eye(c, -0.42, 0.1, st, o.eyes, -1); eye(c, 0.42, 0.1, st, o.eyes, 1);
-    mouth(c, o.mouth, t);
+    if (outfit.shades && rich && o.eyes !== 'sleep') shades(c, st);
+    // la nuit, un baillement de temps en temps
+    const yawn = outfit.night && st.mood === 'idle' && (now / 1000) % 14 < 1.6;
+    mouth(c, yawn ? 'o' : o.mouth, t);
     if (rich && o.headphones) headphones(c, t, px);
     c.restore();
-    if (rich && o.wisp) wisp(c, t, px);
+    if (rich && o.wisp && !outfit.umbrella) wisp(c, t, px);
+    if (rich && outfit.umbrella && st.mood !== 'sleep') umbrella(c, t, now);
     if (rich && o.sparkles) { sparkle(c, -1.45, -0.4, 0.17, 0.6 + 0.4 * Math.sin(t * 3), px); sparkle(c, 1.2, -1.45, 0.13, 0.6 + 0.4 * Math.sin(t * 3 + 2), px); sparkle(c, -0.7, -2.0, 0.09, 0.5 + 0.5 * Math.sin(t * 4 + 1), px); }
     if (rich && o.hearts) { const b = Math.sin(t * 3) * 0.06; heart(c, 1.4, -1.0 + b, 0.28, 0.95); heart(c, 1.58, -0.5 - b, 0.17, 0.8); }
     if (rich && o.bang) bang(c, -1.2, -1.5, 0.28);
@@ -244,6 +319,8 @@ const Follet = (() => {
     };
     st.api = api;
     st.mood = LOOK[mood] ? mood : 'idle';
+    // un clic la fait rire
+    host.addEventListener('click', () => { st.giggle = performance.now() + 1600; st.sqv -= 2.6; });
     draw(st, st.ctx, performance.now(), 1 / 60);
     all.add(st);
     if (!raf) raf = requestAnimationFrame(loop);
@@ -282,5 +359,7 @@ const Follet = (() => {
   // suivre le theme : on recalcule les couleurs quand il change
   if (window.I && I.on) I.on('theme', () => { if (palName === 'theme') setPalette('theme'); });
 
-  return { create, png, setPalette, get palette() { return palName; } };
+  // { hat: 'witch'|'santa'|'tuque'|'party'|null, umbrella, shades, shiver, night }
+  function setOutfit(o) { outfit = o || {}; }
+  return { create, png, setPalette, setOutfit, get palette() { return palName; }, get outfit() { return outfit; } };
 })();
