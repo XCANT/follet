@@ -2,6 +2,24 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.17.0] - 2026-10-14
+
+### Added
+- Copy text from the screen: Ctrl+Alt+T freezes the screen under the mouse, you select an area and its text is copied. It is read offline by the OCR built into Windows, in your languages.
+- Color picker: Ctrl+Alt+C shows a magnifier and copies the #hex color of the pixel you click (it then appears with its swatch in the clipboard history).
+- Both are also available as home tiles, and both shortcuts can be changed in Settings → Behavior.
+- Gestures on the collapsed notch: two-finger swipe (or Shift+wheel) for the next or previous song, middle click to play or pause.
+- The mouse wheel on the notch can adjust the volume instead of opening it (Settings → Behavior → Mouse wheel on the notch).
+- Pure black background for OLED screens, two more color styles (Neutral, Mono) and ready-made themes in Settings → Appearance.
+- Settings backup: export your settings, tiles, tasks, favorites and pinned items to a file, and import them on another PC (Settings → About). AI keys are never exported.
+
+### Changed
+- The welcome tour now has three pages: the basics, the shortcuts, and features you might miss. After this update it shows its new pages once; replay it from Settings → About.
+- New README pictures: the weather page, the clipboard history, the shortcuts and Follet's outfits.
+
+### Fixed
+- The mascot no longer overlaps the title in the welcome tour.
+
 ## [1.16.0] - 2026-10-14
 
 ### Added
