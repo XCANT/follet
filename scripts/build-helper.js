@@ -21,7 +21,7 @@ fs.mkdirSync(path.dirname(out), { recursive: true });
 const refs = [
   ...['System.Runtime.dll', 'System.Runtime.InteropServices.WindowsRuntime.dll', 'System.Web.Extensions.dll', 'System.Core.dll', 'System.Drawing.dll']
     .map((f) => path.join(fx, f)),
-  ...['Windows.Foundation', 'Windows.Media', 'Windows.Storage', 'Windows.Devices', 'Windows.UI', 'Windows.ApplicationModel']
+  ...['Windows.Foundation', 'Windows.Media', 'Windows.Storage', 'Windows.Devices', 'Windows.Graphics', 'Windows.Globalization', 'Windows.UI', 'Windows.ApplicationModel']
     .map((f) => path.join(winmd, f + '.winmd')),
 ].filter((f) => fs.existsSync(f));
 try {

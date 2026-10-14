@@ -290,6 +290,7 @@ while ($true) {
             'focus-app' { $false }
             'bt' { ,@() }   # helper C# seulement
             'screenshot' { throw 'helper C# seulement' }
+            'ocr' { throw 'helper C# seulement' }
             'clip-seq' { 0 }
             'paste' { $false }   # helper C# seulement (sessions de capture WASAPI)
             'radios' {

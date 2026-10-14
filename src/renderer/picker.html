@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'">
+<title>Follet</title>
+<link rel="stylesheet" href="../../node_modules/@fontsource-variable/roboto-flex/full.css">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; cursor: crosshair; user-select: none; font-family: 'Roboto Flex Variable', 'Segoe UI', sans-serif; }
+  #shot { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+  #dim { position: fixed; inset: 0; background: rgba(0, 0, 0, .35); transition: opacity .15s; }
+  body.ocr.dragging #dim, body.color #dim { opacity: 0; }
+  #sel { position: fixed; display: none; outline: 2px solid #fff; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .45); border-radius: 4px; }
+  #hint { position: fixed; left: 50%; top: 28px; transform: translateX(-50%); padding: 10px 18px; border-radius: 999px; background: rgba(20, 18, 24, .88); color: #fff; font-size: 14px; white-space: nowrap; pointer-events: none; }
+  #loupe { position: fixed; display: none; pointer-events: none; width: 132px; border-radius: 18px; overflow: hidden; background: rgba(20, 18, 24, .92); box-shadow: 0 6px 24px rgba(0, 0, 0, .5); }
+  #loupe canvas { display: block; width: 132px; height: 132px; image-rendering: pixelated; }
+  #loupe::after { content: ''; position: absolute; left: 60px; top: 60px; width: 12px; height: 12px; outline: 2px solid #fff; box-shadow: 0 0 0 1px #000; }
+  #loupe .val { display: flex; align-items: center; gap: 8px; padding: 8px 10px; color: #fff; font: 600 13px ui-monospace, Consolas, monospace; }
+  #loupe .val i { width: 16px; height: 16px; border-radius: 50%; outline: 1px solid rgba(255, 255, 255, .5); }
+</style>
+</head>
+<body>
+<img id="shot" alt="">
+<div id="dim"></div>
+<div id="sel"></div>
+<div id="hint"></div>
+<div id="loupe"><canvas width="11" height="11"></canvas><div class="val"><i></i><span></span></div></div>
+<script src="js/picker.js"></script>
+</body>
+</html>

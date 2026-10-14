@@ -16,6 +16,8 @@ using System.Web.Script.Serialization;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Radios;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Media.Ocr;
 using Windows.Storage.Streams;
 using Windows.Media;
 using Windows.Media.Control;
@@ -41,6 +43,21 @@ static class Program {
     using (s) using (var r = new DataReader(s)) {
       var n = await W(r.LoadAsync((uint)s.Size));
       var bytes = new byte[n]; r.ReadBytes(bytes); return bytes;
+    }
+  }
+
+  // Text recognition with the OCR built into Windows (offline), in the user's languages
+  static async Task<object> Ocr(string path) {
+    var engine = OcrEngine.TryCreateFromUserProfileLanguages();
+    if (engine == null) { var langs = OcrEngine.AvailableRecognizerLanguages; if (langs.Count > 0) engine = OcrEngine.TryCreateFromLanguage(langs[0]); }
+    if (engine == null) throw new Exception("no OCR language installed");
+    var file = await W(Windows.Storage.StorageFile.GetFileFromPathAsync(path));
+    using (var stream = await W(file.OpenAsync(Windows.Storage.FileAccessMode.Read))) {
+      var dec = await W(BitmapDecoder.CreateAsync(stream));
+      using (var bmp = await W(dec.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied))) {
+        var res = await W(engine.RecognizeAsync(bmp));
+        return new Dictionary<string, object> { { "text", string.Join("\n", res.Lines.Select(l => l.Text)) }, { "lang", engine.RecognizerLanguage.LanguageTag } };
+      }
     }
   }
 
@@ -129,6 +146,7 @@ static class Program {
         }
         return true;
       }
+      case "ocr": return await Ocr((string)arg);
       case "clip-seq": return (long)Native.GetClipboardSequenceNumber();
       case "paste": return Native.PasteInto(new IntPtr(Convert.ToInt64(arg)));
       case "focus-app": return Native.FocusApp(Convert.ToString(arg));

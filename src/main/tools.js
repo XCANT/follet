@@ -176,6 +176,7 @@ ipcMain.handle('tile-run', (_e, i) => {
   if (t.type === 'path') return shell.openPath(t.path).then((err) => !err);
   if (t.type === 'url') return /^https?:\/\//i.test(t.url) ? shell.openExternal(t.url).then(() => true) : false;
   if (t.k === 'follet:shot') return require('./screenshot').capture().then(() => true);
+  if (t.k === 'follet:ocr' || t.k === 'follet:color') return require('./picker').open(t.k.slice(7)).then(() => true);
   if (t.k === 'lock') { spawn('rundll32.exe', ['user32.dll,LockWorkStation'], { detached: true, stdio: 'ignore' }).unref(); return true; }
   return openUri(t.k);
 });
