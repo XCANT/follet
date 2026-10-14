@@ -19,4 +19,5 @@ console.log(`${body}
 ## Install
 
 Download **Follet-Setup-${version}.exe** below and run it (per-user install, no admin rights needed).
-The installer is not signed: on the SmartScreen warning, click *More info*, then *Run anyway*.`);
+The installer is not signed: on the SmartScreen warning, click *More info*, then *Run anyway*.
+See the [code signing policy](https://github.com/XCANT/follet#code-signing-policy) and [privacy](https://github.com/XCANT/follet#privacy).`);

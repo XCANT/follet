@@ -70,7 +70,8 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 
 - Personal data (config, tasks, shelf, favorites, chats, API keys encrypted by Windows) stays in `%APPDATA%\Follet`, never in the project folder.
 - The clipboard is never written to disk.
-- External services: [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (approximate location by IP, can be turned off), [Open-Meteo](https://open-meteo.com) (weather), [speed.cloudflare.com](https://speed.cloudflare.com) (speed test, on demand), the iCal calendars you add, and the AI provider you choose.
+- No telemetry, no analytics, no account. Follet only contacts the services below, for the features that need them.
+- External services: [GitHub](https://github.com) (checks for a new release every 6 hours), [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (approximate location by IP, can be turned off), [Open-Meteo](https://open-meteo.com) (weather), [speed.cloudflare.com](https://speed.cloudflare.com) (speed test, on demand), the iCal calendars you add, and the AI provider you choose.
 
 ## Development
 
@@ -137,6 +138,14 @@ src/renderer/
   js/views/      one file per tab
 scripts/         checks, release notes, translation extraction
 ```
+
+## Code signing policy
+
+Windows releases are built from this repository by [GitHub Actions](.github/workflows/release.yml), from the tagged commit only. Code signing through the [SignPath Foundation](https://signpath.org) is requested; until it is granted, the installer is not signed.
+
+- Committers and reviewers: [XCANT](https://github.com/XCANT)
+- Approvers (each signed release is approved by hand): [XCANT](https://github.com/XCANT)
+- Privacy: see [Privacy](#privacy). Follet sends nothing to any server other than the ones listed there.
 
 ## Contributing
 

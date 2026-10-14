@@ -68,7 +68,8 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 
 - Les données personnelles (config, tâches, étagère, favoris, conversations, clés d'API chiffrées par Windows) restent dans `%APPDATA%\Follet`, jamais dans le dossier du projet.
 - Le presse-papiers n'est jamais écrit sur le disque.
-- Services externes : [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (position approximative par IP, désactivable), [Open-Meteo](https://open-meteo.com) (météo), [speed.cloudflare.com](https://speed.cloudflare.com) (test de vitesse, sur demande), les agendas iCal que tu ajoutes et le fournisseur d'IA que tu choisis.
+- Aucune télémétrie, aucune statistique d'usage, aucun compte. Follet ne contacte que les services ci-dessous, pour les fonctions qui en ont besoin.
+- Services externes : [GitHub](https://github.com) (vérifie s'il y a une nouvelle version toutes les 6 heures), [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (position approximative par IP, désactivable), [Open-Meteo](https://open-meteo.com) (météo), [speed.cloudflare.com](https://speed.cloudflare.com) (test de vitesse, sur demande), les agendas iCal que tu ajoutes et le fournisseur d'IA que tu choisis.
 
 ## Développement
 
@@ -135,6 +136,14 @@ src/renderer/
   js/views/      un fichier par onglet
 scripts/         vérification, notes de release, extraction des textes à traduire
 ```
+
+## Politique de signature du code
+
+Les versions Windows sont construites à partir de ce dépôt par [GitHub Actions](.github/workflows/release.yml), uniquement depuis le commit étiqueté. La signature par la [SignPath Foundation](https://signpath.org) est demandée ; en attendant, l'installateur n'est pas signé.
+
+- Auteurs et relecteurs : [XCANT](https://github.com/XCANT)
+- Approbateurs (chaque version signée est approuvée à la main) : [XCANT](https://github.com/XCANT)
+- Vie privée : voir [Vie privée](#vie-privée). Follet n'envoie rien à d'autres serveurs que ceux qui y sont listés.
 
 ## Contribuer
 
