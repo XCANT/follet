@@ -89,13 +89,14 @@ function shelfInfo(p) {
   catch { return { path: p, name: path.basename(p), exists: false }; }
 }
 ipcMain.handle('shelf-list', () => core.state.shelf.map((s) => ({ ...shelfInfo(s.path), addedAt: s.addedAt })));
-ipcMain.handle('shelf-add', (_e, paths) => {
+function shelfAdd(paths) {
   const known = new Set(core.state.shelf.map((s) => s.path));
   for (const p of paths) if (p && !known.has(p)) core.state.shelf.unshift({ path: p, addedAt: Date.now() });
   core.state.shelf = core.state.shelf.slice(0, 40);
   core.saveState();
   return core.state.shelf.map((s) => ({ ...shelfInfo(s.path), addedAt: s.addedAt }));
-});
+}
+ipcMain.handle('shelf-add', (_e, paths) => shelfAdd(paths));
 ipcMain.handle('shelf-remove', (_e, p) => { core.state.shelf = core.state.shelf.filter((s) => s.path !== p); core.saveState(); return true; });
 ipcMain.handle('shelf-clear', () => { core.state.shelf = []; core.saveState(); return true; });
 ipcMain.handle('shelf-icon', async (_e, p) => { const i = await iconFor(p, 'normal'); return i && !i.isEmpty() ? i.toDataURL() : null; });
@@ -111,12 +112,32 @@ ipcMain.on('shelf-drag', async (e, paths) => {
 });
 
 // ---------- raccourcis systeme ----------
-ipcMain.handle('open-uri', (_e, uri) => {
+function openUri(uri) {
   // Seulement des schemas connus et sans danger, ou des exe Windows de la liste
   if (/^(ms-settings:|ms-screenclip:|ms-actioncenter:|ms-clock:|ms-availablenetworks:|ms-settings-bluetooth:)/.test(uri)) return shell.openExternal(uri);
   const allowed = { taskmgr: 'taskmgr.exe', explorer: 'explorer.exe', calc: 'calc.exe', terminal: 'wt.exe', notepad: 'notepad.exe' };
   if (allowed[uri]) { spawn(allowed[uri], [], { detached: true, stdio: 'ignore' }).unref(); return true; }
   return false;
+}
+ipcMain.handle('open-uri', (_e, uri) => openUri(uri));
+
+// ---------- tuiles de l'accueil ----------
+// L'interface n'envoie que le numero de la tuile : ce qui est lance vient de la config, pas de la page.
+ipcMain.handle('tile-run', (_e, i) => {
+  const t = (core.config.tiles || [])[i];
+  if (!t) return false;
+  if (t.type === 'path') return shell.openPath(t.path).then((err) => !err);
+  if (t.type === 'url') return /^https?:\/\//i.test(t.url) ? shell.openExternal(t.url).then(() => true) : false;
+  if (t.k === 'follet:shot') return require('./screenshot').capture().then(() => true);
+  if (t.k === 'lock') { spawn('rundll32.exe', ['user32.dll,LockWorkStation'], { detached: true, stdio: 'ignore' }).unref(); return true; }
+  return openUri(t.k);
+});
+ipcMain.handle('tile-pick', async (_e, folder) => {
+  const { dialog } = require('electron');
+  const r = await dialog.showOpenDialog({ properties: [folder ? 'openDirectory' : 'openFile'], defaultPath: folder ? app.getPath('home') : path.join(process.env.APPDATA || '', 'Microsoft', 'Windows', 'Start Menu', 'Programs') });
+  if (r.canceled || !r.filePaths[0]) return null;
+  const p = r.filePaths[0];
+  return { type: 'path', path: p, label: path.basename(p).replace(/\.(lnk|exe|url)$/i, '') };
 });
 ipcMain.handle('open-data-folder', () => shell.openPath(core.DATA));
 
@@ -133,3 +154,5 @@ ipcMain.handle('power', (_e, action) => {
   spawn(c[0], c[1], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
   return true;
 });
+
+module.exports = { shelfAdd };

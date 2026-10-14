@@ -2,6 +2,13 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.10.0] - 2026-10-14
+
+### Added
+- Screenshot to the Shelf: Ctrl+Alt+S (configurable in Settings → Behavior) captures the screen under the mouse at full resolution, without the notch, saves it to Pictures\Screenshots, copies it and drops it on the Shelf.
+- Bluetooth devices: an activity when a headset, controller, mouse… connects or disconnects, with its battery, and an alert when it runs low. Connected devices and their battery also show on Home. Can be turned off in Settings → Activities.
+- Configurable Home tiles (Settings → Tiles): reorder, remove, or add Follet shortcuts (screenshot to Shelf, lock, Notepad, Bluetooth devices…), any app or file, a folder or a website. Up to 8.
+
 ## [1.9.0] - 2026-10-14
 
 ### Added

@@ -73,12 +73,9 @@ I.view('home', {
     });
     this.loadOutput();
 
-    // tuiles : Wi-Fi et Bluetooth sont de vrais interrupteurs, le reste ouvre un outil
-    const TILES = [
-      ['radio:WiFi', 'wifi', 'Wi-Fi'], ['radio:Bluetooth', 'bluetooth', 'Bluetooth'], ['ms-screenclip:', 'screenshot_region', 'Capture'], ['taskmgr', 'monitor_heart', 'Tâches'],
-      ['explorer', 'folder', 'Fichiers'], ['ms-settings:', 'settings', 'Paramètres'], ['calc', 'calculate', 'Calcul'], ['terminal', 'terminal', 'Terminal'],
-    ];
-    $('.tiles', el).innerHTML = TILES.map(([k, i, l]) => `<button class="tile state" data-k="${k}">${ms(i)}<span>${l}</span></button>`).join('');
+    // tuiles (Reglages -> Tuiles) : Wi-Fi et Bluetooth sont de vrais interrupteurs, le reste ouvre quelque chose
+    this.renderTiles();
+    I.on('tiles', () => this.renderTiles());
     $('.tiles', el).addEventListener('click', async (e) => {
       const t = e.target.closest('.tile'); if (!t) return;
       const k = t.dataset.k;
@@ -90,10 +87,13 @@ I.view('home', {
         if (r === 'Allowed') t.classList.toggle('on', on); else snack('Windows a refusé le changement');
         return;
       }
-      follet.openUri(k); I.setMode('collapsed');
+      I.setMode('collapsed');
+      if (!(await follet.tileRun(+t.dataset.i))) snack("Impossible d'ouvrir cette tuile");
     });
 
     follet.onBattery((b) => { this.battery = b; this.renderStatus(); });
+    const btKey = (l) => (l || []).map((d) => d.id + d.battery).join();
+    follet.onBt((l) => { if (btKey(l) !== btKey(this.bt)) { this.bt = l; this.renderStatus(); } });
     follet.battery().then((b) => { this.battery = b; this.renderStatus(); });
   },
 
@@ -112,6 +112,16 @@ I.view('home', {
     $('.nm', btn).textContent = detail || name;
     $('.ms', btn).textContent = /head|casque|buds|écouteur/i.test(name) ? 'headphones' : /hdmi|nvidia|display/i.test(d.name) ? 'tv' : 'speaker';
   },
+  async renderTiles() {
+    const { config } = await follet.configGet();
+    const tiles = config.tiles || [];
+    $('.tiles', this.el).innerHTML = tiles.map((t, i) => {
+      const b = I.tileInfo(t);
+      return `<button class="tile state" data-i="${i}" data-k="${esc(t.k || '')}" title="${esc(t.path || t.url || '')}">${b.img ? `<img class="t-img" data-icon="${esc(t.path)}">` : ms(b.icon)}<span class="ellipsis"${t.k ? '' : ' data-noi18n'}>${esc(b.label)}</span></button>`;
+    }).join('');
+    $$('.tiles img[data-icon]', this.el).forEach(async (img) => { const u = await follet.appIcon(img.dataset.icon).catch(() => null); if (u) img.src = u; else img.replaceWith(Object.assign(document.createElement('span'), { className: 'ms', textContent: 'draft' })); });
+    this.loadRadios();
+  },
   async loadRadios() {
     const list = await follet.radios().catch(() => []);
     for (const r of list || []) { const t = $(`.tile[data-k="radio:${r.kind}"]`, this.el); if (t) t.classList.toggle('on', r.on); }
@@ -120,6 +130,7 @@ I.view('home', {
     const chips = [], b = this.battery;
     if (b && b.present) chips.push(`<span class="chip">${ms(b.plugged ? 'battery_charging_full' : b.percent < 20 ? 'battery_alert' : 'battery_full', 'fill')}${b.percent} %${b.plugged ? ' · branché' : ''}</span>`);
     if (I.weatherNow) chips.push(`<span class="chip">${ms(I.weatherNow.icon, 'fill')}${I.weatherNow.temp}° ${esc(I.weatherNow.city || '')}</span>`);
+    for (const d of this.bt || []) chips.push(`<span class="chip" data-noi18n>${ms(I.btIcon(d), 'fill')}${esc(d.name)}${d.battery != null ? ` · ${d.battery} %` : ''}</span>`);
     if (I.nextEvent) chips.push(`<span class="chip">${ms('event')}${esc(I.nextEvent)}</span>`);
     $('.status-row', this.el).innerHTML = chips.join('');
   },

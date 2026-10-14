@@ -236,6 +236,15 @@ I.activity = (a) => {
     const shown = showActivity(`${ico}<div class="a-txt"><div class="title-s ellipsis">${esc(a.title || a.app || 'Notification')}</div>
       <div class="body-s variant ellipsis">${esc([a.title ? a.app : null, a.body].filter(Boolean).join(' · '))}</div></div>`, 'notif', 5500);
     if (!shown) snack(`${a.app ? a.app + ' : ' : ''}${a.title || a.body || 'Notification'}`);
+  } else if (a.kind === 'shot') {
+    I.flashMood('happy', 2000);
+    if (I.views.shelf) I.views.shelf.refresh();
+    showActivity(`<img class="a-ico shot" src="${a.thumb}"><div class="a-txt"><div class="title-s">Capture dans l'Étagère</div><div class="body-s variant">Copiée : Ctrl+V pour la coller</div></div>${ms('screenshot_monitor', 's20')}`, 'shot', 3500);
+  } else if (a.kind === 'bt') {
+    const bat = a.battery != null ? `<div class="a-val">${a.battery} %</div>` : '';
+    const sub = a.low ? 'Batterie faible' : a.on ? 'Connecté' : 'Déconnecté';
+    if (a.low) I.flashMood('alert', 3500); else if (a.on) I.flashMood('happy', 2500);
+    showActivity(`<div class="a-ico${a.low ? ' warn' : ''}">${ms(a.low ? 'battery_alert' : I.btIcon(a), 'fill s20')}</div><div class="a-txt"><div class="title-s ellipsis" data-noi18n>${esc(a.name)}</div><div class="body-s variant">${sub}</div></div>${a.on === false ? ms('bluetooth_disabled', 's20') : bat}`, 'bt', 3500);
   } else if (a.kind === 'mic') {
     showActivity(`<div class="a-ico mic">${ms('mic', 'fill s20')}</div><div class="a-txt"><div class="title-s">Micro utilisé</div><div class="body-s variant ellipsis" data-noi18n>${esc(a.apps.join(', '))}</div></div>`, 'mic', 3500);
   } else if (a.kind === 'update') {
@@ -245,6 +254,29 @@ I.activity = (a) => {
 };
 follet.onActivity(I.activity);
 $('.c-art').addEventListener('click', (e) => { e.stopPropagation(); follet.mediaFocus(); });
+
+// tuiles de l'accueil : raccourcis integres, ou une appli / un fichier / un dossier / un site choisis
+I.TILES = {
+  'radio:WiFi': ['wifi', 'Wi-Fi'], 'radio:Bluetooth': ['bluetooth', 'Bluetooth'], 'ms-screenclip:': ['screenshot_region', 'Capture'],
+  'follet:shot': ['screenshot_monitor', 'Écran → Étagère'], 'taskmgr': ['monitor_heart', 'Tâches'], 'explorer': ['folder', 'Fichiers'],
+  'ms-settings:': ['settings', 'Paramètres'], 'calc': ['calculate', 'Calcul'], 'terminal': ['terminal', 'Terminal'], 'notepad': ['edit_note', 'Bloc-notes'],
+  'lock': ['lock', 'Verrouiller'], 'ms-settings-bluetooth:': ['bluetooth_searching', 'Appareils'],
+};
+I.DEFAULT_TILES = ['radio:WiFi', 'radio:Bluetooth', 'ms-screenclip:', 'taskmgr', 'explorer', 'ms-settings:', 'calc', 'terminal'].map((k) => ({ k }));
+I.tileInfo = (t) => {
+  if (t.k) { const [icon, label] = I.TILES[t.k] || ['apps', t.k]; return { icon, label }; }
+  if (t.type === 'url') return { icon: 'public', label: t.label || t.url };
+  const dir = !/\.[a-z0-9]{2,4}$/i.test(t.path || '');
+  return { icon: dir ? 'folder' : 'draft', img: !dir, label: t.label || t.path };
+};
+
+// icone d'un appareil Bluetooth d'apres sa categorie Windows ou son nom
+I.btIcon = (d) => {
+  const s = `${d.category || ''} ${d.name || ''}`.toLowerCase();
+  return /game|controller|manette|xbox|dualsense|stadia/.test(s) ? 'sports_esports' : /headset|headphone|casque|buds|airpods|jbl|soundcore/.test(s) ? 'headphones'
+    : /speaker|audio/.test(s) ? 'speaker' : /mouse|souris/.test(s) ? 'mouse' : /keyboard|clavier/.test(s) ? 'keyboard' : /phone|pixel|iphone|galaxy/.test(s) ? 'smartphone'
+    : /watch|charge|fitbit|band/.test(s) ? 'watch' : 'bluetooth';
+};
 
 // point orange tant qu'une appli enregistre le micro
 function renderMic(list) {

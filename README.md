@@ -43,10 +43,10 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 
 | Tab | Contents |
 |---|---|
-| **Home** | Now playing for any app that talks to Windows (Spotify, YouTube Music, browser…) with synced lyrics, a visualizer (click the art to bring the player forward), volume, audio output, Wi-Fi, Bluetooth, shortcuts |
+| **Home** | Now playing for any app that talks to Windows (Spotify, YouTube Music, browser…) with synced lyrics, a visualizer (click the art to bring the player forward), volume, audio output, Wi-Fi, Bluetooth, connected Bluetooth devices and their battery, configurable tiles (apps, files, folders, websites) |
 | **Today** | Clock, hourly and 4-day weather (location by IP), this week's calendar (iCal), notification history, a timer and Pomodoro shown in the notch, tasks |
 | **Stats** | 5-minute CPU (real clock speed), NVIDIA GPU and RAM charts, top apps, network throughput and speed test, storage. Terminal button: fastfetch-style system info |
-| **Shelf** | Drop files on the notch, even collapsed, to keep them handy, then drag them into any app |
+| **Shelf** | Drop files on the notch, even collapsed, to keep them handy, then drag them into any app. Ctrl+Alt+S drops a screenshot there |
 | **Copied** | The last 50 copied texts, in memory only |
 | **Apps** | Launcher with search and favorites, based on the Start menu |
 | **Terminal** | Full shell (PowerShell 7 by default) |
@@ -54,7 +54,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 | **Power** | Lock, sleep, sign out, restart, shut down |
 | **Settings** | Language, colors, Follet's color, notch size and position, display, shortcut, activities, visible tabs and their order, weather, calendars, AI |
 
-**Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, volume, a new song, headphones connected, charger, low battery, timer done, file dropped. An orange dot stays in the notch while an app is recording your microphone, like on iPhone.
+**Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, volume, a new song, headphones connected, Bluetooth devices (with their battery), charger, low battery, timer done, file dropped. An orange dot stays in the notch while an app is recording your microphone, like on iPhone.
 
 **Follet has moods.** Headphones while music plays, a halo while the AI thinks, a wink when the answer arrives, a nightcap after 5 idle minutes, big eyes for alerts.
 
@@ -124,6 +124,8 @@ src/main/
   notifs.js      Windows notifications -> activities
   privacy.js     apps recording the microphone -> orange dot
   lyrics.js      synced lyrics from LRCLIB
+  bluetooth.js   connected Bluetooth devices -> activities
+  screenshot.js  Ctrl+Alt+S -> screenshot on the Shelf
   update.js      updates from GitHub releases
   ai.js          AI providers, encrypted keys, usage
   i18n.js        main-process translation (tray menu)

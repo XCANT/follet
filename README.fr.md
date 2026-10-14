@@ -41,10 +41,10 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 
 | Onglet | Contenu |
 |---|---|
-| **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec paroles synchronisées, visualiseur (clic sur la pochette pour ramener le lecteur), volume, sortie audio, Wi-Fi, Bluetooth, raccourcis |
+| **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec paroles synchronisées, visualiseur (clic sur la pochette pour ramener le lecteur), volume, sortie audio, Wi-Fi, Bluetooth, appareils Bluetooth connectés et leur batterie, tuiles configurables (applis, fichiers, dossiers, sites) |
 | **Aujourd'hui** | Horloge, météo heure par heure et sur 4 jours (position par IP), agenda de la semaine (iCal), historique des notifications, minuteur et Pomodoro affichés dans l'encoche, tâches |
 | **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage. Bouton terminal : fiche système façon fastfetch |
-| **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli |
+| **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli. Ctrl+Alt+S y dépose une capture d'écran |
 | **Copié** | Les 50 derniers textes copiés, en mémoire seulement |
 | **Apps** | Lanceur avec recherche et favoris, basé sur le menu Démarrer |
 | **Terminal** | Shell complet (PowerShell 7 par défaut) |
@@ -52,7 +52,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
 | **Réglages** | Langue (français ou anglais), couleurs, couleur de Follet, taille et position de l'encoche, écran, raccourci, activités, onglets visibles et leur ordre, météo, agendas, IA |
 
-**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, volume, nouvelle chanson, casque connecté, chargeur, batterie faible, minuteur terminé, fichier déposé. Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro, comme sur iPhone.
+**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, volume, nouvelle chanson, casque connecté, appareils Bluetooth (avec leur batterie), chargeur, batterie faible, minuteur terminé, fichier déposé. Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro, comme sur iPhone.
 
 **Follet a des humeurs.** Écouteurs quand la musique joue, auréole quand l'IA réfléchit, clin d'œil quand la réponse arrive, bonnet de nuit après 5 minutes sans activité, grands yeux pour les alertes.
 
@@ -122,6 +122,8 @@ src/main/
   notifs.js      notifications Windows -> activités
   privacy.js     applis qui enregistrent le micro -> point orange
   lyrics.js      paroles synchronisées depuis LRCLIB
+  bluetooth.js   appareils Bluetooth connectés -> activités
+  screenshot.js  Ctrl+Alt+S -> capture dans l'Étagère
   update.js      mises à jour depuis les releases GitHub
   ai.js          fournisseurs d'IA, clés chiffrées, consommation
   i18n.js        traduction côté processus principal (menu de l'icône)

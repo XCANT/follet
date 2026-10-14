@@ -75,6 +75,7 @@ body.tucked #notch[data-mode=collapsed] { transform: translate(-50%, calc(-100% 
 #activity .a-ico.mic { background: #ff9f0a; color: #241400; }
 #activity .a-ico.warn { background: var(--md-error-container); color: var(--md-on-error-container); }
 #activity img.a-ico { object-fit: cover; }
+#activity img.a-ico.shot { width: 56px; border-radius: 8px; }
 #activity .a-txt { flex: 1; min-width: 0; }
 #activity .a-meter { flex: 1; height: 8px; border-radius: 4px; background: var(--md-secondary-container); overflow: hidden; }
 #activity .a-meter i { display: block; height: 100%; background: var(--md-primary); border-radius: 4px; transition: width .25s var(--emphasized); }
@@ -154,6 +155,8 @@ body.dropping #dropzone { opacity: 1; pointer-events: auto; }
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .tile { height: 64px; border-radius: 20px; background: var(--md-surface-container-high); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font: 500 11px/14px var(--font); color: var(--md-on-surface-variant); transition: border-radius .3s var(--spring-fast), background-color .25s, color .25s; }
 .tile .ms { color: var(--md-on-surface); font-size: 22px; }
+.tile .t-img { width: 24px; height: 24px; object-fit: contain; }
+.tile > span:not(.ms) { max-width: 100%; padding: 0 6px; }
 .tile:active { border-radius: 12px; }
 .tile.on { background: var(--md-primary-container); color: var(--md-on-primary-container); border-radius: 24px; }
 .tile.on .ms { color: inherit; font-variation-settings: 'FILL' 1; }

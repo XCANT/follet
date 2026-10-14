@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using Windows.Devices.Enumeration;
 using Windows.Devices.Radios;
 using Windows.Foundation;
 using Windows.Storage.Streams;
@@ -116,6 +117,18 @@ static class Program {
       case "notifs": return await Notifs.Get(arg == null ? 0 : Convert.ToDouble(arg));
       case "notif-remove": Notifs.Remove(Convert.ToUInt32(arg)); return true;
       case "cpu-freq": return Cpu.Mhz();
+      case "bt": return await Bt.Connected();
+      case "screenshot": {
+        // physical pixels (the helper is per-monitor DPI aware), saved as PNG
+        var r = (Dictionary<string, object>)arg;
+        int x = Convert.ToInt32(r["x"]), y = Convert.ToInt32(r["y"]), w = Convert.ToInt32(r["w"]), h = Convert.ToInt32(r["h"]);
+        using (var bmp = new System.Drawing.Bitmap(w, h))
+        using (var g = System.Drawing.Graphics.FromImage(bmp)) {
+          g.CopyFromScreen(x, y, 0, 0, new System.Drawing.Size(w, h));
+          bmp.Save((string)r["path"], System.Drawing.Imaging.ImageFormat.Png);
+        }
+        return true;
+      }
       case "focus-app": return Native.FocusApp(Convert.ToString(arg));
       default: throw new Exception("op inconnue: " + op);
     }
@@ -273,6 +286,58 @@ static class Program {
           { "total", groups.Count },
         };
       }
+    }
+  }
+
+  // ---------- Bluetooth: connected devices and their battery ----------
+  // A one-shot query of Bluetooth endpoints waits for a ~30 s inquiry scan: a watcher reports the
+  // paired, connected devices at once, then follows connections and disconnections.
+  static class Bt {
+    const string Sel = "(System.Devices.Aep.ProtocolId:=\"{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}\" OR System.Devices.Aep.ProtocolId:=\"{bb7bb05e-5972-42b5-94fc-76eaa7084d49}\") AND System.Devices.Aep.IsPaired:=System.StructuredQueryType.Boolean#True AND System.Devices.Aep.IsConnected:=System.StructuredQueryType.Boolean#True";
+    const string Battery = "{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2";
+    static readonly object Lock = new object();
+    static DeviceWatcher watcher;
+    static readonly Dictionary<string, DeviceInformation> found = new Dictionary<string, DeviceInformation>();
+    static readonly Dictionary<string, KeyValuePair<DateTime, int?>> battery = new Dictionary<string, KeyValuePair<DateTime, int?>>();
+
+    static void Watch() {
+      lock (Lock) {
+        if (watcher != null && watcher.Status != DeviceWatcherStatus.Aborted && watcher.Status != DeviceWatcherStatus.Stopped) return;
+        found.Clear();
+        watcher = DeviceInformation.CreateWatcher(Sel, new[] { "System.Devices.Aep.ContainerId", "System.Devices.Aep.Category" }, DeviceInformationKind.AssociationEndpoint);
+        watcher.Added += (w, d) => { lock (Lock) found[d.Id] = d; };
+        watcher.Updated += (w, u) => { lock (Lock) { DeviceInformation d; if (found.TryGetValue(u.Id, out d)) d.Update(u); } };
+        watcher.Removed += (w, u) => { lock (Lock) found.Remove(u.Id); };
+        watcher.Start();
+      }
+    }
+
+    static async Task<int?> Level(string container) {
+      KeyValuePair<DateTime, int?> b;
+      lock (Lock) if (battery.TryGetValue(container, out b) && (DateTime.UtcNow - b.Key).TotalSeconds < 60) return b.Value;
+      int? level = null;
+      try {
+        // the level is published on one of the device's PnP nodes (hands-free profile, battery service...)
+        var nodes = await W(DeviceInformation.FindAllAsync("System.Devices.ContainerId:=\"{" + container + "}\"", new[] { Battery }, DeviceInformationKind.Device));
+        foreach (var n in nodes) { object v; if (n.Properties.TryGetValue(Battery, out v) && v != null) { level = Convert.ToInt32(v); break; } }
+      } catch { }
+      lock (Lock) battery[container] = new KeyValuePair<DateTime, int?>(DateTime.UtcNow, level);
+      return level;
+    }
+
+    public static async Task<object> Connected() {
+      Watch();
+      List<DeviceInformation> now; lock (Lock) now = found.Values.ToList();
+      var list = new List<object>(); var seen = new HashSet<string>();
+      foreach (var d in now) {
+        object c; d.Properties.TryGetValue("System.Devices.Aep.ContainerId", out c);
+        var container = c == null ? d.Id : c.ToString();
+        if (string.IsNullOrEmpty(d.Name) || !seen.Add(container)) continue;   // classic + LE of the same device
+        object cat; d.Properties.TryGetValue("System.Devices.Aep.Category", out cat);
+        var cats = cat as string[];
+        list.Add(new Dictionary<string, object> { { "id", container }, { "name", d.Name }, { "battery", c == null ? null : await Level(container) }, { "category", cats != null ? string.Join(",", cats) : null } });
+      }
+      return list;
     }
   }
 

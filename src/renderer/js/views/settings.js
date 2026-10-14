@@ -8,7 +8,7 @@ I.view('settings', {
 
   sections: [
     ['look', 'palette', 'Apparence'], ['behavior', 'tune', 'Comportement'], ['activities', 'notifications_active', 'Activités'],
-    ['tabs', 'tab', 'Onglets'], ['weather', 'partly_cloudy_day', 'Météo'], ['agenda', 'calendar_month', 'Agenda'], ['ai', 'local_fire_department', 'IA'],
+    ['tabs', 'tab', 'Onglets'], ['tiles', 'grid_view', 'Tuiles'], ['weather', 'partly_cloudy_day', 'Météo'], ['agenda', 'calendar_month', 'Agenda'], ['ai', 'local_fire_department', 'IA'],
     ['system', 'computer', 'Système'], ['about', 'info', 'À propos'],
   ],
 
@@ -72,7 +72,8 @@ I.view('settings', {
       + this.row('Se ranger devant une fenêtre maximisée', 'Elle ressort quand la souris touche le haut de l\'écran, au milieu.', this.sw('tuck', c.behavior.tuck))
       + this.row('Masquer pendant les jeux en plein écran', '', this.sw('hideFullscreen', c.behavior.hideFullscreen))
       + this.row('Accélération graphique', 'Recommandée : animations fluides et moins de travail pour le processeur. Désactivée, Follet économise environ 70 Mo de mémoire. Effet au prochain démarrage de Follet.', this.sw('accel', c.behavior.accel !== false))
-      + this.row('Raccourci clavier', 'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)
+      + this.row('Raccourci clavier', 'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" data-sc="shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)
+      + this.row("Capture d'écran", "Capture l'écran sous la souris, la copie et la dépose dans l'Étagère (dossier Images\\Captures d'écran).", `<input class="field shortcut" data-sc="shotShortcut" readonly value="${esc(c.shotShortcut || '')}" style="width:200px;cursor:pointer">`)
       + this.row('Démarrer avec Windows', '', `<input type="checkbox" class="switch login" ${this.data.login ? 'checked' : ''}>`);
   },
   b_behavior(body) {
@@ -80,17 +81,19 @@ I.view('settings', {
     this.bindSwitches(body, (k, v) => this.save({ behavior: { [k]: v } }));
     segmented($('.seg-hover', body), [['fast', 'Rapide'], ['normal', 'Normale'], ['slow', 'Lente']], this.data.config.behavior.hover || 'normal', (v) => this.save({ behavior: { hover: v } }));
     $('.login', body).addEventListener('change', async (e) => { this.data.login = await follet.loginSet(e.target.checked); snack(this.data.login ? 'Follet démarrera avec Windows' : 'Démarrage automatique désactivé'); });
-    const sc = $('.shortcut', body);
-    sc.addEventListener('focus', () => { sc.value = 'Appuie sur la combinaison…'; });
-    sc.addEventListener('blur', () => { sc.value = this.data.config.shortcut; });
-    sc.addEventListener('keydown', (e) => {
-      e.preventDefault();
-      if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
-      const parts = [e.ctrlKey && 'Control', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Super'].filter(Boolean);
-      if (!parts.length) return;
-      const key = e.code === 'Space' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
-      const acc = [...parts, key].join('+');
-      this.save({ shortcut: acc }, 'Raccourci : ' + acc); sc.blur();
+    $$('.shortcut', body).forEach((sc) => {
+      const k = sc.dataset.sc;
+      sc.addEventListener('focus', () => { sc.value = I.t('Appuie sur la combinaison…'); });
+      sc.addEventListener('blur', () => { sc.value = this.data.config[k] || ''; });
+      sc.addEventListener('keydown', (e) => {
+        e.preventDefault();
+        if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
+        const parts = [e.ctrlKey && 'Control', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Super'].filter(Boolean);
+        if (!parts.length) return;
+        const key = e.code === 'Space' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
+        const acc = [...parts, key].join('+');
+        this.save({ [k]: acc }, 'Raccourci : ' + acc); sc.blur();
+      });
     });
   },
 
@@ -104,9 +107,56 @@ I.view('settings', {
       + this.row(`${ms('battery_charging_full', 's20')} Batterie`, 'Branché, débranché, batterie faible.', this.sw('battery', a.battery))
       + this.row(`${ms('notifications', 's20')} Notifications Windows`, 'Affichées dans l\'encoche. Astuce : dans Windows, coupe les bannières d\'une appli (Paramètres → Notifications) et laisse Follet les montrer.', this.sw('notif', a.notif !== false))
       + this.row(`${ms('mic', 's20')} Micro utilisé`, 'Un point orange reste dans l\'encoche tant qu\'une appli enregistre ton micro.', this.sw('mic', a.mic !== false))
+      + this.row(`${ms('bluetooth', 's20')} Appareils Bluetooth`, 'Connexion, déconnexion et batterie faible (casque, manette, souris…).', this.sw('bluetooth', a.bluetooth !== false))
       + this.row(`${ms('lyrics', 's20')} Paroles synchronisées`, "Dans l'aperçu et l'accueil, quand la chanson est connue de LRCLIB (lrclib.net, base libre et gratuite).", this.sw('lyrics', a.lyrics !== false));
   },
   b_activities(body) { this.bindSwitches(body, (k, v) => this.save({ activities: { [k]: v } })); },
+
+  // ---------- Tuiles de l'accueil ----------
+  r_tiles() {
+    const list = this.data.config.tiles || [], last = list.length - 1, full = list.length >= 8;
+    return `<div class="body-s variant" style="margin:0 8px 12px">Jusqu'à 8 tuiles sur l'accueil : raccourcis de Follet, tes applis, fichiers, dossiers ou sites.</div>`
+      + list.map((t, i) => { const b = I.tileInfo(t); return this.row(`${ms(b.icon, 's20')} <span${t.k ? '' : ' data-noi18n'}>${esc(b.label)}</span>`, t.k ? '' : esc(t.path || t.url),
+        `<div style="display:flex;gap:2px"><button class="icon-btn sm state" data-tmove="${i}" data-d="-1" title="Monter" ${i ? '' : 'disabled'}>${ms('arrow_upward')}</button><button class="icon-btn sm state" data-tmove="${i}" data-d="1" title="Descendre" ${i < last ? '' : 'disabled'}>${ms('arrow_downward')}</button><button class="icon-btn sm state" data-tdel="${i}" title="Retirer">${ms('delete')}</button></div>`); }).join('')
+      + `<div class="t-add" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 8px 0">
+          <button class="btn tonal sm state" data-add="builtin" ${full ? 'disabled' : ''}>${ms('add')}Raccourci</button>
+          <button class="btn tonal sm state" data-add="file" ${full ? 'disabled' : ''}>${ms('apps')}Appli ou fichier</button>
+          <button class="btn tonal sm state" data-add="folder" ${full ? 'disabled' : ''}>${ms('folder')}Dossier</button>
+          <button class="btn tonal sm state" data-add="url" ${full ? 'disabled' : ''}>${ms('public')}Site web</button>
+          <button class="btn text sm state" data-add="reset">Rétablir</button>
+        </div>
+        <div class="t-url" style="display:none;gap:8px;margin:12px 8px 0"><input class="field t-url-in" placeholder="https://…" style="flex:1"><input class="field t-name-in" placeholder="Nom" style="width:140px"><button class="btn filled sm state t-url-ok">OK</button></div>`;
+  },
+  b_tiles(body) {
+    const list = [...(this.data.config.tiles || [])];
+    const commit = async (l) => { await this.save({ tiles: l }); I.emit('tiles'); this.open('tiles'); };
+    $$('[data-tmove]', body).forEach((b) => b.addEventListener('click', () => {
+      const i = +b.dataset.tmove, j = i + +b.dataset.d; if (j < 0 || j >= list.length) return;
+      [list[i], list[j]] = [list[j], list[i]]; commit(list);
+    }));
+    $$('[data-tdel]', body).forEach((b) => b.addEventListener('click', () => { list.splice(+b.dataset.tdel, 1); commit(list); }));
+    $('.t-add', body).addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-add]'); if (!b) return;
+      const a = b.dataset.add;
+      if (a === 'reset') return commit(I.DEFAULT_TILES.map((t) => ({ ...t })));
+      if (a === 'url') { $('.t-url', body).style.display = 'flex'; $('.t-url-in', body).focus(); return; }
+      if (a === 'builtin') {
+        const free = Object.entries(I.TILES).filter(([k]) => !list.some((t) => t.k === k));
+        if (!free.length) return snack('Tous les raccourcis sont déjà là');
+        return openMenu(b, free.map(([k, [icon, label]]) => ({ icon, label, value: k })), (it) => { list.push({ k: it.value }); commit(list); });
+      }
+      const t = await follet.tilePick(a === 'folder');
+      if (t) { list.push(t); commit(list); }
+    });
+    $('.t-url-ok', body).addEventListener('click', () => {
+      let url = $('.t-url-in', body).value.trim(); if (!url) return;
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      let label = $('.t-name-in', body).value.trim();
+      if (!label) try { label = new URL(url).hostname.replace(/^www\./, ''); } catch { return snack('Adresse invalide'); }
+      list.push({ type: 'url', url, label }); commit(list);
+    });
+    $('.t-url-in', body).addEventListener('keydown', (e) => { if (e.key === 'Enter') $('.t-url-ok', body).click(); });
+  },
 
   // ---------- Onglets ----------
   r_tabs() {

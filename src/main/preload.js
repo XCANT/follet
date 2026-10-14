@@ -37,7 +37,7 @@ contextBridge.exposeInMainWorld('follet', {
   shelfList: invoke('shelf-list'), shelfAdd: invoke('shelf-add'), shelfRemove: invoke('shelf-remove'), shelfClear: invoke('shelf-clear'),
   shelfIcon: invoke('shelf-icon'), shelfOpen: invoke('shelf-open'), shelfReveal: invoke('shelf-reveal'), shelfDrag: sendTo('shelf-drag'),
   pathForFile: (file) => webUtils.getPathForFile(file),
-  openUri: invoke('open-uri'), openDataFolder: invoke('open-data-folder'), power: invoke('power'),
+  openUri: invoke('open-uri'), tileRun: invoke('tile-run'), tilePick: invoke('tile-pick'), openDataFolder: invoke('open-data-folder'), power: invoke('power'),
 
   // terminal
   ptyStart: invoke('pty-start'), ptyWrite: sendTo('pty-write'), ptyResize: sendTo('pty-resize'),
@@ -49,7 +49,7 @@ contextBridge.exposeInMainWorld('follet', {
 
   // notifications
   notifs: invoke('notifs-get'), notifRemove: invoke('notif-remove'), onNotifs: on('notifs'),
-  mic: invoke('mic-get'), onMic: on('mic'),
+  mic: invoke('mic-get'), onMic: on('mic'), bt: invoke('bt-get'), onBt: on('bt'),
 
   // reglages
   configGet: invoke('config-get'), configSet: invoke('config-set'), loginSet: invoke('login-set'),

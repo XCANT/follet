@@ -18,18 +18,20 @@ const STATE_PATH = path.join(DATA, 'state.json');
 const DEFAULTS = {
   display: 'primary',
   shortcut: 'Control+Alt+Space',
+  shotShortcut: 'Control+Alt+S',
   shell: 'pwsh.exe',
   disks: ['C:\\'],
   calendars: [],
   weather: { mode: 'ip', fallback: null },
   theme: { source: 'art', color: '#6750a4', variant: 'tonal' },
   behavior: { tuck: true, hideFullscreen: true, hover: 'normal', accel: true },
-  activities: { volume: true, media: true, battery: true, audioDevice: true, notif: true, mic: true, lyrics: true },
+  activities: { volume: true, media: true, battery: true, audioDevice: true, notif: true, mic: true, lyrics: true, bluetooth: true },
   tabs: { home: true, today: true, stats: true, shelf: true, clip: true, apps: true, term: true, ai: true, power: true },
   ai: { provider: 'claude-code', models: {}, effort: 'low', customBase: '' },
   mascot: { color: 'corail' },
   notch: { size: 'normal', pos: 50 },   // pos : 0 = bord gauche, 50 = centre, 100 = bord droit
   tabOrder: [],
+  tiles: [{ k: 'radio:WiFi' }, { k: 'radio:Bluetooth' }, { k: 'ms-screenclip:' }, { k: 'taskmgr' }, { k: 'explorer' }, { k: 'ms-settings:' }, { k: 'calc' }, { k: 'terminal' }],
   language: 'auto',
 };
 
