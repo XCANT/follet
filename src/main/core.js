@@ -19,6 +19,7 @@ const DEFAULTS = {
   display: 'primary',
   shortcut: 'Control+Alt+Space',
   shotShortcut: 'Control+Alt+S',
+  clipShortcut: 'Control+Alt+V',
   shell: 'pwsh.exe',
   disks: ['C:\\'],
   calendars: [],
@@ -71,7 +72,7 @@ for (const level of ['log', 'warn', 'error']) {
 process.on('uncaughtException', (e) => log('crash', e));
 process.on('unhandledRejection', (e) => log('rejet', e));
 let config = merge(DEFAULTS, readJson(CONFIG_PATH, {}));
-let state = merge({ todos: [], favorites: [], shelf: [] }, readJson(STATE_PATH, {}));
+let state = merge({ todos: [], favorites: [], shelf: [], pins: [] }, readJson(STATE_PATH, {}));
 // ancien reglage claudeModel -> ai.models['claude-code']
 if (config.claudeModel && !config.ai.models['claude-code']) { config.ai.models['claude-code'] = config.claudeModel; }
 delete config.claudeModel;

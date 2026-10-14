@@ -45,7 +45,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | **Aujourd'hui** | Horloge, météo (position par IP) avec une page détaillée : graphique sur 24 h, 7 jours, vent, UV, qualité de l'air, soleil, et alerte de pluie imminente, agenda de la semaine (iCal), historique des notifications, minuteur et Pomodoro affichés dans l'encoche, tâches |
 | **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage. Bouton terminal : fiche système façon fastfetch |
 | **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli. Ctrl+Alt+S y dépose une capture d'écran |
-| **Copié** | Les 50 derniers textes copiés, en mémoire seulement |
+| **Copié** | Les 50 derniers textes et images copiés (en mémoire seulement), éléments épinglés, recherche. Ctrl+Alt+V l'ouvre et Entrée colle dans l'appli où tu étais |
 | **Apps** | Lanceur avec recherche et favoris, basé sur le menu Démarrer |
 | **Terminal** | Shell complet (PowerShell 7 par défaut) |
 | **Follet** | Ton IA au choix : Claude Code (ton abonnement), API Claude, OpenAI, Gemini, Ollama (local), OpenRouter ou un serveur compatible. Lit les fichiers texte que tu lui glisses. Tableau de bord d'utilisation : fenêtre de 5 h, jetons, messages, heure par heure, par modèle, par projet |

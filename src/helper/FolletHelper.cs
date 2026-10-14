@@ -129,6 +129,8 @@ static class Program {
         }
         return true;
       }
+      case "clip-seq": return (long)Native.GetClipboardSequenceNumber();
+      case "paste": return Native.PasteInto(new IntPtr(Convert.ToInt64(arg)));
       case "focus-app": return Native.FocusApp(Convert.ToString(arg));
       default: throw new Exception("op inconnue: " + op);
     }
@@ -465,6 +467,20 @@ static class Native {
   [DllImport("user32.dll")] public static extern IntPtr GetAncestor(IntPtr h, uint flags);
   [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out SPS s);
   [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern uint GetClipboardSequenceNumber();
+  [DllImport("user32.dll")] static extern bool IsWindow(IntPtr h);
+
+  // Remet la fenetre ou l'on etait au premier plan, puis Ctrl+V
+  public static bool PasteInto(IntPtr h) {
+    if (h == IntPtr.Zero || !IsWindow(h)) return false;
+    if (IsIconic(h)) ShowWindow(h, 9);
+    keybd_event(0x12, 0, 0, UIntPtr.Zero); keybd_event(0x12, 0, 2, UIntPtr.Zero);
+    SetForegroundWindow(h);
+    System.Threading.Thread.Sleep(120);
+    keybd_event(0x11, 0, 0, UIntPtr.Zero); keybd_event(0x56, 0, 0, UIntPtr.Zero);
+    keybd_event(0x56, 0, 2, UIntPtr.Zero); keybd_event(0x11, 0, 2, UIntPtr.Zero);
+    return true;
+  }
   [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int cmd);
   [DllImport("user32.dll")] static extern bool IsIconic(IntPtr h);
   [DllImport("user32.dll")] static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
@@ -496,7 +512,7 @@ static class Native {
     if (h == IntPtr.Zero || !IsWindowVisible(h)) return null;
     var c = new StringBuilder(256); GetClassName(h, c, 256);
     RECT r; GetWindowRect(h, out r); uint pid; GetWindowThreadProcessId(h, out pid);
-    return new Dictionary<string, object> { { "max", IsZoomed(h) }, { "l", r.L }, { "t", r.T }, { "r", r.R }, { "b", r.B }, { "pid", pid }, { "cls", c.ToString() } };
+    return new Dictionary<string, object> { { "max", IsZoomed(h) }, { "l", r.L }, { "t", r.T }, { "r", r.R }, { "b", r.B }, { "pid", pid }, { "cls", c.ToString() }, { "hwnd", h.ToInt64() } };
   }
   public static object Power() {
     SPS s; GetSystemPowerStatus(out s);

@@ -357,6 +357,15 @@ body.dropping #dropzone { opacity: 1; pointer-events: auto; }
 .clip .meta { font: 400 11px/14px var(--font); color: var(--md-on-surface-variant); white-space: nowrap; }
 .clip .del { opacity: 0; }
 .clip:hover .del { opacity: 1; }
+.clip .pin { opacity: 0; } .clip:hover .pin, .clip .pin.on { opacity: 1; }
+.clip .pin.on { color: var(--md-primary); }
+.clip.sel { outline: 2px solid var(--md-primary); outline-offset: -2px; }
+.clip > .ms { color: var(--md-primary); }
+.clip .swatch { width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
+.clip .clip-img { max-height: 72px; max-width: 220px; border-radius: 10px; object-fit: contain; background: var(--md-surface-container-high); }
+.clip.image { justify-content: flex-start; }
+.clip.image .meta:first-of-type { flex: 1; }
+.clip-h { display: flex; align-items: center; gap: 6px; margin: 4px 4px 0; font: 500 12px/16px var(--font); color: var(--md-on-surface-variant); }
 .favs { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; flex-shrink: 0; }
 .favs:empty { display: none; }
 .app-grid { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: max-content; gap: 4px; align-content: start; }

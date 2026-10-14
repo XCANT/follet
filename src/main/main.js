@@ -45,6 +45,26 @@ function registerShortcut() {
 }
 core.events.on('config', (c, before) => { if (c.shortcut !== before.shortcut) registerShortcut(); });
 
+// Ctrl+Alt+V : historique du presse-papiers ; Entree y colle dans la fenetre ou l'on etait
+let clipShortcut = null;
+function registerClipShortcut() {
+  if (clipShortcut) { try { globalShortcut.unregister(clipShortcut); } catch { } }
+  clipShortcut = core.config.clipShortcut || null;
+  if (!clipShortcut) return;
+  try {
+    globalShortcut.register(clipShortcut, async () => {
+      const win = windowMod.win; if (!win) return;
+      const fg = await helper.call('fg', null, 1500).catch(() => null);
+      require('./tools').setPasteTarget(fg && fg.pid !== process.pid ? fg.hwnd : null);
+      if (!win.isVisible()) win.showInactive();
+      windowMod.reveal();
+      core.send('open-tab', 'clip');
+      win.focus();
+    });
+  } catch { clipShortcut = null; }
+}
+core.events.on('config', (c, before) => { if (c.clipShortcut !== before.clipShortcut) registerClipShortcut(); });
+
 // ---------- icone de la zone de notification ----------
 let tray;
 function createTray() {
@@ -77,6 +97,7 @@ app.whenReady().then(() => {
   monitors.start();
   createTray();
   registerShortcut();
+  registerClipShortcut();
   update.start();
   notifs.start();
   privacy.start();

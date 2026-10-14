@@ -5,21 +5,68 @@ const path = require('path');
 const { spawn } = require('child_process');
 const core = require('./core');
 
-// ---------- presse-papiers (en memoire seulement, jamais sur le disque) ----------
-let clips = [];
-let lastClip = clipboard.readText();
-setInterval(() => {
+// ---------- presse-papiers ----------
+// L'historique reste en memoire (jamais sur le disque) ; seuls les elements epingles sont gardes
+// dans state.json. Le helper donne le numero de sequence du presse-papiers : on ne relit (surtout les
+// images, couteuses) que quand il change.
+let clips = [];                 // { type: 'text', text, at } | { type: 'image', thumb, w, h, at }
+const images = new Map();       // at -> nativeImage (memoire seulement)
+let lastSeq = -1, lastText = clipboard.readText(), lastImgSig = null, pasteTarget = null;
+const MAX_IMAGES = 8;
+const publicList = () => clips;
+function pushClip(item) {
+  clips = [item, ...clips.filter((c) => (item.type === 'text' ? c.text !== item.text : c.sig !== item.sig))].slice(0, 50);
+  const keep = new Set(clips.filter((c) => c.type === 'image').slice(0, MAX_IMAGES).map((c) => c.at));
+  clips = clips.filter((c) => c.type !== 'image' || keep.has(c.at));
+  for (const at of images.keys()) if (!keep.has(at)) images.delete(at);
+  core.send('clip-update', publicList());
+}
+async function pollClipboard() {
+  const helper = require('./helper');
+  let seq = 0;
+  if (helper.ready && helper.kind === 'exe') seq = await helper.call('clip-seq', null, 2000).catch(() => 0);
+  if (seq && seq === lastSeq) return;
+  lastSeq = seq;
+  const formats = clipboard.availableFormats();
   const t = clipboard.readText();
-  if (t === lastClip) return;
-  lastClip = t;
-  if (!t || !t.trim()) return;
-  clips = [{ text: t, at: Date.now() }, ...clips.filter((c) => c.text !== t)].slice(0, 50);
-  core.send('clip-update', clips);
-}, 700);
-ipcMain.handle('clip-list', () => clips);
-ipcMain.handle('clip-copy', (_e, text) => { lastClip = text; clipboard.writeText(text); return true; });
-ipcMain.handle('clip-remove', (_e, at) => { clips = clips.filter((c) => c.at !== at); return clips; });
-ipcMain.handle('clip-clear', () => { clips = []; return clips; });
+  if (t && t.trim() && t !== lastText) { lastText = t; return pushClip({ type: 'text', text: t, at: Date.now() }); }
+  if (!t && seq && formats.some((f) => f.startsWith('image/'))) {
+    const img = clipboard.readImage(); if (img.isEmpty()) return;
+    const { width: w, height: h } = img.getSize();
+    const thumb = img.resize(w > h ? { width: Math.min(w, 320) } : { height: Math.min(h, 200) }).toDataURL();
+    const sig = `${w}x${h}:${thumb.length}:${thumb.slice(-48)}`;
+    if (sig === lastImgSig) return;
+    lastImgSig = sig;
+    const at = Date.now(); images.set(at, img);
+    pushClip({ type: 'image', thumb, w, h, sig, at });
+  }
+}
+setInterval(() => pollClipboard().catch(() => { }), 700);
+
+function writeClip(item) {
+  if (item.type === 'image') { const img = images.get(item.at); if (!img) return false; lastImgSig = item.sig; clipboard.writeImage(img); }
+  else { lastText = item.text; clipboard.writeText(item.text); }
+  return true;
+}
+const findClip = (ref) => (typeof ref === 'string' ? { type: 'text', text: ref } : clips.find((c) => c.at === ref) || null);
+ipcMain.handle('clip-list', () => ({ clips: publicList(), pins: core.state.pins || [], canPaste: !!pasteTarget }));
+ipcMain.handle('clip-copy', (_e, ref) => { const c = findClip(ref); return c ? writeClip(c) : false; });
+// colle dans la fenetre ou l'on etait avant d'ouvrir l'historique (Ctrl+Alt+V)
+ipcMain.handle('clip-paste', async (_e, ref) => {
+  const c = findClip(ref); if (!c || !writeClip(c)) return false;
+  const target = pasteTarget; pasteTarget = null;
+  if (!target) return false;
+  return require('./helper').call('paste', target, 4000).catch(() => false);
+});
+ipcMain.handle('clip-remove', (_e, at) => { clips = clips.filter((c) => c.at !== at); images.delete(at); return publicList(); });
+ipcMain.handle('clip-clear', () => { clips = []; images.clear(); return publicList(); });
+ipcMain.handle('clip-pin', (_e, text) => {
+  const pins = (core.state.pins || []).filter((t) => t !== text);
+  core.state.pins = [text, ...pins].slice(0, 30); core.saveState(); return core.state.pins;
+});
+ipcMain.handle('clip-unpin', (_e, text) => { core.state.pins = (core.state.pins || []).filter((t) => t !== text); core.saveState(); return core.state.pins; });
+ipcMain.handle('open-url', (_e, url) => (/^https?:\/\//i.test(url) ? shell.openExternal(url).then(() => true) : false));
+function setPasteTarget(hwnd) { pasteTarget = hwnd || null; }
 
 // ---------- applis (raccourcis du menu Demarrer) ----------
 let appsCache = null;
@@ -155,4 +202,4 @@ ipcMain.handle('power', (_e, action) => {
   return true;
 });
 
-module.exports = { shelfAdd };
+module.exports = { shelfAdd, setPasteTarget };

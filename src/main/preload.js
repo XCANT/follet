@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld('follet', {
   calendar: invoke('calendar'), weather: invoke('weather'), geocode: invoke('geocode'), notify: invoke('notify'),
 
   // outils
-  clipList: invoke('clip-list'), clipCopy: invoke('clip-copy'), clipRemove: invoke('clip-remove'), clipClear: invoke('clip-clear'), onClip: on('clip-update'),
+  clipList: invoke('clip-list'), clipCopy: invoke('clip-copy'), clipPaste: invoke('clip-paste'), clipPin: invoke('clip-pin'), clipUnpin: invoke('clip-unpin'), openUrl: invoke('open-url'), clipRemove: invoke('clip-remove'), clipClear: invoke('clip-clear'), onClip: on('clip-update'),
   appsList: invoke('apps-list'), appIcon: invoke('app-icon'), appLaunch: invoke('app-launch'), appFav: invoke('app-fav'),
   shelfList: invoke('shelf-list'), shelfAdd: invoke('shelf-add'), shelfRemove: invoke('shelf-remove'), shelfClear: invoke('shelf-clear'),
   shelfIcon: invoke('shelf-icon'), shelfOpen: invoke('shelf-open'), shelfReveal: invoke('shelf-reveal'), shelfDrag: sendTo('shelf-drag'),

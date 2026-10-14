@@ -190,8 +190,7 @@ I.view('ai', {
   },
 
   async idea(k) {
-    const clips = await follet.clipList();
-    const last = clips[0] && clips[0].text;
+    const last = ((await follet.clipList()).clips.find((c) => c.type !== 'image') || {}).text;
     const prompts = {
       summary: 'Résume ce texte en quelques points clairs :',
       explain: 'Explique-moi simplement ce texte :',
@@ -235,8 +234,8 @@ I.view('ai', {
       this.files = []; this.renderFiles();
     }
     if (this.attach && !text) {
-      const clips = await follet.clipList();
-      if (clips[0]) { q += `\n\n---\nTexte copié :\n${clips[0].text}`; display += `\n📋 + texte copié`; }
+      const first = (await follet.clipList()).clips.find((c) => c.type !== 'image');
+      if (first) { q += `\n\n---\nTexte copié :\n${first.text}`; display += `\n📋 + texte copié`; }
       this.attach = false; $('.clip-attach', this.el).classList.remove('selected');
     }
     this.add('user', esc(display));

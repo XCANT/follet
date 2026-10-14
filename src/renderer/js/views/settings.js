@@ -73,6 +73,7 @@ I.view('settings', {
       + this.row('Masquer pendant les jeux en plein écran', '', this.sw('hideFullscreen', c.behavior.hideFullscreen))
       + this.row('Accélération graphique', 'Recommandée : animations fluides et moins de travail pour le processeur. Désactivée, Follet économise environ 70 Mo de mémoire. Effet au prochain démarrage de Follet.', this.sw('accel', c.behavior.accel !== false))
       + this.row('Raccourci clavier', 'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" data-sc="shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)
+      + this.row('Historique du presse-papiers', "Ouvre l'onglet Copié ; Entrée colle l'élément choisi dans l'appli où tu étais.", `<input class="field shortcut" data-sc="clipShortcut" readonly value="${esc(c.clipShortcut || '')}" style="width:200px;cursor:pointer">`)
       + this.row("Capture d'écran", "Capture l'écran sous la souris, la copie et la dépose dans l'Étagère (dossier Images\\Captures d'écran).", `<input class="field shortcut" data-sc="shotShortcut" readonly value="${esc(c.shotShortcut || '')}" style="width:200px;cursor:pointer">`)
       + this.row('Démarrer avec Windows', '', `<input type="checkbox" class="switch login" ${this.data.login ? 'checked' : ''}>`);
   },

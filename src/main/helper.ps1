@@ -289,7 +289,9 @@ while ($true) {
             'mic-users' { ,@() }
             'focus-app' { $false }
             'bt' { ,@() }   # helper C# seulement
-            'screenshot' { throw 'helper C# seulement' }   # helper C# seulement (sessions de capture WASAPI)
+            'screenshot' { throw 'helper C# seulement' }
+            'clip-seq' { 0 }
+            'paste' { $false }   # helper C# seulement (sessions de capture WASAPI)
             'radios' {
                 $null = Await ([Windows.Devices.Radios.Radio]::RequestAccessAsync()) ([Windows.Devices.Radios.RadioAccessStatus])
                 $list = Await ([Windows.Devices.Radios.Radio]::GetRadiosAsync()) ([System.Collections.Generic.IReadOnlyList[Windows.Devices.Radios.Radio]])

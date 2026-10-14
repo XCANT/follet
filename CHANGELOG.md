@@ -2,6 +2,17 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.14.0] - 2026-10-14
+
+### Added
+- Ctrl+Alt+V (configurable in Settings → Behavior) opens the clipboard history: arrows to choose, Enter pastes into the app you were in, Shift+Enter only copies.
+- Pinned clipboard items, kept across restarts (the rest of the history still stays in memory only).
+- Copied images in the history (the last 8, in memory only).
+- Links get an open button, colors (#hex) a swatch.
+
+### Changed
+- The clipboard is read only when Windows reports a change (clipboard sequence number from the helper), instead of every 0.7 s.
+
 ## [1.13.0] - 2026-10-14
 
 ### Added

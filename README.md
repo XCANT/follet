@@ -47,7 +47,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 | **Today** | Clock, weather (location by IP) with a detailed page: 24-hour chart, 7 days, wind, UV, air quality, sun, and a rain-soon alert, this week's calendar (iCal), notification history, a timer and Pomodoro shown in the notch, tasks |
 | **Stats** | 5-minute CPU (real clock speed), NVIDIA GPU and RAM charts, top apps, network throughput and speed test, storage. Terminal button: fastfetch-style system info |
 | **Shelf** | Drop files on the notch, even collapsed, to keep them handy, then drag them into any app. Ctrl+Alt+S drops a screenshot there |
-| **Copied** | The last 50 copied texts, in memory only |
+| **Copied** | The last 50 copied texts and images (in memory only), pinned items, search. Ctrl+Alt+V opens it and Enter pastes into the app you were in |
 | **Apps** | Launcher with search and favorites, based on the Start menu |
 | **Terminal** | Full shell (PowerShell 7 by default) |
 | **Follet** | The AI of your choice: Claude Code (your subscription), Claude API, OpenAI, Gemini, Ollama (local), OpenRouter or a compatible server. Reads the text files you drop on it. Usage dashboard: 5-hour window, tokens, messages, hour by hour, by model, by project |
