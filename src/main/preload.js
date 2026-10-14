@@ -52,6 +52,6 @@ contextBridge.exposeInMainWorld('follet', {
   mic: invoke('mic-get'), onMic: on('mic'), bt: invoke('bt-get'), onBt: on('bt'), onDownloads: on('downloads'),
 
   // reglages
-  configGet: invoke('config-get'), configSet: invoke('config-set'), loginSet: invoke('login-set'),
+  configGet: invoke('config-get'), configSet: invoke('config-set'), configExport: invoke('config-export'), configImport: invoke('config-import'), loginSet: invoke('login-set'),
   updateStatus: invoke('update-status'), updateCheck: invoke('update-check'), updateInstall: invoke('update-install'), onUpdate: on('update-status'),
 });

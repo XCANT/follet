@@ -51,4 +51,28 @@ ipcMain.handle('config-get', async () => ({
 ipcMain.handle('config-set', (_e, patch) => core.setConfig(patch));
 ipcMain.handle('login-set', (_e, on) => setLogin(!!on));
 
+// Sauvegarde : reglages + taches, favoris et epingles dans un fichier JSON (sans les cles d'IA, chiffrees a part)
+const KEPT = ['todos', 'favorites', 'pins'];
+ipcMain.handle('config-export', async () => {
+  const { dialog } = require('electron');
+  const d = new Date(), name = `Follet ${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
+  const r = await dialog.showSaveDialog({ defaultPath: require('path').join(app.getPath('documents'), name), filters: [{ name: 'Follet', extensions: ['json'] }] });
+  if (r.canceled || !r.filePath) return false;
+  const state = Object.fromEntries(KEPT.map((k) => [k, core.state[k]]));
+  fs.writeFileSync(r.filePath, JSON.stringify({ follet: app.getVersion(), config: core.config, state }, null, 2));
+  return true;
+});
+ipcMain.handle('config-import', async () => {
+  const { dialog } = require('electron');
+  const r = await dialog.showOpenDialog({ properties: ['openFile'], filters: [{ name: 'Follet', extensions: ['json'] }] });
+  if (r.canceled || !r.filePaths[0]) return null;
+  let data;
+  try { data = JSON.parse(fs.readFileSync(r.filePaths[0], 'utf8')); } catch { return { error: 'bad' }; }
+  if (!data || !data.follet || typeof data.config !== 'object') return { error: 'bad' };
+  core.setConfig(data.config);
+  for (const k of KEPT) if (Array.isArray((data.state || {})[k])) core.state[k] = data.state[k];
+  core.saveState();
+  return { ok: true };
+});
+
 module.exports = { loginEnabled, setLogin };

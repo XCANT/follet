@@ -38,13 +38,19 @@ async function seedFromImage(dataUrl) {
   return ranked[0];
 }
 
-async function tokensFor(seed, variant) {
+// Fond noir pur (ecrans OLED) : les surfaces deviennent des gris presque noirs, les couleurs d'accent restent
+const BLACK = {
+  '--md-surface': '#000000', '--md-surface-dim': '#000000', '--md-surface-container-lowest': '#000000', '--md-surface-container-low': '#0a0a0b',
+  '--md-surface-container': '#111113', '--md-surface-container-high': '#19191c', '--md-surface-container-highest': '#222226', '--md-surface-bright': '#2a2a2e',
+};
+async function tokensFor(seed, variant, surface) {
   const m = await load();
   const Scheme = m[VARIANTS[variant] || VARIANTS.tonal];
   const scheme = new Scheme(m.Hct.fromInt(seed), true, 0);
   const vars = {};
   for (const r of ROLES) { const dc = m.MaterialDynamicColors[r]; if (dc) vars['--md-' + kebab(r)] = m.hexFromArgb(dc.getArgb(scheme)); }
   vars['--md-seed'] = m.hexFromArgb(seed);
+  if (surface === 'black') Object.assign(vars, BLACK);
   return vars;
 }
 
@@ -55,10 +61,10 @@ async function apply() {
   if (source === 'art' && currentArt) seed = await seedFromImage(currentArt).catch(() => null);
   if (seed == null) seed = t.source === 'custom' ? hexArgb(t.color) : accentArgb();
   if (seed == null) { seed = accentArgb(); source = 'accent'; }
-  const key = seed + '|' + t.variant;
+  const key = seed + '|' + t.variant + '|' + t.surface;
   if (key === lastKey) return;
   lastKey = key;
-  core.send('theme', await tokensFor(seed, t.variant), { source });
+  core.send('theme', await tokensFor(seed, t.variant, t.surface), { source });
 }
 
 // La pochette change : on recolore si la source est "pochette"
