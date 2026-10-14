@@ -52,7 +52,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
 | **Réglages** | Langue (français ou anglais), couleurs, couleur de Follet, taille et position de l'encoche, écran, raccourci, activités, onglets visibles et leur ordre, météo, agendas, IA |
 
-**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, volume, nouvelle chanson, casque connecté, appareils Bluetooth (avec leur batterie), chargeur, batterie faible, minuteur terminé, fichier déposé. Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro, comme sur iPhone.
+**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, rappel d'agenda, volume, nouvelle chanson, casque connecté, appareils Bluetooth (avec leur batterie), chargeur, batterie faible, minuteur terminé, fichier déposé. Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro, comme sur iPhone.
 
 **Follet a des humeurs.** Écouteurs quand la musique joue, auréole quand l'IA réfléchit, clin d'œil quand la réponse arrive, bonnet de nuit après 5 minutes sans activité, grands yeux pour les alertes.
 

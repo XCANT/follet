@@ -107,10 +107,14 @@ I.view('settings', {
       + this.row(`${ms('battery_charging_full', 's20')} Batterie`, 'Branché, débranché, batterie faible.', this.sw('battery', a.battery))
       + this.row(`${ms('notifications', 's20')} Notifications Windows`, 'Affichées dans l\'encoche. Astuce : dans Windows, coupe les bannières d\'une appli (Paramètres → Notifications) et laisse Follet les montrer.', this.sw('notif', a.notif !== false))
       + this.row(`${ms('mic', 's20')} Micro utilisé`, 'Un point orange reste dans l\'encoche tant qu\'une appli enregistre ton micro.', this.sw('mic', a.mic !== false))
+      + this.row(`${ms('event', 's20')} Rappels d'agenda`, "Avant chaque événement de l'agenda, puis à son début.", '<div class="seg-rem"></div>')
       + this.row(`${ms('bluetooth', 's20')} Appareils Bluetooth`, 'Connexion, déconnexion et batterie faible (casque, manette, souris…).', this.sw('bluetooth', a.bluetooth !== false))
       + this.row(`${ms('lyrics', 's20')} Paroles synchronisées`, "Dans l'aperçu et l'accueil, quand la chanson est connue de LRCLIB (lrclib.net, base libre et gratuite).", this.sw('lyrics', a.lyrics !== false));
   },
-  b_activities(body) { this.bindSwitches(body, (k, v) => this.save({ activities: { [k]: v } })); },
+  b_activities(body) {
+    this.bindSwitches(body, (k, v) => this.save({ activities: { [k]: v } }));
+    segmented($('.seg-rem', body), [['0', 'Non'], ['5', '5 min'], ['10', '10 min'], ['15', '15 min']], String(this.data.config.activities.reminder ?? 10), (v) => this.save({ activities: { reminder: +v } }));
+  },
 
   // ---------- Tuiles de l'accueil ----------
   r_tiles() {

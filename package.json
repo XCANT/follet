@@ -1,6 +1,6 @@
 {
   "name": "follet",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "Follet: a Dynamic Island-style notch for Windows in Material You — music, calendar, stats, shelf, clipboard, terminal and AI.",
   "author": "XCANT",
   "license": "MIT",
@@ -79,7 +79,9 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Follet",
       "perMachine": false,
-      "deleteAppDataOnUninstall": false
+      "deleteAppDataOnUninstall": false,
+      "include": "build/installer.nsh",
+      "unicode": true
     },
     "electronLanguages": [
       "en-US",

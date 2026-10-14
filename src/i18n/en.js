@@ -124,6 +124,7 @@ const FOLLET_EN = {
     'Raccourci': 'Shortcut', 'Appli ou fichier': 'App or file', 'Dossier': 'Folder', 'Site web': 'Website', 'Rétablir': 'Reset', 'Nom': 'Name',
     'Tous les raccourcis sont déjà là': 'All shortcuts are already there', "Impossible d'ouvrir cette tuile": "Couldn't open this tile",
     'Écran → Étagère': 'Screen → Shelf', 'Bloc-notes': 'Notepad', 'Appareils': 'Devices',
+    "Rappels d'agenda": 'Calendar reminders', "Avant chaque événement de l'agenda, puis à son début.": 'Before each calendar event, then when it starts.', 'Non': 'Off',
     'Ouvrir le lecteur': 'Open the player', 'Tout effacer': 'Clear all', 'Les retire aussi du centre de notifications de Windows': 'Also removes them from the Windows notification center',
     "Follet n'a pas accès aux notifications": "Follet can't access notifications", 'Aucune notification': 'No notifications',
     'Pomodoro': 'Pomodoro', '25 min de travail, 5 min de pause, enchaînés': '25 min of work, 5 min break, back to back', "C'est la pause": 'Break time', 'Au travail': 'Back to work',

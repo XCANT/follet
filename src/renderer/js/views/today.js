@@ -72,9 +72,28 @@ I.view('today', {
 
     // meteo et agenda servent aussi a l'apercu de l'encoche : on charge tout de suite, puis toutes les 15 min
     const refresh = () => { this.loadWeather(); this.loadCalendar(); };
+    // rappels : quelques minutes avant chaque evenement, puis a son debut
+    this.reminded = new Set();
+    setInterval(() => this.checkReminders(), 20000);
     refresh(); setInterval(refresh, 15 * 60e3);
   },
 
+  async checkReminders() {
+    if (!this.events) return;
+    const lead = (await follet.configGet()).config.activities.reminder ?? 10;
+    if (!lead) return;
+    const now = Date.now();
+    for (const ev of this.events) {
+      if (ev.allDay) continue;
+      const s = new Date(ev.start).getTime(), left = s - now;
+      for (const [tag, due] of [['soon', left <= lead * 60e3 && left > 60e3], ['now', left <= 60e3 && left > -2 * 60e3]]) {
+        const id = `${tag}|${ev.start}|${ev.title}`;
+        if (!due || this.reminded.has(id)) continue;
+        this.reminded.add(id);
+        I.activity({ kind: 'event', title: ev.title, location: ev.location, color: ev.color, mins: tag === 'soon' ? Math.round(left / 60e3) : 0 });
+      }
+    }
+  },
   setPane(p) {
     this.pane = p;
     $$('.ag-tab', this.el).forEach((b) => b.classList.toggle('on', b.dataset.p === p));

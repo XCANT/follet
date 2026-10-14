@@ -2,6 +2,12 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.11.0] - 2026-10-14
+
+### Added
+- Calendar reminders: the notch shows the event a few minutes before it starts (5, 10 or 15, set in Settings → Activities), then again when it starts.
+- Uninstalling asks whether to also delete your Follet settings and data (`%APPDATA%\Follet`). Updates never touch them, and silent uninstalls keep them.
+
 ## [1.10.0] - 2026-10-14
 
 ### Added

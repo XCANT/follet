@@ -236,6 +236,10 @@ I.activity = (a) => {
     const shown = showActivity(`${ico}<div class="a-txt"><div class="title-s ellipsis">${esc(a.title || a.app || 'Notification')}</div>
       <div class="body-s variant ellipsis">${esc([a.title ? a.app : null, a.body].filter(Boolean).join(' · '))}</div></div>`, 'notif', 5500);
     if (!shown) snack(`${a.app ? a.app + ' : ' : ''}${a.title || a.body || 'Notification'}`);
+  } else if (a.kind === 'event') {
+    I.flashMood('alert', 2500);
+    const when = a.mins ? (I.lang === 'en' ? `In ${a.mins} min` : `Dans ${a.mins} min`) : (I.lang === 'en' ? 'Starting now' : 'Commence maintenant');
+    showActivity(`<div class="a-ico" ${a.color ? `style="background:${esc(a.color)};color:#fff"` : ''}>${ms('event', 'fill s20')}</div><div class="a-txt"><div class="title-s ellipsis" data-noi18n>${esc(a.title)}</div><div class="body-s variant ellipsis"><span data-noi18n>${when}</span>${a.location ? ` · <span data-noi18n>${esc(a.location)}</span>` : ''}</div></div>`, 'event', 8000);
   } else if (a.kind === 'shot') {
     I.flashMood('happy', 2000);
     if (I.views.shelf) I.views.shelf.refresh();
