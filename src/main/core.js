@@ -25,7 +25,7 @@ const DEFAULTS = {
   weather: { mode: 'ip', fallback: null },
   theme: { source: 'art', color: '#6750a4', variant: 'tonal' },
   behavior: { tuck: true, hideFullscreen: true, hover: 'normal', accel: true },
-  activities: { volume: true, media: true, battery: true, audioDevice: true, notif: true, mic: true, lyrics: true, bluetooth: true, reminder: 10 },
+  activities: { volume: true, media: true, battery: true, audioDevice: true, notif: true, mic: true, lyrics: true, bluetooth: true, reminder: 10, downloads: true },
   tabs: { home: true, today: true, stats: true, shelf: true, clip: true, apps: true, term: true, ai: true, power: true },
   ai: { provider: 'claude-code', models: {}, effort: 'low', customBase: '' },
   mascot: { color: 'corail' },

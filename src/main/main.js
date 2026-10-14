@@ -27,6 +27,7 @@ const privacy = require('./privacy');
 require('./lyrics');
 const bluetooth = require('./bluetooth');
 const screenshot = require('./screenshot');
+const downloads = require('./downloads');
 
 // ---------- raccourci global ----------
 let shortcut = null;
@@ -81,6 +82,7 @@ app.whenReady().then(() => {
   privacy.start();
   bluetooth.start();
   screenshot.start(windowMod);
+  downloads.start();
   // Dev : FOLLET_MEM=1 journalise la memoire par processus toutes les 15 s
   if (process.env.FOLLET_MEM) setInterval(() => {
     const by = {}; for (const m of app.getAppMetrics()) by[m.type] = (by[m.type] || 0) + Math.round((m.memory.privateBytes || m.memory.workingSetSize) / 1024);

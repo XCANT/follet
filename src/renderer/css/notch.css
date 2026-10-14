@@ -55,6 +55,13 @@ body.tucked #notch[data-mode=collapsed] { transform: translate(-50%, calc(-100% 
 .c-timer { display: none; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: var(--shape-full); background: var(--md-tertiary-container); color: var(--md-on-tertiary-container); font: 500 12px/22px var(--font); font-variant-numeric: tabular-nums; }
 .c-timer .ms { font-size: 15px; }
 .has-timer .c-timer { display: inline-flex; }
+.c-dl { display: none; align-items: center; gap: 3px; height: 22px; padding: 0 8px; border-radius: var(--shape-full); background: var(--md-primary-container); color: var(--md-on-primary-container); font: 500 12px/22px var(--font); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.c-dl .ms { font-size: 15px; animation: dl-bob 1.2s var(--effects) infinite; }
+.has-dl .c-dl { display: inline-flex; }
+#notch[data-mode=collapsed].has-dl { width: 270px; }
+body[data-size=small] #notch[data-mode=collapsed].has-dl { width: 246px; }
+body[data-size=large] #notch[data-mode=collapsed].has-dl { width: 300px; }
+@keyframes dl-bob { 50% { transform: translateY(2px); } }
 .pomo-break .c-timer { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
 .t-pomo { display: block; font: 500 11px/14px var(--font); color: var(--md-on-surface-variant); text-align: center; margin-top: 2px; }
 /* micro utilise : point orange facon iOS */

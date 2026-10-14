@@ -2,6 +2,11 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.12.0] - 2026-10-14
+
+### Added
+- Live downloads: while a browser downloads into the Downloads folder (Chrome, Edge, Brave, Firefox), the collapsed notch shows a chip with the size received so far; when it finishes, the file lands on the Shelf, ready to drag. Can be turned off in Settings → Activities.
+
 ## [1.11.0] - 2026-10-14
 
 ### Added

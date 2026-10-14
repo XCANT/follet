@@ -236,6 +236,12 @@ I.activity = (a) => {
     const shown = showActivity(`${ico}<div class="a-txt"><div class="title-s ellipsis">${esc(a.title || a.app || 'Notification')}</div>
       <div class="body-s variant ellipsis">${esc([a.title ? a.app : null, a.body].filter(Boolean).join(' · '))}</div></div>`, 'notif', 5500);
     if (!shown) snack(`${a.app ? a.app + ' : ' : ''}${a.title || a.body || 'Notification'}`);
+  } else if (a.kind === 'download') {
+    if (a.done) I.flashMood('happy', 2500);
+    const ext = (a.name.match(/\.([a-z0-9]{1,5})$/i) || [])[1] || '';
+    const icon = /^(png|jpe?g|gif|webp|svg|bmp|heic)$/i.test(ext) ? 'image' : /^(mp4|mkv|mov|webm|avi)$/i.test(ext) ? 'movie' : /^(mp3|wav|flac|ogg|m4a)$/i.test(ext) ? 'music_note'
+      : /^(zip|rar|7z|tar|gz)$/i.test(ext) ? 'folder_zip' : /^(exe|msi|msix)$/i.test(ext) ? 'install_desktop' : /^pdf$/i.test(ext) ? 'picture_as_pdf' : 'draft';
+    showActivity(`<div class="a-ico">${ms(a.done ? icon : 'download', 'fill s20')}</div><div class="a-txt"><div class="title-s ellipsis" data-noi18n>${esc(a.name)}</div><div class="body-s variant">${a.done ? (I.lang === 'en' ? 'Downloaded · on the Shelf' : "Téléchargé · dans l'Étagère") : (I.lang === 'en' ? 'Downloading…' : 'Téléchargement…')}</div></div>${a.done ? `<div class="a-val">${fmtBytes(a.size)}</div>` : ''}`, 'download', a.done ? 4500 : 2500);
   } else if (a.kind === 'event') {
     I.flashMood('alert', 2500);
     const when = a.mins ? (I.lang === 'en' ? `In ${a.mins} min` : `Dans ${a.mins} min`) : (I.lang === 'en' ? 'Starting now' : 'Commence maintenant');
@@ -281,6 +287,15 @@ I.btIcon = (d) => {
     : /speaker|audio/.test(s) ? 'speaker' : /mouse|souris/.test(s) ? 'mouse' : /keyboard|clavier/.test(s) ? 'keyboard' : /phone|pixel|iphone|galaxy/.test(s) ? 'smartphone'
     : /watch|charge|fitbit|band/.test(s) ? 'watch' : 'bluetooth';
 };
+
+// telechargement en cours : pastille avec la taille recue (la taille totale n'est pas connue)
+follet.onDownloads((list) => {
+  notchEl.classList.toggle('has-dl', list.length > 0);
+  if (!list.length) return;
+  const bytes = list.reduce((s, d) => s + d.bytes, 0), speed = list.reduce((s, d) => s + d.speed, 0);
+  $('.c-dl-val').textContent = (list.length > 1 ? list.length + ' · ' : '') + fmtBytes(bytes);
+  $('.c-dl').title = list.map((d) => d.name || '…').join(', ') + (speed ? ` · ${fmtBytes(speed)}/s` : '');
+});
 
 // point orange tant qu'une appli enregistre le micro
 function renderMic(list) {
