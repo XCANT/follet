@@ -17,7 +17,9 @@ I.view('today', {
     </div>
     <div class="col">
       <div class="card timer-card">
+        <div class="ag-tabs t-tabs"><button class="ag-tab on state" data-tp="timer">Minuteur</button><button class="ag-tab state" data-tp="sw">Chrono</button></div>
         <div class="timer-ring"></div>
+        <div class="timer-list"></div>
         <div class="timer-presets"></div>
         <div class="timer-actions" style="display:flex;gap:8px"></div>
       </div>
@@ -35,17 +37,34 @@ I.view('today', {
     $('.timer-ring', el).innerHTML = this.g.html('<span class="t-val"></span>');
     $('.timer-presets', el).innerHTML = [5, 10, 25, 45].map((m) => `<button class="chip sm assist state" data-min="${m}">${m} min</button>`).join('')
       + `<button class="chip sm assist state" data-pomo title="25 min de travail, 5 min de pause, enchaînés">${ms('target', 's18')}Pomodoro</button>`;
-    $('.timer-presets', el).addEventListener('click', (e) => { const b = e.target.closest('[data-min]'); if (b) this.startTimer(+b.dataset.min * 60);
-      if (e.target.closest('[data-pomo]')) { I.timer = { end: Date.now() + 1500e3, total: 1500, pomo: { phase: 'work', n: 1 } }; I.saveTimer(); this.renderTimer(); }
+    this.tp = 'timer';
+    $('.t-tabs', el).addEventListener('click', (e) => { const b = e.target.closest('[data-tp]'); if (b) { this.tp = b.dataset.tp; this.adding = false; this.renderTimer(); } });
+    $('.timer-presets', el).addEventListener('click', (e) => {
+      const b = e.target.closest('[data-min]');
+      if (b) this.sel = I.addTimer(+b.dataset.min * 60).id;
+      if (e.target.closest('[data-pomo]')) { const p = I.timers.find((x) => x.pomo); this.sel = (p || I.addTimer(1500, { pomo: { phase: 'work', n: 1 } })).id; }
+      this.adding = false; this.renderTimer();
     });
+    $('.timer-list', el).addEventListener('click', (e) => { const b = e.target.closest('[data-tid]'); if (b) { this.sel = +b.dataset.tid; this.renderTimer(); } });
     $('.timer-actions', el).addEventListener('click', (e) => {
-      const a = e.target.closest('[data-a]')?.dataset.a; const t = I.timer; if (!a || !t) return;
-      if (a === 'pause') I.timer = { left: I.timerLeft(), total: t.total, paused: true, pomo: t.pomo };
-      if (a === 'resume') I.timer = { end: Date.now() + t.left * 1000, total: t.total, pomo: t.pomo };
-      if (a === 'stop') I.timer = null;
-      if (a === 'plus') I.timer = t.paused ? { ...t, left: t.left + 60, total: t.total + 60 } : { ...t, end: t.end + 60000, total: t.total + 60 };
-      I.saveTimer(); this.renderTimer();
+      const a = e.target.closest('[data-a]')?.dataset.a; if (!a) return;
+      const sw = I.stopwatch;
+      if (a === 'sw-start') sw.start = Date.now();
+      if (a === 'sw-pause') { sw.acc = I.swElapsed(); sw.start = null; }
+      if (a === 'sw-lap') sw.laps = [I.swElapsed(), ...sw.laps].slice(0, 20);
+      if (a === 'sw-reset') I.stopwatch = { acc: 0, start: null, laps: [] };
+      if (a === 'add') this.adding = !this.adding;
+      const t = this.selected();
+      if (t) {
+        if (a === 'pause') Object.assign(t, { left: I.timerLeft(t), paused: true });
+        if (a === 'resume') { t.end = Date.now() + t.left * 1000; delete t.paused; delete t.left; }
+        if (a === 'stop') I.timers = I.timers.filter((x) => x !== t);
+        if (a === 'plus') { if (t.paused) t.left += 60; else t.end += 60000; t.total += 60; }
+      }
+      I.saveTimer(); I.tickTimer(); this.renderTimer();
     });
+    // le chrono affiche les dixiemes : rafraichi plus souvent quand il est visible
+    setInterval(() => { if (this.tp === 'sw' && I.stopwatch.start && I.mode === 'expanded' && I.tab === 'today') $('.t-val', el).firstChild.textContent = I.fmtSw(I.swElapsed()); }, 100);
     I.on('timer', () => { if (I.mode === 'expanded' && I.tab === 'today') this.renderTimer(); });
     I.on('tick', (now) => { if (I.mode === 'expanded' && I.tab === 'today') this.renderClock(now); });
 
@@ -132,18 +151,36 @@ I.view('today', {
     $('.date-big', this.el).textContent = dayName(now, { weekday: 'long', day: 'numeric', month: 'long' });
   },
 
-  startTimer(sec) { I.timer = { end: Date.now() + sec * 1000, total: sec }; I.saveTimer(); this.renderTimer(); },
+  selected() { return I.timers.find((x) => x.id === this.sel) || I.nextTimer(); },
   renderTimer() {
-    const t = I.timer, el = this.el;
-    const left = I.timerLeft();
-    $('.t-val', el).innerHTML = (t ? fmtDur(Math.ceil(left)) : '0:00') + (t && t.pomo ? `<small class="t-pomo">${I.pomoLabel(t.pomo)}</small>` : '');
-    this.g.set($('.timer-ring .gauge', el), t ? (100 * left) / t.total : 0);
-    $('.timer-presets', el).style.display = t ? 'none' : '';
-    $('.timer-actions', el).innerHTML = !t ? '<span class="body-s variant">Un minuteur s\'affiche dans l\'encoche</span>'
+    const el = this.el;
+    $$('.t-tabs .ag-tab', el).forEach((b) => b.classList.toggle('on', b.dataset.tp === this.tp));
+    const ring = $('.timer-ring .gauge', el), val = $('.t-val', el), list = $('.timer-list', el), acts = $('.timer-actions', el);
+    if (this.tp === 'sw') {
+      const sw = I.stopwatch, e = I.swElapsed(), running = !!sw.start;
+      val.innerHTML = `<span>${I.fmtSw(e)}</span>`;
+      this.g.set(ring, ((e % 60) / 60) * 100);
+      $('.timer-presets', el).style.display = 'none';
+      // duree de chaque tour (les temps sont gardes cumules)
+      list.innerHTML = sw.laps.slice(0, 2).map((l, i) => `<span class="chip sm">${I.lang === 'en' ? 'Lap' : 'Tour'} ${sw.laps.length - i} · ${I.fmtSw(l - (sw.laps[i + 1] || 0))}</span>`).join('');
+      acts.innerHTML = `<button class="btn tonal sm state" data-a="${running ? 'sw-pause' : 'sw-start'}">${ms(running ? 'pause' : 'play_arrow')}${running ? 'Pause' : e ? 'Reprendre' : 'Démarrer'}</button>`
+        + (running ? `<button class="icon-btn sm tonal state" data-a="sw-lap" title="Tour">${ms('flag')}</button>` : '')
+        + (e ? `<button class="icon-btn sm state" data-a="sw-reset" title="Réinitialiser">${ms('restart_alt')}</button>` : '');
+      return;
+    }
+    const t = this.selected(), left = I.timerLeft(t);
+    if (t) this.sel = t.id;
+    val.innerHTML = `<span>${t ? fmtDur(Math.ceil(left)) : '0:00'}</span>` + (t && t.pomo ? `<small class="t-pomo">${I.pomoLabel(t.pomo)}</small>` : '');
+    this.g.set(ring, t ? (100 * left) / t.total : 0);
+    $('.timer-presets', el).style.display = !t || this.adding ? '' : 'none';
+    list.innerHTML = I.timers.length > 1 ? I.timers.map((x) => `<button class="chip sm state ${x === t ? 'selected' : ''}" data-tid="${x.id}">${ms(x.paused ? 'pause' : x.pomo ? 'target' : 'timer', 's18')}${fmtDur(Math.ceil(I.timerLeft(x)))}</button>`).join('') : '';
+    acts.innerHTML = !t ? "<span class='body-s variant'>Un minuteur s'affiche dans l'encoche</span>"
       : `<button class="btn tonal sm state" data-a="${t.paused ? 'resume' : 'pause'}">${ms(t.paused ? 'play_arrow' : 'pause')}${t.paused ? 'Reprendre' : 'Pause'}</button>
          <button class="icon-btn sm tonal state" data-a="plus" title="+1 min">${ms('add')}</button>
-         <button class="icon-btn sm state" data-a="stop" title="Arrêter">${ms('stop')}</button>`;
+         <button class="icon-btn sm state" data-a="stop" title="Arrêter">${ms('stop')}</button>
+         <button class="icon-btn sm state ${this.adding ? 'selected' : ''}" data-a="add" title="Autre minuteur">${ms('more_time')}</button>`;
   },
+
 
   renderTodos() {
     const el = this.el, todos = this.todos || [];

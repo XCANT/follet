@@ -42,7 +42,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | Onglet | Contenu |
 |---|---|
 | **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec paroles synchronisées, visualiseur (clic sur la pochette pour ramener le lecteur), volume, sortie audio, Wi-Fi, Bluetooth, appareils Bluetooth connectés et leur batterie, tuiles configurables (applis, fichiers, dossiers, sites) |
-| **Aujourd'hui** | Horloge, météo (position par IP) avec une page détaillée : graphique sur 24 h, 7 jours, vent, UV, qualité de l'air, soleil, et alerte de pluie imminente, agenda de la semaine (iCal), historique des notifications, minuteur et Pomodoro affichés dans l'encoche, tâches |
+| **Aujourd'hui** | Horloge, météo (position par IP) avec une page détaillée : graphique sur 24 h, 7 jours, vent, UV, qualité de l'air, soleil, et alerte de pluie imminente, agenda de la semaine (iCal), historique des notifications, minuteurs, Pomodoro et chrono affichés dans l'encoche, tâches |
 | **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage. Bouton terminal : fiche système façon fastfetch |
 | **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli. Ctrl+Alt+S y dépose une capture d'écran |
 | **Copié** | Les 50 derniers textes et images copiés (en mémoire seulement), éléments épinglés, recherche. Ctrl+Alt+V l'ouvre et Entrée colle dans l'appli où tu étais |
@@ -67,7 +67,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 ## Vie privée
 
 - Les données personnelles (config, tâches, étagère, favoris, conversations, clés d'API chiffrées par Windows) restent dans `%APPDATA%\Follet`, jamais dans le dossier du projet.
-- Le presse-papiers n'est jamais écrit sur le disque.
+- L'historique du presse-papiers reste en mémoire, jamais sur le disque ; seuls les éléments que tu épingles sont gardés (dans `%APPDATA%\Follet`).
 - Aucune télémétrie, aucune statistique d'usage, aucun compte. Follet ne contacte que les services ci-dessous, pour les fonctions qui en ont besoin.
 - Services externes : [GitHub](https://github.com) (vérifie s'il y a une nouvelle version toutes les 6 heures), [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (position approximative par IP, désactivable), [Open-Meteo](https://open-meteo.com) (météo et qualité de l'air), [speed.cloudflare.com](https://speed.cloudflare.com) (test de vitesse, sur demande), [LRCLIB](https://lrclib.net) (paroles : artiste et titre de la chanson en cours, désactivable), les agendas iCal que tu ajoutes et le fournisseur d'IA que tu choisis.
 

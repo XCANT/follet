@@ -2,6 +2,15 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.15.0] - 2026-10-14
+
+### Added
+- Several timers at once: the notch shows the one ending first (and how many run), Today lists them to switch between, and the clock-plus button adds another.
+- Stopwatch (Today → Timer card → Stopwatch) with laps; while it runs alone, the notch shows it.
+
+### Changed
+- The README's privacy section mentions that pinned clipboard items are saved.
+
 ## [1.14.0] - 2026-10-14
 
 ### Added

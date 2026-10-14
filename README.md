@@ -44,7 +44,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 | Tab | Contents |
 |---|---|
 | **Home** | Now playing for any app that talks to Windows (Spotify, YouTube Music, browser…) with synced lyrics, a visualizer (click the art to bring the player forward), volume, audio output, Wi-Fi, Bluetooth, connected Bluetooth devices and their battery, configurable tiles (apps, files, folders, websites) |
-| **Today** | Clock, weather (location by IP) with a detailed page: 24-hour chart, 7 days, wind, UV, air quality, sun, and a rain-soon alert, this week's calendar (iCal), notification history, a timer and Pomodoro shown in the notch, tasks |
+| **Today** | Clock, weather (location by IP) with a detailed page: 24-hour chart, 7 days, wind, UV, air quality, sun, and a rain-soon alert, this week's calendar (iCal), notification history, timers, Pomodoro and a stopwatch shown in the notch, tasks |
 | **Stats** | 5-minute CPU (real clock speed), NVIDIA GPU and RAM charts, top apps, network throughput and speed test, storage. Terminal button: fastfetch-style system info |
 | **Shelf** | Drop files on the notch, even collapsed, to keep them handy, then drag them into any app. Ctrl+Alt+S drops a screenshot there |
 | **Copied** | The last 50 copied texts and images (in memory only), pinned items, search. Ctrl+Alt+V opens it and Enter pastes into the app you were in |
@@ -69,7 +69,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 ## Privacy
 
 - Personal data (config, tasks, shelf, favorites, chats, API keys encrypted by Windows) stays in `%APPDATA%\Follet`, never in the project folder.
-- The clipboard is never written to disk.
+- The clipboard history stays in memory, never on disk; only the items you pin are saved (in `%APPDATA%\Follet`).
 - No telemetry, no analytics, no account. Follet only contacts the services below, for the features that need them.
 - External services: [GitHub](https://github.com) (checks for a new release every 6 hours), [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (approximate location by IP, can be turned off), [Open-Meteo](https://open-meteo.com) (weather and air quality), [speed.cloudflare.com](https://speed.cloudflare.com) (speed test, on demand), [LRCLIB](https://lrclib.net) (song lyrics: artist and title of the current song, can be turned off), the iCal calendars you add, and the AI provider you choose.
 

@@ -361,37 +361,54 @@ document.addEventListener('drop', async (e) => {
   else { setMode('collapsed', true); showActivity(`<div class="a-ico">${ms('inventory_2', 'fill s20')}</div><div class="a-txt"><div class="title-s">${label}</div><div class="body-s variant ellipsis">${esc(paths.map((p) => p.split(/[\\/]/).pop()).join(', '))}</div></div>`, 'shelf', 2600); }
 });
 
-// ---------- minuteur (affiche dans l'encoche) ----------
-I.timer = JSON.parse(localStorage.getItem('timer') || 'null');   // { end, total } ou { left, total, paused: true }
-I.saveTimer = () => localStorage.setItem('timer', JSON.stringify(I.timer));
+// ---------- minuteurs et chrono (affiches dans l'encoche) ----------
+const stored = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+// plusieurs minuteurs { id, end, total } ou { id, left, total, paused }, Pomodoro : + pomo { phase, n }
+I.timers = stored('timers', null) || (stored('timer', null) ? [{ id: 1, ...stored('timer', null) }] : []);
+I.stopwatch = stored('stopwatch', { acc: 0, start: null, laps: [] });
+I.saveTimer = () => { localStorage.setItem('timers', JSON.stringify(I.timers)); localStorage.removeItem('timer'); localStorage.setItem('stopwatch', JSON.stringify(I.stopwatch)); };
 I.pomoLabel = (p) => p.phase === 'work' ? (I.lang === 'en' ? `Session ${p.n}` : `Séance ${p.n}`) : (p.n % 4 === 0 ? (I.lang === 'en' ? 'Long break' : 'Longue pause') : (I.lang === 'en' ? 'Short break' : 'Courte pause'));
-I.timerLeft = () => !I.timer ? 0 : I.timer.paused ? I.timer.left : Math.max(0, (I.timer.end - Date.now()) / 1000);
-function tickTimer() {
-  const t = I.timer;
-  notchEl.classList.toggle('has-timer', !!t);
-  notchEl.classList.toggle('pomo-break', !!(t && t.pomo && t.pomo.phase === 'break'));
-  if (!t) return;
-  const left = I.timerLeft();
-  $('.c-timer-val').textContent = fmtDur(Math.ceil(left));
-  if (!t.paused && left <= 0 && t.pomo) {
+I.timerLeft = (t) => !t ? 0 : t.paused ? t.left : Math.max(0, (t.end - Date.now()) / 1000);
+I.swElapsed = () => { const s = I.stopwatch; return s.acc + (s.start ? (Date.now() - s.start) / 1000 : 0); };
+I.fmtSw = (sec) => `${fmtDur(Math.floor(sec))}.${Math.floor((sec * 10) % 10)}`;
+I.addTimer = (sec, extra = {}) => { const t = { id: Math.max(Date.now(), ...I.timers.map((x) => x.id + 1)), end: Date.now() + sec * 1000, total: sec, ...extra }; I.timers.push(t); I.saveTimer(); tickTimer(); return t; };
+// celui qui finit en premier (les minuteurs en pause passent apres)
+I.nextTimer = () => [...I.timers].sort((a, b) => (a.paused ? 1 : 0) - (b.paused ? 1 : 0) || I.timerLeft(a) - I.timerLeft(b))[0] || null;
+function timerDone(t) {
+  if (t.pomo) {
     // Pomodoro : 25 min de travail, 5 min de pause (15 toutes les 4 seances), enchaines automatiquement
     const work = t.pomo.phase === 'work';
     const next = work ? { phase: 'break', n: t.pomo.n } : { phase: 'work', n: t.pomo.n + 1 };
     const sec = work ? (t.pomo.n % 4 === 0 ? 15 : 5) * 60 : 25 * 60;
-    I.timer = { end: Date.now() + sec * 1000, total: sec, pomo: next }; I.saveTimer();
+    Object.assign(t, { end: Date.now() + sec * 1000, total: sec, pomo: next });
     I.flashMood(work ? 'happy' : 'alert', 3000);
     const title = work ? "C'est la pause" : 'Au travail', sub = I.pomoLabel(next) + ' · ' + fmtDur(sec);
     showActivity(`<div class="a-ico">${ms(work ? 'self_improvement' : 'target', 'fill s20')}</div><div class="a-txt"><div class="title-s">${title}</div><div class="body-s variant">${sub}</div></div>`, 'timer', 6000);
     follet.notify(I.t(title), sub);
-  } else if (!t.paused && left <= 0) {
-    I.timer = null; I.saveTimer();
-    notchEl.classList.remove('has-timer');
-    I.flashMood('alert', 3000);
-    showActivity(`<div class="a-ico">${ms('timer', 'fill s20')}</div><div class="a-txt"><div class="title-s">Minuteur terminé</div><div class="body-s variant">${fmtDur(t.total)}</div></div>`, 'timer', 6000);
-    follet.notify(I.t('Minuteur terminé'), I.lang === 'en' ? `${fmtDur(t.total)} elapsed` : `${fmtDur(t.total)} écoulé${t.total >= 120 ? 'es' : ''}`);
+    return;
+  }
+  I.timers = I.timers.filter((x) => x !== t);
+  I.flashMood('alert', 3000);
+  showActivity(`<div class="a-ico">${ms('timer', 'fill s20')}</div><div class="a-txt"><div class="title-s">Minuteur terminé</div><div class="body-s variant">${fmtDur(t.total)}</div></div>`, 'timer', 6000);
+  follet.notify(I.t('Minuteur terminé'), I.lang === 'en' ? `${fmtDur(t.total)} elapsed` : `${fmtDur(t.total)} écoulé${t.total >= 120 ? 'es' : ''}`);
+}
+function tickTimer() {
+  let changed = false;
+  for (const t of [...I.timers]) if (!t.paused && I.timerLeft(t) <= 0) { timerDone(t); changed = true; }
+  if (changed) I.saveTimer();
+  const t = I.nextTimer(), sw = !t && !!I.stopwatch.start;
+  notchEl.classList.toggle('has-timer', !!t || sw);
+  notchEl.classList.toggle('pomo-break', !!(t && t.pomo && t.pomo.phase === 'break'));
+  if (t) {
+    $('.c-timer .ms').textContent = t.paused ? 'pause' : t.pomo ? 'target' : 'timer';
+    $('.c-timer-val').textContent = (I.timers.length > 1 ? I.timers.length + ' · ' : '') + fmtDur(Math.ceil(I.timerLeft(t)));
+  } else if (sw) {
+    $('.c-timer .ms').textContent = 'avg_pace';
+    $('.c-timer-val').textContent = fmtDur(Math.floor(I.swElapsed()));
   }
   I.emit('timer');
 }
+I.tickTimer = tickTimer;
 
 // ---------- info-bulles Material (remplacent celles de Windows) ----------
 const tip = document.createElement('div'); tip.id = 'tip'; notchEl.appendChild(tip);
