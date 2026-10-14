@@ -19,6 +19,14 @@
     <td width="50%"><img src="docs/follet.webp" alt="Follet tab: AI usage, 5-hour window, tokens by model and by project"></td>
     <td width="50%" valign="top"><img src="docs/depot.webp" alt="Drop a file on the notch: Shelf or Ask Follet"><br><br><img src="docs/mascotte.gif" alt="Follet idle, listening to music, thinking, and when the answer arrives"></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="docs/weather.webp" alt="Weather page: rain soon, 24-hour chart, 7 days, wind, UV, air quality"></td>
+    <td width="50%"><img src="docs/clip.webp" alt="Clipboard history: pinned items, texts, images, links, colors"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/shortcuts.webp" alt="The welcome tour: Follet's global shortcuts"></td>
+    <td width="50%"><img src="docs/outfits.webp" alt="Follet's outfits: witch hat, beanie, Santa hat, umbrella, sunglasses, party hat"></td>
+  </tr>
 </table>
 
 *A Dynamic Island for Windows, with a little flame living in it (who dresses for the season and the weather). A* feu follet *is the will-o'-the-wisp of Québec folklore, a cousin of the Japanese hitodama. Follet speaks English and French. Demo music: My Castle Town (Lofi), XCANT.*
@@ -47,12 +55,13 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 | **Today** | Clock, weather (location by IP) with a detailed page: 24-hour chart, 7 days, wind, UV, air quality, sun, and a rain-soon alert, this week's calendar (iCal), notification history, timers, Pomodoro and a stopwatch shown in the notch, tasks |
 | **Stats** | 5-minute CPU (real clock speed), NVIDIA GPU and RAM charts, top apps, network throughput and speed test, storage. Terminal button: fastfetch-style system info |
 | **Shelf** | Drop files on the notch, even collapsed, to keep them handy, then drag them into any app. Ctrl+Alt+S drops a screenshot there |
+| **Screen tools** | **Ctrl+Alt+T** copies the text of any area of the screen (read offline by the OCR built into Windows), **Ctrl+Alt+C** is a color picker with a magnifier that copies the #hex code. Both can also be home tiles |
 | **Copied** | The last 50 copied texts and images (in memory only), pinned items, search. Ctrl+Alt+V opens it and Enter pastes into the app you were in |
 | **Apps** | Launcher with search and favorites, based on the Start menu |
 | **Terminal** | Full shell (PowerShell 7 by default) |
 | **Follet** | The AI of your choice: Claude Code (your subscription), Claude API, OpenAI, Gemini, Ollama (local), OpenRouter or a compatible server. Reads the text files you drop on it. Usage dashboard: 5-hour window, tokens, messages, hour by hour, by model, by project |
 | **Power** | Lock, sleep, sign out, restart, shut down |
-| **Settings** | Language, colors, Follet's color, notch size and position, display, shortcut, activities, visible tabs and their order, weather, calendars, AI |
+| **Settings** | Language, colors (ready-made themes, pure black for OLED screens), Follet's color, notch size and position, display, shortcut, activities, visible tabs and their order, weather, calendars, AI, settings backup (export / import) |
 
 **Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, a calendar reminder, a download (then on the Shelf), volume, a new song, headphones connected, Bluetooth devices (with their battery), charger, low battery, timer done, file dropped. An orange dot stays in the notch while an app is recording your microphone, like on iPhone.
 
@@ -60,6 +69,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 
 **Gestures.**
 - Hover: preview, only if the mouse lingers (just passing by on the way to a browser tab does not open it; the delay is adjustable). Scroll down or click: full panel. Esc or move the mouse away: close.
+- On the collapsed notch: two-finger swipe (or Shift+wheel) for the next or previous song, middle click to play or pause. The wheel can adjust the volume instead of opening (Settings → Behavior).
 - **Ctrl+Alt+Space** (configurable) opens and closes Follet from anywhere.
 - With the notch open: **1 to 9** to pick a tab, **← / →** or the scroll wheel on the tabs.
 - In front of a maximized window the notch tucks away; it comes back when the mouse touches the top middle of the screen. It disappears during full-screen games.
@@ -127,6 +137,7 @@ src/main/
   bluetooth.js   connected Bluetooth devices -> activities
   screenshot.js  Ctrl+Alt+S -> screenshot on the Shelf
   downloads.js   browser downloads -> progress chip, then the Shelf
+  picker.js      Ctrl+Alt+T screen text (Windows OCR), Ctrl+Alt+C color picker
   update.js      updates from GitHub releases
   ai.js          AI providers, encrypted keys, usage
   i18n.js        main-process translation (tray menu)

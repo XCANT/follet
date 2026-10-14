@@ -19,6 +19,14 @@
     <td width="50%"><img src="docs/fr/follet.webp" alt="Onglet Follet : utilisation de l'IA, fenêtre de 5 h, jetons par modèle et par projet"></td>
     <td width="50%" valign="top"><img src="docs/fr/depot.webp" alt="Glisser un fichier sur l'encoche : Étagère ou Demander à Follet"><br><br><img src="docs/mascotte.gif" alt="Follet au repos, en musique, en réflexion et quand la réponse arrive"></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="docs/fr/weather.webp" alt="Page météo : pluie à venir, courbe sur 24 h, 7 jours, vent, UV, qualité de l'air"></td>
+    <td width="50%"><img src="docs/fr/clip.webp" alt="Historique du presse-papiers : épinglés, textes, images, liens, couleurs"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/fr/shortcuts.webp" alt="La visite guidée : les raccourcis de Follet"></td>
+    <td width="50%"><img src="docs/outfits.webp" alt="Les tenues de Follet : chapeau de sorcière, tuque, bonnet de Noël, parapluie, lunettes de soleil, chapeau de fête"></td>
+  </tr>
 </table>
 
 *Un feu follet : la petite flamme du folklore québécois, cousine du hitodama japonais. Elle s'habille selon la saison et la météo. Musique de démonstration : My Castle Town (Lofi), XCANT.*
@@ -45,12 +53,13 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | **Aujourd'hui** | Horloge, météo (position par IP) avec une page détaillée : graphique sur 24 h, 7 jours, vent, UV, qualité de l'air, soleil, et alerte de pluie imminente, agenda de la semaine (iCal), historique des notifications, minuteurs, Pomodoro et chrono affichés dans l'encoche, tâches |
 | **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage. Bouton terminal : fiche système façon fastfetch |
 | **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli. Ctrl+Alt+S y dépose une capture d'écran |
+| **Outils d'écran** | **Ctrl+Alt+T** copie le texte de n'importe quelle zone de l'écran (lu hors ligne par l'OCR intégré à Windows), **Ctrl+Alt+C** est une pipette avec loupe qui copie le code #hex. Les deux peuvent aussi être des tuiles de l'accueil |
 | **Copié** | Les 50 derniers textes et images copiés (en mémoire seulement), éléments épinglés, recherche. Ctrl+Alt+V l'ouvre et Entrée colle dans l'appli où tu étais |
 | **Apps** | Lanceur avec recherche et favoris, basé sur le menu Démarrer |
 | **Terminal** | Shell complet (PowerShell 7 par défaut) |
 | **Follet** | Ton IA au choix : Claude Code (ton abonnement), API Claude, OpenAI, Gemini, Ollama (local), OpenRouter ou un serveur compatible. Lit les fichiers texte que tu lui glisses. Tableau de bord d'utilisation : fenêtre de 5 h, jetons, messages, heure par heure, par modèle, par projet |
 | **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
-| **Réglages** | Langue (français ou anglais), couleurs, couleur de Follet, taille et position de l'encoche, écran, raccourci, activités, onglets visibles et leur ordre, météo, agendas, IA |
+| **Réglages** | Langue (français ou anglais), couleurs (thèmes prêts, noir pur pour écrans OLED), couleur de Follet, taille et position de l'encoche, écran, raccourci, activités, onglets visibles et leur ordre, météo, agendas, IA, sauvegarde des réglages (exporter / importer) |
 
 **Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, rappel d'agenda, téléchargement (puis dans l'Étagère), volume, nouvelle chanson, casque connecté, appareils Bluetooth (avec leur batterie), chargeur, batterie faible, minuteur terminé, fichier déposé. Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro, comme sur iPhone.
 
@@ -58,6 +67,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 
 **Gestes.**
 - Survol : aperçu, seulement si la souris s'attarde (un simple passage vers un onglet de navigateur ne l'ouvre pas ; délai réglable). Molette vers le bas ou clic : panneau complet. Échap ou sortir la souris : refermer.
+- Sur l'encoche repliée : glisser à deux doigts (ou Maj+molette) pour la chanson suivante ou précédente, clic du milieu pour lecture/pause. La molette peut régler le volume au lieu d'ouvrir (Réglages → Comportement).
 - **Ctrl+Alt+Espace** (modifiable) ouvre et ferme Follet de n'importe où.
 - Encoche ouverte : **1 à 9** pour choisir un onglet, **← / →** ou la molette sur les onglets.
 - Devant une fenêtre maximisée, l'encoche se range ; elle ressort quand la souris touche le haut de l'écran, au milieu. Elle disparaît pendant un jeu en plein écran.
@@ -125,6 +135,7 @@ src/main/
   bluetooth.js   appareils Bluetooth connectés -> activités
   screenshot.js  Ctrl+Alt+S -> capture dans l'Étagère
   downloads.js   téléchargements du navigateur -> pastille, puis l'Étagère
+  picker.js      Ctrl+Alt+T texte de l'écran (OCR de Windows), Ctrl+Alt+C pipette
   update.js      mises à jour depuis les releases GitHub
   ai.js          fournisseurs d'IA, clés chiffrées, consommation
   i18n.js        traduction côté processus principal (menu de l'icône)
