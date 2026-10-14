@@ -227,6 +227,8 @@ const FOLLET_EN = {
     "À ton goût": "Make it yours",
     "thèmes, noir OLED, tuiles, ordre des onglets dans les Réglages": "themes, OLED black, tiles, tab order in Settings",
     "Je change aussi de tenue : tuque quand il fait froid, parapluie sous la pluie, chapeau de sorcière en octobre…": "I also change outfits: a beanie when it's cold, an umbrella in the rain, a witch hat in October…",
+    "8 tuiles au maximum : retire-en une avec": "8 tiles at most: remove one with",
+    "pour en ajouter une autre.": "to add another.",
   },
   patterns: [
     ['^(.+) : (.+) jetons$', '$1: $2 tokens'],

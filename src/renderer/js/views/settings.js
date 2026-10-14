@@ -151,6 +151,7 @@ I.view('settings', {
           <button class="btn tonal sm state" data-add="url" ${full ? 'disabled' : ''}>${ms('public')}Site web</button>
           <button class="btn text sm state" data-add="reset">Rétablir</button>
         </div>
+        ${full ? `<div class="body-s variant" style="margin:10px 8px 0;display:flex;gap:6px;align-items:center">${ms('info', 's18')}8 tuiles au maximum : retire-en une avec ${ms('delete', 's18')} pour en ajouter une autre.</div>` : ''}
         <div class="t-url" style="display:none;gap:8px;margin:12px 8px 0"><input class="field t-url-in" placeholder="https://…" style="flex:1"><input class="field t-name-in" placeholder="Nom" style="width:140px"><button class="btn filled sm state t-url-ok">OK</button></div>`;
   },
   b_tiles(body) {
