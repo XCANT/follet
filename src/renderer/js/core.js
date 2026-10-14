@@ -69,7 +69,31 @@ function typing() {
 }
 window.addEventListener('blur', () => { if (I.mode === 'expanded' && !pointerIn) setMode('collapsed'); });
 $('#compact').addEventListener('click', (e) => { if (!e.target.closest('button')) { setMode('expanded'); } });
-$('#compact').addEventListener('wheel', (e) => { if (e.deltaY > 0) setMode('expanded'); }, { passive: true });
+// Gestes sur l'encoche repliee : glisser a deux doigts (ou Maj+molette) change de chanson, clic du milieu
+// = lecture/pause, molette = ouvrir (vers le bas) ou volume selon le reglage
+let swipeX = 0, swipeT = 0, swipeLock = 0, vol = null;
+follet.onVolume((v) => { if (v) vol = v; });
+follet.volume().then((v) => { if (v) vol = v; }).catch(() => { });
+$('#compact').addEventListener('wheel', (e) => {
+  const now = Date.now();
+  if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+    if (!I.media.present || now < swipeLock) return;
+    if (now - swipeT > 300) swipeX = 0;
+    swipeT = now; swipeX += e.deltaX;
+    if (Math.abs(swipeX) > 80) { follet.mediaCmd(swipeX > 0 ? 'next' : 'prev'); swipeX = 0; swipeLock = now + 700; I.mascot.bump(); }
+    return;
+  }
+  if (I.wheel === 'volume' && vol) {
+    const level = Math.max(0, Math.min(100, Math.round(vol.level / 2) * 2 + (e.deltaY < 0 ? 2 : -2)));
+    vol = { ...vol, level, muted: false };
+    follet.setVolume(level);
+    I.activity({ kind: 'volume', level, muted: false });
+    return;
+  }
+  if (e.deltaY > 0) setMode('expanded');
+}, { passive: true });
+$('#compact').addEventListener('auxclick', (e) => { if (e.button === 1 && I.media.present) { e.preventDefault(); follet.mediaCmd('toggle'); } });
+$('#compact').addEventListener('mousedown', (e) => { if (e.button === 1) e.preventDefault(); });   // pas de defilement automatique
 $('.topbar').addEventListener('wheel', (e) => { if (e.deltaY < 0) setMode('peek'); }, { passive: true });
 // Clavier (encoche ouverte) : Echap ferme, 1-9 choisit un onglet, fleches gauche/droite passent au voisin
 const visibleTabs = () => $$('#nav button').map((b) => b.dataset.tab);
@@ -266,6 +290,14 @@ I.activity = (a) => {
     I.flashMood('happy', 2000);
     if (I.views.shelf) I.views.shelf.refresh();
     showActivity(`<img class="a-ico shot" src="${a.thumb}"><div class="a-txt"><div class="title-s">Capture dans l'Étagère</div><div class="body-s variant">Copiée : Ctrl+V pour la coller</div></div>${ms('screenshot_monitor', 's20')}`, 'shot', 3500);
+  } else if (a.kind === 'ocr') {
+    if (a.text) I.flashMood('happy', 2000);
+    const n = a.text ? a.text.split('\n').length : 0;
+    const sub = a.error ? 'Lecture impossible' : !a.text ? 'Aucun texte trouvé' : (I.lang === 'en' ? `Copied · ${n} line${n > 1 ? 's' : ''}` : `Copié · ${n} ligne${n > 1 ? 's' : ''}`);
+    showActivity(`<div class="a-ico${a.text ? '' : ' warn'}">${ms('document_scanner', 'fill s20')}</div><div class="a-txt"><div class="title-s ellipsis"${a.text ? ' data-noi18n' : ''}>${a.text ? esc(a.text.replace(/\s+/g, ' ')) : "Texte de l'écran"}</div><div class="body-s variant"${a.text ? ' data-noi18n' : ''}>${a.text ? esc(sub) : sub}</div></div>${ms(a.text ? 'content_copy' : 'search_off', 's20')}`, 'ocr', 3500);
+  } else if (a.kind === 'color') {
+    I.flashMood('happy', 1500);
+    showActivity(`<div class="a-ico" style="background:${esc(a.hex)}"></div><div class="a-txt"><div class="title-s" data-noi18n>${esc(a.hex.toUpperCase())}</div><div class="body-s variant">Couleur copiée</div></div>${ms('colorize', 's20')}`, 'color', 3000);
   } else if (a.kind === 'bt') {
     const bat = a.battery != null ? `<div class="a-val">${a.battery} %</div>` : '';
     const sub = a.low ? 'Batterie faible' : a.on ? 'Connecté' : 'Déconnecté';
@@ -284,7 +316,7 @@ $('.c-art').addEventListener('click', (e) => { e.stopPropagation(); follet.media
 // tuiles de l'accueil : raccourcis integres, ou une appli / un fichier / un dossier / un site choisis
 I.TILES = {
   'radio:WiFi': ['wifi', 'Wi-Fi'], 'radio:Bluetooth': ['bluetooth', 'Bluetooth'], 'ms-screenclip:': ['screenshot_region', 'Capture'],
-  'follet:shot': ['screenshot_monitor', 'Écran → Étagère'], 'taskmgr': ['monitor_heart', 'Tâches'], 'explorer': ['folder', 'Fichiers'],
+  'follet:shot': ['screenshot_monitor', 'Écran → Étagère'], 'follet:ocr': ['document_scanner', "Texte de l'écran"], 'follet:color': ['colorize', 'Pipette'], 'taskmgr': ['monitor_heart', 'Tâches'], 'explorer': ['folder', 'Fichiers'],
   'ms-settings:': ['settings', 'Paramètres'], 'calc': ['calculate', 'Calcul'], 'terminal': ['terminal', 'Terminal'], 'notepad': ['edit_note', 'Bloc-notes'],
   'lock': ['lock', 'Verrouiller'], 'ms-settings-bluetooth:': ['bluetooth_searching', 'Appareils'],
 };

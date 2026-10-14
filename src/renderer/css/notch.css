@@ -516,16 +516,20 @@ body.dropping #dropzone { opacity: 1; pointer-events: auto; }
 .cal-item .u { flex: 1; min-width: 0; font: 12px/16px var(--mono); color: var(--md-on-surface-variant); }
 
 /* ============ Bienvenue (premier lancement) ============ */
-#welcome { position: absolute; inset: 0; z-index: 55; display: flex; flex-direction: column; align-items: center; padding: 58px 48px 24px;
+#welcome { position: absolute; inset: 0; z-index: 55; display: flex; flex-direction: column; align-items: center; padding: 34px 48px 24px;
   background: radial-gradient(80% 60% at 50% 20%, color-mix(in srgb, var(--md-primary) 18%, transparent), transparent 70%), var(--notch);
   border-radius: inherit; animation: viewIn .5s var(--spring); }
+.w-mascot { width: 96px; height: 96px; flex-shrink: 0; }
 #welcome.bye { opacity: 0; transform: scale(.98); transition: all .35s var(--emphasized); }
 .w-title { font: 400 30px/38px var(--font); margin-top: 6px; font-variation-settings: 'wdth' 110, 'opsz' 32; }
 .w-sub { font: 400 14px/20px var(--font); color: var(--md-on-surface-variant); margin-top: 4px; }
-.w-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 34px; width: 100%; }
+.w-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 26px; width: 100%; }
 .w-steps div { background: var(--md-surface-container-high); border-radius: 24px; padding: 18px 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
 .w-steps .ms { font-size: 30px; color: var(--md-primary); margin-bottom: 4px; }
 .w-steps b { font: 500 14px/20px var(--font); }
 .w-steps span:last-child { font: 400 12.5px/17px var(--font); color: var(--md-on-surface-variant); }
 .w-foot { margin-top: auto; width: 100%; display: flex; align-items: center; gap: 20px; }
 .w-foot span { flex: 1; }
+.w-dots { display: flex; gap: 6px; }
+.w-dots i { width: 8px; height: 8px; border-radius: 4px; background: var(--md-outline-variant); transition: width .3s var(--spring), background .3s; }
+.w-dots i.on { width: 22px; background: var(--md-primary); }

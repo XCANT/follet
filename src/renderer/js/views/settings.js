@@ -37,9 +37,11 @@ I.view('settings', {
   r_look() {
     const t = this.data.config.theme;
     return this.row('Langue', 'Langue de l\'interface. Automatique suit Windows.', '<div class="seg-lang"></div>')
+      + this.row('Thèmes prêts', 'Un clic applique la couleur, le style et le fond.', '<div class="presets" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:440px"></div>')
       + this.row('Source des couleurs', 'Material You construit tout le thème à partir d\'une seule couleur.', '<div class="seg-src"></div>')
       + `<div class="set-row custom-row" style="${t.source === 'custom' ? '' : 'display:none'}"><div class="txt"><div class="hl">Couleur</div></div><div class="swatches"></div><input type="color" class="color-pick" value="${esc(t.color)}" style="width:36px;height:32px;border:0;background:none;cursor:pointer"></div>`
       + this.row('Style', 'Intensité et variété des couleurs dérivées.', '<div class="seg-var"></div>')
+      + this.row('Fond', "Noir pur : idéal pour les écrans OLED, l'encoche se fond dans le bord de l'écran.", '<div class="seg-surf"></div>')
       + this.row("Taille de l'encoche", 'Encoche repliée.', '<div class="seg-size"></div>')
       + this.row("Position de l'encoche", "Glisse pour décaler l'encoche, par exemple pour la placer au-dessus de ta webcam.", `<div style="display:flex;gap:6px;align-items:center"><div class="pos-slider" style="width:180px"></div><button class="icon-btn sm state pos-reset" title="Recentrer">${ms('align_horizontal_center')}</button></div>`)
       + this.row('Tenues de Follet', "Chapeau de sorcière en octobre, tuque quand il fait froid, parapluie sous la pluie, bonnet de Noël…", this.sw('outfits', (this.data.config.mascot || {}).outfits !== false))
@@ -52,7 +54,18 @@ I.view('settings', {
       $('.custom-row', body).style.display = v === 'custom' ? '' : 'none';
       this.save({ theme: { source: v } });
     });
-    segmented($('.seg-var', body), [['tonal', 'Doux'], ['vibrant', 'Vif'], ['expressive', 'Expressif'], ['fidelity', 'Fidèle']], t.variant, (v) => this.save({ theme: { variant: v } }));
+    segmented($('.seg-var', body), [['tonal', 'Doux'], ['vibrant', 'Vif'], ['expressive', 'Expressif'], ['fidelity', 'Fidèle'], ['neutral', 'Neutre'], ['mono', 'Mono']], t.variant, (v) => this.save({ theme: { variant: v } }));
+    segmented($('.seg-surf', body), [['tinted', 'Teinté'], ['black', 'Noir pur']], t.surface || 'tinted', (v) => this.save({ theme: { surface: v } }));
+    const presets = [
+      ['Minuit', '#5f6368', 'mono', 'black'], ['Lavande', '#6750a4', 'tonal', 'tinted'], ['Océan', '#0b57d0', 'vibrant', 'tinted'], ['Forêt', '#146c2e', 'tonal', 'tinted'],
+      ['Sakura', '#d0638c', 'expressive', 'tinted'], ['Braise', '#e8673d', 'vibrant', 'black'], ['Ambre', '#e8a33d', 'fidelity', 'tinted'],
+    ];
+    $('.presets', body).innerHTML = presets.map(([n, c, v, s], i) => `<button class="chip state ${t.source === 'custom' && t.color === c && t.variant === v && (t.surface || 'tinted') === s ? 'selected' : ''}" data-p="${i}"><span style="width:14px;height:14px;border-radius:50%;background:${c};${s === 'black' ? 'outline:3px solid #000;' : ''}display:inline-block"></span>${n}</button>`).join('');
+    $('.presets', body).addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-p]'); if (!b) return;
+      const [, color, variant, surface] = presets[+b.dataset.p];
+      await this.save({ theme: { source: 'custom', color, variant, surface } }); this.open('look');
+    });
     segmented($('.seg-mascot', body), [['corail', 'Corail'], ['theme', 'Couleurs de l\'appli']], (this.data.config.mascot || {}).color || 'corail', (v) => { Follet.setPalette(v); this.save({ mascot: { color: v } }); I.emit('mascot-palette'); });
     segmented($('.seg-size', body), [['small', 'Petite'], ['normal', 'Normale'], ['large', 'Grande']], (this.data.config.notch || {}).size || 'normal', async (v) => { await this.save({ notch: { size: v } }); I.applyLayout(this.data.config); });
     // appliquee au relachement : l'encoche bouge sous la souris, on ne la deplace pas pendant le glisser
@@ -71,17 +84,21 @@ I.view('settings', {
     const disp = this.data.displays.map((d) => `<option value="${d.primary ? 'primary' : d.id}" ${(c.display === 'primary' && d.primary) || c.display === d.id ? 'selected' : ''}>${esc(d.label)}</option>`).join('');
     return this.row('Écran', 'Où l\'encoche s\'affiche.', `<select class="field disp">${disp}</select>`)
       + this.row('Ouverture au survol', 'Combien de temps la souris doit s\'attarder avant l\'aperçu. Un simple passage ne l\'ouvre pas.', '<div class="seg-hover"></div>')
+      + this.row("Molette sur l'encoche", "Vers le bas pour ouvrir, ou pour régler le volume (le clic ouvre toujours). Glisser à deux doigts ou Maj+molette change de chanson ; clic du milieu = lecture/pause.", '<div class="seg-wheel"></div>')
       + this.row('Se ranger devant une fenêtre maximisée', 'Elle ressort quand la souris touche le haut de l\'écran, au milieu.', this.sw('tuck', c.behavior.tuck))
       + this.row('Masquer pendant les jeux en plein écran', '', this.sw('hideFullscreen', c.behavior.hideFullscreen))
       + this.row('Accélération graphique', 'Recommandée : animations fluides et moins de travail pour le processeur. Désactivée, Follet économise environ 70 Mo de mémoire. Effet au prochain démarrage de Follet.', this.sw('accel', c.behavior.accel !== false))
       + this.row('Raccourci clavier', 'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" data-sc="shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)
       + this.row('Historique du presse-papiers', "Ouvre l'onglet Copié ; Entrée colle l'élément choisi dans l'appli où tu étais.", `<input class="field shortcut" data-sc="clipShortcut" readonly value="${esc(c.clipShortcut || '')}" style="width:200px;cursor:pointer">`)
       + this.row("Capture d'écran", "Capture l'écran sous la souris, la copie et la dépose dans l'Étagère (dossier Images\\Captures d'écran).", `<input class="field shortcut" data-sc="shotShortcut" readonly value="${esc(c.shotShortcut || '')}" style="width:200px;cursor:pointer">`)
+      + this.row("Copier le texte de l'écran", "Sélectionne une zone : le texte est lu par Windows, sur ce PC, puis copié.", `<input class="field shortcut" data-sc="ocrShortcut" readonly value="${esc(c.ocrShortcut || '')}" style="width:200px;cursor:pointer">`)
+      + this.row('Pipette', "Clique sur n'importe quel pixel de l'écran : sa couleur (#hex) est copiée.", `<input class="field shortcut" data-sc="colorShortcut" readonly value="${esc(c.colorShortcut || '')}" style="width:200px;cursor:pointer">`)
       + this.row('Démarrer avec Windows', '', `<input type="checkbox" class="switch login" ${this.data.login ? 'checked' : ''}>`);
   },
   b_behavior(body) {
     $('.disp', body).addEventListener('change', (e) => this.save({ display: e.target.value }, 'Écran changé'));
     this.bindSwitches(body, (k, v) => this.save({ behavior: { [k]: v } }));
+    segmented($('.seg-wheel', body), [['open', 'Ouvrir'], ['volume', 'Volume']], this.data.config.behavior.wheel || 'open', (v) => { I.wheel = v; this.save({ behavior: { wheel: v } }); });
     segmented($('.seg-hover', body), [['fast', 'Rapide'], ['normal', 'Normale'], ['slow', 'Lente']], this.data.config.behavior.hover || 'normal', (v) => this.save({ behavior: { hover: v } }));
     $('.login', body).addEventListener('change', async (e) => { this.data.login = await follet.loginSet(e.target.checked); snack(this.data.login ? 'Follet démarrera avec Windows' : 'Démarrage automatique désactivé'); });
     $$('.shortcut', body).forEach((sc) => {
@@ -292,13 +309,21 @@ I.view('settings', {
 
   // ---------- A propos ----------
   r_about() {
-    return this.row('Follet', `Version ${esc(this.data.version)} · Material You`, '')
+    return this.row('Follet', `Version ${esc(this.data.version)} · Material You`, `<button class="btn tonal sm state tour">${ms('tour')}Revoir la visite</button>`)
       + `<div class="set-row upd-row"><div class="txt"><div class="hl">Mises à jour</div><div class="sup upd-sup">…</div></div><div class="upd-ctrl"></div></div>`
       + this.row('Données personnelles', esc(this.data.dataDir) + '<br>Config, tâches, étagère et conversations Claude restent sur ce PC.', `<button class="btn tonal sm state open-data">${ms('folder_open')}Ouvrir</button>`)
+      + this.row('Sauvegarde des réglages', "Pour un nouveau PC : réglages, tuiles, tâches, favoris et éléments épinglés (et tes adresses d'agenda). Les clés d'IA ne sont jamais exportées.", `<div style="display:flex;gap:6px"><button class="btn tonal sm state cfg-exp">${ms('upload')}Exporter</button><button class="btn tonal sm state cfg-imp">${ms('download')}Importer</button></div>`)
       + this.row('Services contactés', 'ipwho.is / geojs.io (position par IP), Open-Meteo (météo), speed.cloudflare.com (test de vitesse, sur demande), tes agendas iCal.', '');
   },
   b_about(body) {
     $('.open-data', body).addEventListener('click', () => follet.openDataFolder());
+    $('.tour', body).addEventListener('click', () => I.tour(0));
+    $('.cfg-exp', body).addEventListener('click', async () => { if (await follet.configExport()) snack('Réglages exportés'); });
+    $('.cfg-imp', body).addEventListener('click', async () => {
+      const r = await follet.configImport(); if (!r) return;
+      if (r.error) return snack('Fichier de réglages invalide');
+      snack('Réglages importés'); setTimeout(() => location.reload(), 900);
+    });
     const paint = (s) => {
       const sup = $('.upd-sup', body), ctrl = $('.upd-ctrl', body);
       if (!sup) return;
