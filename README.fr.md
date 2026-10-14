@@ -31,6 +31,8 @@
 
 Pour que les notifications n'apparaissent que dans Follet, coupe les bannières des applis dans Paramètres Windows → Notifications (ou active Ne pas déranger) : Follet les lit dans le centre de notifications.
 
+Empreinte : installateur de 95 Mo, environ 350 Mo de mémoire et moins de 2 % du processeur au repos (mesuré sur un portable Ryzen 7). Couper l'accélération graphique dans Réglages → Comportement économise environ 70 Mo.
+
 Follet vérifie les nouvelles versions toutes les 6 heures et s'installe à jour depuis Réglages → À propos.
 
 En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.

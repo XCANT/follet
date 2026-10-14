@@ -2,6 +2,12 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.8.1] - 2026-10-13
+
+### Changed
+- Smaller installer: 95 MB instead of 111 MB (295 MB installed instead of 358 MB). Only the English and French Chromium languages are shipped, and development files of dependencies (source maps, TypeScript sources, unused icon styles) are left out.
+- The README states Follet's footprint at rest.
+
 ## [1.8.0] - 2026-10-13
 
 ### Added

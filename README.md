@@ -33,6 +33,8 @@ The interface follows the Windows language (French or English). Change it in Set
 
 To see notifications only in Follet, turn off app banners in Windows Settings → Notifications (or turn on Do not disturb): Follet reads them from the notification center.
 
+Footprint: a 95 MB installer, about 350 MB of memory and under 2 % of the processor at rest (measured on a Ryzen 7 laptop). Turning off hardware acceleration in Settings → Behavior saves about 70 MB.
+
 Follet checks for new versions every 6 hours and updates itself from Settings → About.
 
 If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
