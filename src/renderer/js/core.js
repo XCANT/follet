@@ -242,6 +242,8 @@ I.activity = (a) => {
     const icon = /^(png|jpe?g|gif|webp|svg|bmp|heic)$/i.test(ext) ? 'image' : /^(mp4|mkv|mov|webm|avi)$/i.test(ext) ? 'movie' : /^(mp3|wav|flac|ogg|m4a)$/i.test(ext) ? 'music_note'
       : /^(zip|rar|7z|tar|gz)$/i.test(ext) ? 'folder_zip' : /^(exe|msi|msix)$/i.test(ext) ? 'install_desktop' : /^pdf$/i.test(ext) ? 'picture_as_pdf' : 'draft';
     showActivity(`<div class="a-ico">${ms(a.done ? icon : 'download', 'fill s20')}</div><div class="a-txt"><div class="title-s ellipsis" data-noi18n>${esc(a.name)}</div><div class="body-s variant">${a.done ? (I.lang === 'en' ? 'Downloaded · on the Shelf' : "Téléchargé · dans l'Étagère") : (I.lang === 'en' ? 'Downloading…' : 'Téléchargement…')}</div></div>${a.done ? `<div class="a-val">${fmtBytes(a.size)}</div>` : ''}`, 'download', a.done ? 4500 : 2500);
+  } else if (a.kind === 'rain') {
+    showActivity(`<div class="a-ico">${ms(a.snow ? 'weather_snowy' : 'umbrella', 'fill s20')}</div><div class="a-txt"><div class="title-s" data-noi18n>${esc(a.text)}</div><div class="body-s variant ellipsis" data-noi18n>${esc(I.weatherNow?.city || '')}</div></div>`, 'rain', 6000);
   } else if (a.kind === 'event') {
     I.flashMood('alert', 2500);
     const when = a.mins ? (I.lang === 'en' ? `In ${a.mins} min` : `Dans ${a.mins} min`) : (I.lang === 'en' ? 'Starting now' : 'Commence maintenant');

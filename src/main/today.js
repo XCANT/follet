@@ -79,12 +79,18 @@ core.events.on('config', (c, b) => { if (JSON.stringify(c.weather) !== JSON.stri
 ipcMain.handle('weather', async () => {
   const loc = await locate(); if (!loc) return null;
   const key = `${loc.lat.toFixed(2)},${loc.lon.toFixed(2)}`;
-  if (weatherCache.data && weatherCache.key === key && Date.now() - weatherCache.at < 20 * 60e3) return weatherCache.data;
+  // 14 min : la pluie a 15 min (minutely_15) reste fraiche pour l'alerte "pluie bientot"
+  if (weatherCache.data && weatherCache.key === key && Date.now() - weatherCache.at < 14 * 60e3) return weatherCache.data;
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}`
-    + '&current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,relative_humidity_2m'
-    + '&hourly=temperature_2m,weather_code,precipitation_probability&forecast_hours=12'
-    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto&forecast_days=5';
-  try { weatherCache = { at: Date.now(), key, data: { city: loc.city, source: loc.source, ...(await core.fetchJson(url)) } }; } catch { }
+    + '&current=temperature_2m,apparent_temperature,weather_code,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m,uv_index,pressure_msl,precipitation,cloud_cover,visibility'
+    + '&hourly=temperature_2m,weather_code,precipitation_probability,precipitation,is_day&forecast_hours=25'
+    + '&minutely_15=precipitation,snowfall&forecast_minutely_15=8'
+    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,uv_index_max,wind_speed_10m_max,sunrise,sunset&timezone=auto&forecast_days=7';
+  const air = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${loc.lat}&longitude=${loc.lon}&current=us_aqi,pm2_5&timezone=auto`;
+  try {
+    const [w, a] = await Promise.all([core.fetchJson(url), core.fetchJson(air).catch(() => null)]);
+    weatherCache = { at: Date.now(), key, data: { city: loc.city, source: loc.source, ...w, air: a && a.current } };
+  } catch { }
   return weatherCache.data;
 });
 // Recherche de ville (reglages) via le geocodage d'Open-Meteo

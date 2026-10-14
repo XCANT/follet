@@ -108,6 +108,7 @@ I.view('settings', {
       + this.row(`${ms('notifications', 's20')} Notifications Windows`, 'Affichées dans l\'encoche. Astuce : dans Windows, coupe les bannières d\'une appli (Paramètres → Notifications) et laisse Follet les montrer.', this.sw('notif', a.notif !== false))
       + this.row(`${ms('mic', 's20')} Micro utilisé`, 'Un point orange reste dans l\'encoche tant qu\'une appli enregistre ton micro.', this.sw('mic', a.mic !== false))
       + this.row(`${ms('download', 's20')} Téléchargements`, "Progression des téléchargements du navigateur, puis le fichier dans l'Étagère.", this.sw('downloads', a.downloads !== false))
+      + this.row(`${ms('umbrella', 's20')} Pluie imminente`, "Prévient quand la pluie ou la neige arrive dans l'heure.", this.sw('rain', a.rain !== false))
       + this.row(`${ms('event', 's20')} Rappels d'agenda`, "Avant chaque événement de l'agenda, puis à son début.", '<div class="seg-rem"></div>')
       + this.row(`${ms('bluetooth', 's20')} Appareils Bluetooth`, 'Connexion, déconnexion et batterie faible (casque, manette, souris…).', this.sw('bluetooth', a.bluetooth !== false))
       + this.row(`${ms('lyrics', 's20')} Paroles synchronisées`, "Dans l'aperçu et l'accueil, quand la chanson est connue de LRCLIB (lrclib.net, base libre et gratuite).", this.sw('lyrics', a.lyrics !== false));

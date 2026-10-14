@@ -2,6 +2,12 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.13.0] - 2026-10-14
+
+### Added
+- Detailed weather page, opened by clicking the weather card in Today: current conditions on a sky that follows the weather and the time of day, a 24-hour chart (temperature and chance of rain), 7 days, wind with direction and gusts, humidity, UV index, air quality, sunrise and sunset, pressure and visibility.
+- Rain soon: the notch warns when rain or snow starts within the hour, from Open-Meteo's 15-minute forecast. Can be turned off in Settings → Activities.
+
 ## [1.12.0] - 2026-10-14
 
 ### Added

@@ -50,6 +50,7 @@ I.view('today', {
     I.on('tick', (now) => { if (I.mode === 'expanded' && I.tab === 'today') this.renderClock(now); });
 
     $('.cal-refresh', el).addEventListener('click', () => this.loadCalendar(true));
+    $('.weather', el).addEventListener('click', () => I.showTab('weather'));
     // historique des notifications : ce qui reste dans le centre de notifications de Windows
     $('.ag-tabs', el).addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (b) this.setPane(b.dataset.p); });
     $('.notif-list', el).addEventListener('click', (e) => { const x = e.target.closest('.n-del'); if (x) follet.notifRemove(+x.dataset.id); });
@@ -78,6 +79,15 @@ I.view('today', {
     refresh(); setInterval(refresh, 15 * 60e3);
   },
 
+  // "Pluie dans 30 min" : une fois par averse, quand rien ne tombe encore
+  async rainAlert(w) {
+    const s = I.views.weather.soon(w);
+    if (!s || s.none || s.now) { if (s && s.none) this.rainSaid = null; return; }
+    const { config } = await follet.configGet();
+    if (config.activities.rain === false || s.mins > 60 || this.rainSaid) return;
+    this.rainSaid = Date.now();
+    I.activity({ kind: 'rain', mins: s.mins, snow: s.snow, text: I.views.weather.soonText(s) });
+  },
   async checkReminders() {
     if (!this.events) return;
     const lead = (await follet.configGet()).config.activities.reminder ?? 10;
@@ -168,6 +178,7 @@ I.view('today', {
       <div class="w-hours">${hours}</div>
       <div class="w-days">${days}</div>`;
     this.updatePeek();
+    this.rainAlert(w);
   },
 
   async loadCalendar(force) {
