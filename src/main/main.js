@@ -24,6 +24,7 @@ require('./ai');
 const update = require('./update');
 const notifs = require('./notifs');
 const privacy = require('./privacy');
+require('./lyrics');
 
 // ---------- raccourci global ----------
 let shortcut = null;

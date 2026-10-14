@@ -2,6 +2,17 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.9.0] - 2026-10-14
+
+### Added
+- Synced lyrics: the current line shows in the preview (instead of the artist) and on Home, from [LRCLIB](https://lrclib.net), a free and open lyrics database. Video titles like "Artist - Song (Official Video)" are cleaned up before the lookup. Can be turned off in Settings → Activities.
+- Notification history: Today → Notifications lists what is still in the Windows notification center, with a button to clear one or all of them (also from Windows).
+- Pomodoro: 25 minutes of work and 5 minutes of break (15 every 4 sessions), chained automatically and shown in the notch.
+- Clicking the album art (Home or preview) brings the player's window to the front.
+
+### Changed
+- Timer presets: 5, 10, 25 and 45 minutes, plus Pomodoro.
+
 ## [1.8.1] - 2026-10-13
 
 ### Changed

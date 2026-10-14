@@ -7,8 +7,13 @@ I.view('today', {
       <div class="card weather"><div class="empty">${ms('cloud')}Chargement…</div></div>
     </div>
     <div class="card agenda">
-      <div class="card-title"><span>Agenda</span><button class="icon-btn xs state cal-refresh" title="Actualiser">${ms('refresh')}</button></div>
+      <div class="card-title">
+        <div class="ag-tabs"><button class="ag-tab on state" data-p="agenda">Agenda</button><button class="ag-tab state" data-p="notifs">Notifications<span class="badge notif-count"></span></button></div>
+        <button class="icon-btn xs state cal-refresh" title="Actualiser">${ms('refresh')}</button>
+        <button class="btn text sm state notif-clear" title="Les retire aussi du centre de notifications de Windows" style="display:none">Tout effacer</button>
+      </div>
       <div class="scroll agenda-list" style="flex:1"></div>
+      <div class="scroll notif-list" style="flex:1;display:none"></div>
     </div>
     <div class="col">
       <div class="card timer-card">
@@ -28,12 +33,15 @@ I.view('today', {
     this.el = el;
     this.g = gauge(120, 10);
     $('.timer-ring', el).innerHTML = this.g.html('<span class="t-val"></span>');
-    $('.timer-presets', el).innerHTML = [1, 5, 10, 25, 45].map((m) => `<button class="chip sm assist state" data-min="${m}">${m} min</button>`).join('');
-    $('.timer-presets', el).addEventListener('click', (e) => { const b = e.target.closest('[data-min]'); if (b) this.startTimer(+b.dataset.min * 60); });
+    $('.timer-presets', el).innerHTML = [5, 10, 25, 45].map((m) => `<button class="chip sm assist state" data-min="${m}">${m} min</button>`).join('')
+      + `<button class="chip sm assist state" data-pomo title="25 min de travail, 5 min de pause, enchaînés">${ms('target', 's18')}Pomodoro</button>`;
+    $('.timer-presets', el).addEventListener('click', (e) => { const b = e.target.closest('[data-min]'); if (b) this.startTimer(+b.dataset.min * 60);
+      if (e.target.closest('[data-pomo]')) { I.timer = { end: Date.now() + 1500e3, total: 1500, pomo: { phase: 'work', n: 1 } }; I.saveTimer(); this.renderTimer(); }
+    });
     $('.timer-actions', el).addEventListener('click', (e) => {
       const a = e.target.closest('[data-a]')?.dataset.a; const t = I.timer; if (!a || !t) return;
-      if (a === 'pause') I.timer = { left: I.timerLeft(), total: t.total, paused: true };
-      if (a === 'resume') I.timer = { end: Date.now() + t.left * 1000, total: t.total };
+      if (a === 'pause') I.timer = { left: I.timerLeft(), total: t.total, paused: true, pomo: t.pomo };
+      if (a === 'resume') I.timer = { end: Date.now() + t.left * 1000, total: t.total, pomo: t.pomo };
       if (a === 'stop') I.timer = null;
       if (a === 'plus') I.timer = t.paused ? { ...t, left: t.left + 60, total: t.total + 60 } : { ...t, end: t.end + 60000, total: t.total + 60 };
       I.saveTimer(); this.renderTimer();
@@ -42,6 +50,12 @@ I.view('today', {
     I.on('tick', (now) => { if (I.mode === 'expanded' && I.tab === 'today') this.renderClock(now); });
 
     $('.cal-refresh', el).addEventListener('click', () => this.loadCalendar(true));
+    // historique des notifications : ce qui reste dans le centre de notifications de Windows
+    $('.ag-tabs', el).addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (b) this.setPane(b.dataset.p); });
+    $('.notif-list', el).addEventListener('click', (e) => { const x = e.target.closest('.n-del'); if (x) follet.notifRemove(+x.dataset.id); });
+    $('.notif-clear', el).addEventListener('click', () => (this.notifs || []).forEach((n) => follet.notifRemove(n.id)));
+    follet.onNotifs((list) => { this.notifs = list; this.renderNotifs(); });
+    follet.notifs().then((r) => { this.notifs = r.list; this.access = r.access; this.renderNotifs(); }).catch(() => { });
     $('.agenda-list', el).addEventListener('click', (e) => { if (e.target.closest('.add-cal')) { I.showTab('settings'); I.views.settings.open('agenda'); } });
     $('.todo-list', el).addEventListener('click', (e) => {
       const it = e.target.closest('.todo'); if (!it) return;
@@ -61,6 +75,27 @@ I.view('today', {
     refresh(); setInterval(refresh, 15 * 60e3);
   },
 
+  setPane(p) {
+    this.pane = p;
+    $$('.ag-tab', this.el).forEach((b) => b.classList.toggle('on', b.dataset.p === p));
+    $('.agenda-list', this.el).style.display = p === 'agenda' ? '' : 'none';
+    $('.notif-list', this.el).style.display = p === 'notifs' ? '' : 'none';
+    $('.cal-refresh', this.el).style.display = p === 'agenda' ? '' : 'none';
+    this.renderNotifs();
+  },
+  renderNotifs() {
+    const list = this.notifs || [], el = this.el;
+    $('.notif-count', el).textContent = list.length || '';
+    $('.notif-clear', el).style.display = this.pane === 'notifs' && list.length ? '' : 'none';
+    if (this.pane !== 'notifs') return;
+    $('.notif-list', el).innerHTML = !list.length
+      ? `<div class="empty">${ms('notifications_off')}${this.access && this.access !== 'Allowed' ? "Follet n'a pas accès aux notifications" : 'Aucune notification'}</div>`
+      : list.map((n) => `<div class="notif-item">
+          ${n.logo ? `<img class="n-ico" src="${n.logo}">` : `<div class="n-ico">${ms('notifications', 's18')}</div>`}
+          <div class="n-txt"><div class="n-head"><span class="ellipsis">${esc(n.app || '')}</span><span>${hhmm(new Date(n.time))}</span></div>
+            <div class="title-s ellipsis" data-noi18n>${esc(n.title || '')}</div><div class="body-s variant n-body" data-noi18n>${esc(n.body || '')}</div></div>
+          <button class="icon-btn xs state n-del" data-id="${n.id}" title="Effacer">${ms('close')}</button></div>`).join('');
+  },
   show() { this.renderClock(new Date()); this.renderTimer(); this.loadWeather(); this.loadCalendar(); },
 
   renderClock(now) {
@@ -72,7 +107,7 @@ I.view('today', {
   renderTimer() {
     const t = I.timer, el = this.el;
     const left = I.timerLeft();
-    $('.t-val', el).textContent = t ? fmtDur(Math.ceil(left)) : '0:00';
+    $('.t-val', el).innerHTML = (t ? fmtDur(Math.ceil(left)) : '0:00') + (t && t.pomo ? `<small class="t-pomo">${I.pomoLabel(t.pomo)}</small>` : '');
     this.g.set($('.timer-ring .gauge', el), t ? (100 * left) / t.total : 0);
     $('.timer-presets', el).style.display = t ? 'none' : '';
     $('.timer-actions', el).innerHTML = !t ? '<span class="body-s variant">Un minuteur s\'affiche dans l\'encoche</span>'

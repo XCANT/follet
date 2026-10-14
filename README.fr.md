@@ -41,8 +41,8 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 
 | Onglet | Contenu |
 |---|---|
-| **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec visualiseur, volume, sortie audio, Wi-Fi, Bluetooth, raccourcis |
-| **Aujourd'hui** | Horloge, météo heure par heure et sur 4 jours (position par IP), agenda de la semaine (iCal), minuteur affiché dans l'encoche, tâches |
+| **Accueil** | Lecture en cours pour toute appli qui parle à Windows (Spotify, YouTube Music, navigateur…) avec paroles synchronisées, visualiseur (clic sur la pochette pour ramener le lecteur), volume, sortie audio, Wi-Fi, Bluetooth, raccourcis |
+| **Aujourd'hui** | Horloge, météo heure par heure et sur 4 jours (position par IP), agenda de la semaine (iCal), historique des notifications, minuteur et Pomodoro affichés dans l'encoche, tâches |
 | **Stats** | Courbes CPU (fréquence réelle), GPU NVIDIA et RAM sur 5 min, applis qui consomment, débit réseau et test de vitesse, stockage. Bouton terminal : fiche système façon fastfetch |
 | **Étagère** | Glisse des fichiers sur l'encoche, même repliée, pour les garder sous la main, puis fais-les glisser vers n'importe quelle appli |
 | **Copié** | Les 50 derniers textes copiés, en mémoire seulement |
@@ -69,7 +69,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 - Les données personnelles (config, tâches, étagère, favoris, conversations, clés d'API chiffrées par Windows) restent dans `%APPDATA%\Follet`, jamais dans le dossier du projet.
 - Le presse-papiers n'est jamais écrit sur le disque.
 - Aucune télémétrie, aucune statistique d'usage, aucun compte. Follet ne contacte que les services ci-dessous, pour les fonctions qui en ont besoin.
-- Services externes : [GitHub](https://github.com) (vérifie s'il y a une nouvelle version toutes les 6 heures), [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (position approximative par IP, désactivable), [Open-Meteo](https://open-meteo.com) (météo), [speed.cloudflare.com](https://speed.cloudflare.com) (test de vitesse, sur demande), les agendas iCal que tu ajoutes et le fournisseur d'IA que tu choisis.
+- Services externes : [GitHub](https://github.com) (vérifie s'il y a une nouvelle version toutes les 6 heures), [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (position approximative par IP, désactivable), [Open-Meteo](https://open-meteo.com) (météo), [speed.cloudflare.com](https://speed.cloudflare.com) (test de vitesse, sur demande), [LRCLIB](https://lrclib.net) (paroles : artiste et titre de la chanson en cours, désactivable), les agendas iCal que tu ajoutes et le fournisseur d'IA que tu choisis.
 
 ## Développement
 
@@ -121,6 +121,7 @@ src/main/
   monitors.js    musique, volume, sortie audio, batterie -> activités
   notifs.js      notifications Windows -> activités
   privacy.js     applis qui enregistrent le micro -> point orange
+  lyrics.js      paroles synchronisées depuis LRCLIB
   update.js      mises à jour depuis les releases GitHub
   ai.js          fournisseurs d'IA, clés chiffrées, consommation
   i18n.js        traduction côté processus principal (menu de l'icône)

@@ -154,11 +154,44 @@ setInterval(async () => { I.moodState.idle = await follet.idleTime().catch(() =>
 $$('#compact [data-media]').forEach((b) => b.addEventListener('click', () => follet.mediaCmd(b.dataset.media)));
 follet.onMedia((m) => {
   I.media = m;   // le processus principal envoie toujours la pochette courante
+  I.mediaAt = Date.now();
+  loadLyrics();
   renderCompact();
   updateMood();
   I.emit('media', I.media);
 });
-follet.media().then((m) => { if (m) { I.media = m; renderCompact(); } });
+follet.media().then((m) => { if (m) { I.media = m; I.mediaAt = Date.now(); renderCompact(); loadLyrics(); } });
+
+// ---------- paroles synchronisees (LRCLIB) ----------
+// position estimee entre deux sondages du lecteur
+I.mediaPos = () => { const m = I.media; return !m.present ? 0 : m.position + (m.status === 'Playing' ? (Date.now() - (I.mediaAt || Date.now())) / 1000 : 0); };
+I.lyrics = null;
+let lyricsKey = null, lyricShown = null;
+async function loadLyrics() {
+  const m = I.media, key = m.present ? `${m.artist}|${m.title}` : null;
+  if (key === lyricsKey) return;
+  lyricsKey = key; I.lyrics = null; showLyric();
+  if (!key) return;
+  const r = await follet.lyrics({ artist: m.artist, title: m.title, duration: m.duration }).catch(() => null);
+  if (key === lyricsKey && r && r.lines && r.lines.length) { I.lyrics = r.lines; showLyric(); }
+}
+function currentLyric() {
+  const L = I.lyrics; if (!L) return null;
+  const t = I.mediaPos() + 0.25;
+  let lo = 0, hi = L.length - 1, at = -1;
+  while (lo <= hi) { const mid = (lo + hi) >> 1; if (L[mid].t <= t) { at = mid; lo = mid + 1; } else hi = mid - 1; }
+  return at < 0 ? '' : L[at].text || '♪';
+}
+function showLyric() {
+  const line = currentLyric();
+  notchEl.classList.toggle('has-lyric', line !== null && line !== '');
+  if (line === lyricShown) return;
+  lyricShown = line;
+  $('.c-lyric').textContent = line || '';
+  const h = $('.np-lyric'); if (h) h.textContent = line || '';
+}
+// rafraichi 4 fois par seconde, seulement quand une ligne est visible
+setInterval(() => { if (I.lyrics && I.media.status === 'Playing' && (I.mode === 'peek' || (I.mode === 'expanded' && I.tab === 'home'))) showLyric(); }, 250);
 
 // ---------- activites en direct ----------
 let actTimer = null, actKind = null;
@@ -211,6 +244,7 @@ I.activity = (a) => {
   }
 };
 follet.onActivity(I.activity);
+$('.c-art').addEventListener('click', (e) => { e.stopPropagation(); follet.mediaFocus(); });
 
 // point orange tant qu'une appli enregistre le micro
 function renderMic(list) {
@@ -277,14 +311,26 @@ document.addEventListener('drop', async (e) => {
 // ---------- minuteur (affiche dans l'encoche) ----------
 I.timer = JSON.parse(localStorage.getItem('timer') || 'null');   // { end, total } ou { left, total, paused: true }
 I.saveTimer = () => localStorage.setItem('timer', JSON.stringify(I.timer));
+I.pomoLabel = (p) => p.phase === 'work' ? (I.lang === 'en' ? `Session ${p.n}` : `Séance ${p.n}`) : (p.n % 4 === 0 ? (I.lang === 'en' ? 'Long break' : 'Longue pause') : (I.lang === 'en' ? 'Short break' : 'Courte pause'));
 I.timerLeft = () => !I.timer ? 0 : I.timer.paused ? I.timer.left : Math.max(0, (I.timer.end - Date.now()) / 1000);
 function tickTimer() {
   const t = I.timer;
   notchEl.classList.toggle('has-timer', !!t);
+  notchEl.classList.toggle('pomo-break', !!(t && t.pomo && t.pomo.phase === 'break'));
   if (!t) return;
   const left = I.timerLeft();
   $('.c-timer-val').textContent = fmtDur(Math.ceil(left));
-  if (!t.paused && left <= 0) {
+  if (!t.paused && left <= 0 && t.pomo) {
+    // Pomodoro : 25 min de travail, 5 min de pause (15 toutes les 4 seances), enchaines automatiquement
+    const work = t.pomo.phase === 'work';
+    const next = work ? { phase: 'break', n: t.pomo.n } : { phase: 'work', n: t.pomo.n + 1 };
+    const sec = work ? (t.pomo.n % 4 === 0 ? 15 : 5) * 60 : 25 * 60;
+    I.timer = { end: Date.now() + sec * 1000, total: sec, pomo: next }; I.saveTimer();
+    I.flashMood(work ? 'happy' : 'alert', 3000);
+    const title = work ? "C'est la pause" : 'Au travail', sub = I.pomoLabel(next) + ' · ' + fmtDur(sec);
+    showActivity(`<div class="a-ico">${ms(work ? 'self_improvement' : 'target', 'fill s20')}</div><div class="a-txt"><div class="title-s">${title}</div><div class="body-s variant">${sub}</div></div>`, 'timer', 6000);
+    follet.notify(I.t(title), sub);
+  } else if (!t.paused && left <= 0) {
     I.timer = null; I.saveTimer();
     notchEl.classList.remove('has-timer');
     I.flashMood('alert', 3000);

@@ -43,8 +43,8 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 
 | Tab | Contents |
 |---|---|
-| **Home** | Now playing for any app that talks to Windows (Spotify, YouTube Music, browser…) with a visualizer, volume, audio output, Wi-Fi, Bluetooth, shortcuts |
-| **Today** | Clock, hourly and 4-day weather (location by IP), this week's calendar (iCal), a timer shown in the notch, tasks |
+| **Home** | Now playing for any app that talks to Windows (Spotify, YouTube Music, browser…) with synced lyrics, a visualizer (click the art to bring the player forward), volume, audio output, Wi-Fi, Bluetooth, shortcuts |
+| **Today** | Clock, hourly and 4-day weather (location by IP), this week's calendar (iCal), notification history, a timer and Pomodoro shown in the notch, tasks |
 | **Stats** | 5-minute CPU (real clock speed), NVIDIA GPU and RAM charts, top apps, network throughput and speed test, storage. Terminal button: fastfetch-style system info |
 | **Shelf** | Drop files on the notch, even collapsed, to keep them handy, then drag them into any app |
 | **Copied** | The last 50 copied texts, in memory only |
@@ -71,7 +71,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 - Personal data (config, tasks, shelf, favorites, chats, API keys encrypted by Windows) stays in `%APPDATA%\Follet`, never in the project folder.
 - The clipboard is never written to disk.
 - No telemetry, no analytics, no account. Follet only contacts the services below, for the features that need them.
-- External services: [GitHub](https://github.com) (checks for a new release every 6 hours), [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (approximate location by IP, can be turned off), [Open-Meteo](https://open-meteo.com) (weather), [speed.cloudflare.com](https://speed.cloudflare.com) (speed test, on demand), the iCal calendars you add, and the AI provider you choose.
+- External services: [GitHub](https://github.com) (checks for a new release every 6 hours), [ipwho.is](https://ipwho.is) / [geojs.io](https://www.geojs.io) (approximate location by IP, can be turned off), [Open-Meteo](https://open-meteo.com) (weather), [speed.cloudflare.com](https://speed.cloudflare.com) (speed test, on demand), [LRCLIB](https://lrclib.net) (song lyrics: artist and title of the current song, can be turned off), the iCal calendars you add, and the AI provider you choose.
 
 ## Development
 
@@ -123,6 +123,7 @@ src/main/
   monitors.js    music, volume, audio output, battery -> activities
   notifs.js      Windows notifications -> activities
   privacy.js     apps recording the microphone -> orange dot
+  lyrics.js      synced lyrics from LRCLIB
   update.js      updates from GitHub releases
   ai.js          AI providers, encrypted keys, usage
   i18n.js        main-process translation (tray menu)

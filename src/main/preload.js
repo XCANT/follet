@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('follet', {
 
   // media / son / ecrans
   media: invoke('media-get'), onMedia: on('media'),
-  mediaCmd: invoke('media-cmd'), mediaSeek: invoke('media-seek'),
+  mediaCmd: invoke('media-cmd'), mediaFocus: invoke('media-focus'), lyrics: invoke('lyrics-get'), mediaSeek: invoke('media-seek'),
   mediaShuffle: invoke('media-shuffle'), mediaRepeat: invoke('media-repeat'),
   audioDevices: invoke('audio-devices'), setAudioDevice: invoke('audio-set'),
   radios: invoke('radios'), setRadio: invoke('radio-set'),

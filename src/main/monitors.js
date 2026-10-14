@@ -93,6 +93,7 @@ function start() {
 
 // ---------- commandes depuis l'interface ----------
 ipcMain.handle('media-get', () => media);
+ipcMain.handle('media-focus', () => (media && media.app ? helper.call('focus-app', media.app).catch(() => false) : false));
 ipcMain.handle('media-cmd', async (_e, c) => { await helper.call('media-cmd', c); setTimeout(() => pollMedia().catch(() => { }), 250); return true; });
 ipcMain.handle('media-seek', async (_e, s) => { await helper.call('media-seek', s); posBase = null; return true; });
 ipcMain.handle('volume-get', () => volume);

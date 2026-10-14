@@ -4,11 +4,12 @@ I.view('home', {
   html: `<div class="grid v-home">
     <div class="card np">
       <div class="np-top">
-        <div class="np-art">${ms('music_note', 's40')}</div>
+        <div class="np-art" title="Ouvrir le lecteur">${ms('music_note', 's40')}</div>
         <div class="np-meta">
           <span class="chip sm np-app" style="display:none"></span>
           <div class="np-title">Rien en lecture</div>
           <div class="np-artist">Lance de la musique ou une vidéo</div>
+          <div class="np-lyric" data-noi18n></div>
         </div>
       </div>
       <div class="viz"><canvas></canvas></div>
@@ -41,6 +42,7 @@ I.view('home', {
       else if (a === 'repeat') follet.mediaRepeat({ None: 'List', List: 'Track', Track: 'None' }[m.repeat] || 'List');
       else follet.mediaCmd(a);
     }));
+    $('.np-art', el).addEventListener('click', () => { if (I.media.present) follet.mediaFocus(); });
     $('.wavy', el).addEventListener('click', (e) => {
       const m = I.media; if (!m.present || !m.duration) return;
       const r = e.currentTarget.getBoundingClientRect();

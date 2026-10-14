@@ -116,6 +116,7 @@ static class Program {
       case "notifs": return await Notifs.Get(arg == null ? 0 : Convert.ToDouble(arg));
       case "notif-remove": Notifs.Remove(Convert.ToUInt32(arg)); return true;
       case "cpu-freq": return Cpu.Mhz();
+      case "focus-app": return Native.FocusApp(Convert.ToString(arg));
       default: throw new Exception("op inconnue: " + op);
     }
   }
@@ -398,6 +399,29 @@ static class Native {
   [DllImport("user32.dll")] public static extern IntPtr WindowFromPoint(POINT p);
   [DllImport("user32.dll")] public static extern IntPtr GetAncestor(IntPtr h, uint flags);
   [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out SPS s);
+  [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int cmd);
+  [DllImport("user32.dll")] static extern bool IsIconic(IntPtr h);
+  [DllImport("user32.dll")] static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
+
+  // Met au premier plan l'appli qui joue (identifiant de la session media) : appli du Store par son
+  // AUMID, sinon la fenetre principale du processus du meme nom
+  public static bool FocusApp(string id) {
+    if (string.IsNullOrEmpty(id)) return false;
+    if (id.Contains("!")) { Process.Start("explorer.exe", "shell:AppsFolder\\" + id); return true; }
+    var name = System.IO.Path.GetFileNameWithoutExtension(id);
+    foreach (var p in Process.GetProcessesByName(name)) {
+      using (p) {
+        var h = p.MainWindowHandle;
+        if (h == IntPtr.Zero || !IsWindowVisible(h)) continue;
+        if (IsIconic(h)) ShowWindow(h, 9);
+        // Windows refuse le premier plan a un processus en arriere-plan, sauf juste apres une touche
+        keybd_event(0x12, 0, 0, UIntPtr.Zero); keybd_event(0x12, 0, 2, UIntPtr.Zero);
+        return SetForegroundWindow(h);
+      }
+    }
+    return false;
+  }
   public struct RECT { public int L, T, R, B; }
   public struct POINT { public int X, Y; }
   struct SPS { public byte AC; public byte Flag; public byte Pct; public byte Saver; public int Life; public int Full; }
