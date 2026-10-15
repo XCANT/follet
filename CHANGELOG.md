@@ -2,6 +2,11 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.18.1] - 2026-10-15
+
+### Fixed
+- The notch no longer closes (taking its right-click menu with it) when the mouse moves outside the notch to reach a menu item.
+
 ## [1.18.0] - 2026-10-15
 
 ### Added
