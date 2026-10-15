@@ -2,6 +2,11 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.18.2] - 2026-10-15
+
+### Fixed
+- The right-click menu really stays open now when the mouse leaves the notch to reach an item: making the window click-through again closed Windows' menu, so the mouse tracking pauses while the menu is open.
+
 ## [1.18.1] - 2026-10-15
 
 ### Fixed

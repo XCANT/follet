@@ -91,8 +91,12 @@ function create() {
 
 // ---------- capture de la souris ----------
 ipcMain.on('notch-rect', (_e, r) => { notchRect = r; });
+// Menu du clic droit ouvert : on ne touche a rien. Rendre la fenetre "traversable" (setIgnoreMouseEvents)
+// quand la souris sort de l'encoche fermait le menu natif sous Windows.
+let menuOpen = false;
+function setMenuOpen(v) { menuOpen = v; }
 function trackCursor() {
-  if (!win || !win.isVisible()) return;
+  if (!win || !win.isVisible() || menuOpen) return;
   const p = screen.getCursorScreenPoint();
   const wb = win.getBounds();
   const now = !!notchRect && p.x >= wb.x + notchRect.x && p.x <= wb.x + notchRect.x + notchRect.w
@@ -171,4 +175,4 @@ async function checkFullscreen() {
 
 ipcMain.on('focus-window', () => win && win.focus());
 
-module.exports = { create, place, reveal, targetDisplay, get win() { return win; }, get tucked() { return tucked; } };
+module.exports = { create, place, reveal, setMenuOpen, targetDisplay, get win() { return win; }, get tucked() { return tucked; } };
