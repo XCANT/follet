@@ -52,7 +52,7 @@ contextBridge.exposeInMainWorld('follet', {
   mic: invoke('mic-get'), onMic: on('mic'), bt: invoke('bt-get'), onBt: on('bt'), onDownloads: on('downloads'),
 
   // reglages
-  focus: invoke('focus-get'), focusSet: invoke('focus-set'), onFocus: on('focus'), notchMenu: sendTo('notch-menu'),
+  focus: invoke('focus-get'), focusSet: invoke('focus-set'), onFocus: on('focus'), notchMenu: sendTo('notch-menu'), onMenu: on('menu'),
   configGet: invoke('config-get'), configSet: invoke('config-set'), configExport: invoke('config-export'), configImport: invoke('config-import'), loginSet: invoke('login-set'),
   updateStatus: invoke('update-status'), updateCheck: invoke('update-check'), updateInstall: invoke('update-install'), onUpdate: on('update-status'),
 });

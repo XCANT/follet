@@ -93,6 +93,7 @@ function createTray() {
 ipcMain.on('notch-menu', () => {
   const on = focus.active();
   const open = (tab) => { windowMod.reveal(); core.send('open-tab', tab); windowMod.win.focus(); };
+  core.send('menu', true);
   Menu.buildFromTemplate([
     { label: t("Capture d'écran"), click: () => screenshot.capture() },
     { label: t("Copier le texte de l'écran"), click: () => picker.open('ocr') },
@@ -107,7 +108,7 @@ ipcMain.on('notch-menu', () => {
       ] },
     { type: 'separator' },
     { label: t('Réglages…'), click: () => open('settings') },
-  ]).popup({ window: windowMod.win });
+  ]).popup({ window: windowMod.win, callback: () => core.send('menu', false) });
 });
 
 // La mascotte, rendue par l'interface aux couleurs du theme, sert d'icone de notification

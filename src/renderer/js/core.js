@@ -55,7 +55,7 @@ follet.onPointer((inside) => {
   clearTimeout(leaveTimer); clearTimeout(peekTimer);
   if (!inside) {
     leaveTimer = setTimeout(() => {
-      if (pointerIn) return;
+      if (pointerIn || I.menuOpen) return;
       if (I.mode === 'peek') setMode('collapsed');
       else if (I.mode === 'expanded' && !typing()) setMode('collapsed');
     }, I.mode === 'expanded' ? 600 : 220);
@@ -67,7 +67,12 @@ function typing() {
   const a = document.activeElement;
   return document.hasFocus() && a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && a.type !== 'range' && a.type !== 'checkbox'));
 }
-window.addEventListener('blur', () => { if (I.mode === 'expanded' && !pointerIn) setMode('collapsed'); });
+window.addEventListener('blur', () => { if (I.mode === 'expanded' && !pointerIn && !I.menuOpen) setMode('collapsed'); });
+// menu du clic droit ouvert : la souris peut sortir de l'encoche pour le parcourir sans la refermer
+follet.onMenu((open) => {
+  I.menuOpen = open;
+  if (!open) setTimeout(() => { if (!pointerIn && !I.menuOpen && (I.mode === 'peek' || (I.mode === 'expanded' && !typing()))) setMode('collapsed'); }, 400);
+});
 $('#compact').addEventListener('click', (e) => { if (!e.target.closest('button')) { setMode('expanded'); } });
 // Gestes sur l'encoche repliee : glisser a deux doigts (ou Maj+molette) change de chanson, clic du milieu
 // = lecture/pause, molette = ouvrir (vers le bas) ou volume selon le reglage
