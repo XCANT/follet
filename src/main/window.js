@@ -12,6 +12,8 @@ let notchRect = null;        // rectangle de l'encoche dans la fenetre (px CSS),
 let inside = false;
 let dwell = 0, hovered = false, last = null;
 const HOVER_DELAY = { fast: 120, normal: 280, slow: 550 }; // ms de presence lente avant l'apercu
+const REVEAL_DELAY = { fast: 300, normal: 450, slow: 700 };   // ms immobile en haut de l'ecran pour sortir de sa cachette
+let edgeDwell = 0;
 let coveredByMax = false, revealed = false, tucked = false, hiddenForFullscreen = false;
 
 function targetDisplay() {
@@ -109,11 +111,15 @@ function trackCursor() {
     if (speed < 0.5) dwell += 40; else dwell = Math.max(0, dwell - 40);
     if (dwell >= (HOVER_DELAY[core.config.behavior.hover] || 280)) { hovered = true; core.send('hover'); }
   }
-  // Rangee : le haut de l'ecran au milieu la fait ressortir
+  // Rangee : la souris posee en haut de l'ecran, au milieu, la fait ressortir. Il faut s'y attarder,
+  // presque immobile : on vise souvent les onglets du navigateur tout en haut, sans vouloir l'encoche.
   if (tucked) {
     const b = targetDisplay().bounds;
-    if (p.y <= b.y + 1 && Math.abs(p.x - (b.x + b.width / 2)) <= 150) reveal();
-  }
+    if (p.y <= b.y + 1 && Math.abs(p.x - (b.x + b.width / 2)) <= 150 && speed < 0.3) {
+      edgeDwell += 40;
+      if (edgeDwell >= (REVEAL_DELAY[core.config.behavior.hover] || 450)) { edgeDwell = 0; reveal(); }
+    } else edgeDwell = 0;
+  } else edgeDwell = 0;
 }
 
 // ---------- rangement devant une fenetre maximisee ----------

@@ -70,7 +70,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 - Sur l'encoche repliée : glisser à deux doigts (ou Maj+molette) pour la chanson suivante ou précédente, clic du milieu pour lecture/pause. La molette peut régler le volume au lieu d'ouvrir (Réglages → Comportement).
 - **Ctrl+Alt+Espace** (modifiable) ouvre et ferme Follet de n'importe où.
 - Encoche ouverte : **1 à 9** pour choisir un onglet, **← / →** ou la molette sur les onglets.
-- Devant une fenêtre maximisée, l'encoche se range ; elle ressort quand la souris touche le haut de l'écran, au milieu. Elle disparaît pendant un jeu en plein écran.
+- Devant une fenêtre maximisée, l'encoche se range ; elle ressort quand la souris s'attarde un instant en haut de l'écran, au milieu. Elle disparaît pendant un jeu en plein écran.
 
 **Material You.** Tout le thème vient de la pochette en cours, de la couleur d'accent de Windows ou d'une couleur choisie.
 

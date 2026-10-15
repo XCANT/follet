@@ -72,7 +72,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 - On the collapsed notch: two-finger swipe (or Shift+wheel) for the next or previous song, middle click to play or pause. The wheel can adjust the volume instead of opening (Settings → Behavior).
 - **Ctrl+Alt+Space** (configurable) opens and closes Follet from anywhere.
 - With the notch open: **1 to 9** to pick a tab, **← / →** or the scroll wheel on the tabs.
-- In front of a maximized window the notch tucks away; it comes back when the mouse touches the top middle of the screen. It disappears during full-screen games.
+- In front of a maximized window the notch tucks away; it comes back when the mouse rests for a moment at the top middle of the screen. It disappears during full-screen games.
 
 **Material You.** The whole theme comes from the current album art, the Windows accent color, or a color you pick.
 

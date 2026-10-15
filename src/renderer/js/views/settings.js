@@ -85,7 +85,7 @@ I.view('settings', {
     return this.row('Écran', 'Où l\'encoche s\'affiche.', `<select class="field disp">${disp}</select>`)
       + this.row('Ouverture au survol', 'Combien de temps la souris doit s\'attarder avant l\'aperçu. Un simple passage ne l\'ouvre pas.', '<div class="seg-hover"></div>')
       + this.row("Molette sur l'encoche", "Vers le bas pour ouvrir, ou pour régler le volume (le clic ouvre toujours). Glisser à deux doigts ou Maj+molette change de chanson ; clic du milieu = lecture/pause.", '<div class="seg-wheel"></div>')
-      + this.row('Se ranger devant une fenêtre maximisée', 'Elle ressort quand la souris touche le haut de l\'écran, au milieu.', this.sw('tuck', c.behavior.tuck))
+      + this.row('Se ranger devant une fenêtre maximisée', "Elle ressort quand la souris s'attarde en haut de l'écran, au milieu (le délai suit l'ouverture au survol).", this.sw('tuck', c.behavior.tuck))
       + this.row('Masquer pendant les jeux en plein écran', '', this.sw('hideFullscreen', c.behavior.hideFullscreen))
       + this.row('Accélération graphique', 'Recommandée : animations fluides et moins de travail pour le processeur. Désactivée, Follet économise environ 70 Mo de mémoire. Effet au prochain démarrage de Follet.', this.sw('accel', c.behavior.accel !== false))
       + this.row('Raccourci clavier', 'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.', `<input class="field shortcut" data-sc="shortcut" readonly value="${esc(c.shortcut)}" style="width:200px;cursor:pointer">`)

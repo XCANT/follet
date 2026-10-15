@@ -9,8 +9,10 @@ input, textarea { font: inherit; color: inherit; }
   position: absolute; top: 0; left: 50%; transform: translateX(-50%);
   background: var(--notch);
   overflow: hidden;
-  box-shadow: 0 14px 36px -10px rgba(0, 0, 0, .65);
-  transition: width .55s var(--spring), height .55s var(--spring), border-radius .55s var(--spring), transform .45s var(--spring);
+  /* 2e ombre : une bande de la couleur de l'encoche au-dessus d'elle, pour qu'aucun jour n'apparaisse avec le haut de l'ecran */
+  box-shadow: 0 14px 36px -10px rgba(0, 0, 0, .65), 0 -80px 0 0 var(--notch);
+  /* le glissement vertical (rangee <-> sortie) ne rebondit pas : un rebond la decollait du haut de l'ecran */
+  transition: width .55s var(--spring), height .55s var(--spring), border-radius .55s var(--spring), transform .4s cubic-bezier(.2, 0, 0, 1);
 }
 #notch[data-mode=collapsed] { width: 200px; height: 34px; border-radius: 0 0 17px 17px; }
 #notch[data-mode=collapsed].has-timer { width: 250px; }

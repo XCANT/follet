@@ -42,7 +42,7 @@
       { title: "Salut, moi c'est Follet !", sub: "Je vis dans cette encoche, en haut de ton écran. Voici comment m'utiliser :",
         steps: card('mouse', 'Survole', 'pour voir la musique et ta journée') + card('swipe_down', 'Fais défiler', 'ou clique pour tout ouvrir')
           + card('keyboard', key('shortcut'), "m'ouvre de n'importe où") + card('move_to_inbox', 'Glisse des fichiers', 'sur moi pour les garder sous la main'),
-        foot: "Devant une fenêtre plein écran, je me cache : touche le haut de l'écran, au milieu, pour me faire revenir." },
+        foot: "Devant une fenêtre plein écran, je me cache : garde la souris un instant en haut de l'écran, au milieu, pour me faire revenir." },
       { title: 'Mes raccourcis', sub: 'Ils marchent partout dans Windows, même quand je suis replié :',
         steps: card('content_paste', key('clipShortcut'), "l'historique du presse-papiers, Entrée colle") + card('screenshot_monitor', key('shotShortcut'), "capture l'écran dans l'Étagère")
           + card('document_scanner', key('ocrShortcut'), "copie le texte d'une zone de l'écran") + card('colorize', key('colorShortcut'), 'pipette : copie une couleur'),

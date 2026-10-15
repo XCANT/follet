@@ -23,7 +23,7 @@ const FOLLET_EN = {
     'Fais défiler': 'Scroll', 'ou clique pour tout ouvrir': 'or click to open everything',
     'Ctrl+Alt+Espace': 'Ctrl+Alt+Space', "m'ouvre de n'importe où": 'opens me from anywhere',
     'Glisse des fichiers': 'Drop files', 'sur moi pour les garder sous la main': 'on me to keep them handy',
-    "Devant une fenêtre plein écran, je me cache : touche le haut de l'écran, au milieu, pour me faire revenir.": 'In front of a full-screen window I hide: touch the top middle of the screen to bring me back.',
+    "Devant une fenêtre plein écran, je me cache : garde la souris un instant en haut de l'écran, au milieu, pour me faire revenir.": 'In front of a full-screen window I hide: rest the mouse for a moment at the top middle of the screen to bring me back.',
     "C'est parti": "Let's go",
 
     // meteo
@@ -105,7 +105,7 @@ const FOLLET_EN = {
     "Où l'encoche s'affiche.": 'Where the notch shows.', 'Ouverture au survol': 'Open on hover',
     "Combien de temps la souris doit s'attarder avant l'aperçu. Un simple passage ne l'ouvre pas.": 'How long the mouse must linger before the preview. Just passing by does not open it.',
     'Normale': 'Normal', 'Lente': 'Slow',
-    'Se ranger devant une fenêtre maximisée': 'Hide behind maximized windows', "Elle ressort quand la souris touche le haut de l'écran, au milieu.": 'It comes back when the mouse touches the top middle of the screen.',
+    'Se ranger devant une fenêtre maximisée': 'Hide behind maximized windows', "Elle ressort quand la souris s'attarde en haut de l'écran, au milieu (le délai suit l'ouverture au survol).": 'It comes back when the mouse rests at the top middle of the screen (the delay follows the hover setting).',
     'Masquer pendant les jeux en plein écran': 'Hide during full-screen games', 'Accélération graphique': 'Hardware acceleration',
     'Recommandée : animations fluides et moins de travail pour le processeur. Désactivée, Follet économise environ 70 Mo de mémoire. Effet au prochain démarrage de Follet.': 'Recommended: smooth animations and less work for the processor. When off, Follet saves about 70 MB of memory. Applies the next time Follet starts.', 'Raccourci clavier': 'Keyboard shortcut',
     'Ouvre ou ferme Follet de partout. Clique puis appuie sur la combinaison.': 'Opens or closes Follet from anywhere. Click, then press the keys.',
