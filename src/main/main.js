@@ -29,6 +29,8 @@ const bluetooth = require('./bluetooth');
 const screenshot = require('./screenshot');
 const downloads = require('./downloads');
 const picker = require('./picker');
+const focus = require('./focus');
+const heat = require('./heat');
 
 // ---------- raccourci global ----------
 let shortcut = null;
@@ -87,6 +89,27 @@ function createTray() {
   rebuild();
 }
 
+// Clic droit sur l'encoche : menu des outils (menu natif, il peut deborder de l'encoche)
+ipcMain.on('notch-menu', () => {
+  const on = focus.active();
+  const open = (tab) => { windowMod.reveal(); core.send('open-tab', tab); windowMod.win.focus(); };
+  Menu.buildFromTemplate([
+    { label: t("Capture d'écran"), click: () => screenshot.capture() },
+    { label: t("Copier le texte de l'écran"), click: () => picker.open('ocr') },
+    { label: t('Pipette'), click: () => picker.open('color') },
+    { label: t('Presse-papiers'), click: () => open('clip') },
+    { type: 'separator' },
+    on ? { label: t('Arrêter le mode concentration'), click: () => focus.set(0) }
+      : { label: t('Mode concentration'), submenu: [
+        { label: t('1 heure'), click: () => focus.set(60) },
+        { label: t("Jusqu'à demain matin"), click: () => focus.set('morning') },
+        { label: t("Jusqu'à ce que je l'arrête"), click: () => focus.set('always') },
+      ] },
+    { type: 'separator' },
+    { label: t('Réglages…'), click: () => open('settings') },
+  ]).popup({ window: windowMod.win });
+});
+
 // La mascotte, rendue par l'interface aux couleurs du theme, sert d'icone de notification
 ipcMain.on('tray-icon', (_e, dataUrl) => { const img = nativeImage.createFromDataURL(dataUrl); if (tray && !img.isEmpty()) tray.setImage(img.resize({ width: 32, height: 32 })); });
 ipcMain.handle('idle-time', () => powerMonitor.getSystemIdleTime());
@@ -106,6 +129,7 @@ app.whenReady().then(() => {
   screenshot.start(windowMod);
   downloads.start();
   picker.start(windowMod);
+  heat.start();
   // Dev : FOLLET_MEM=1 journalise la memoire par processus toutes les 15 s
   if (process.env.FOLLET_MEM) setInterval(() => {
     const by = {}; for (const m of app.getAppMetrics()) by[m.type] = (by[m.type] || 0) + Math.round((m.memory.privateBytes || m.memory.workingSetSize) / 1024);

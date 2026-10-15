@@ -194,3 +194,4 @@ ipcMain.handle('speedtest', async () => {
   } finally { speedRunning = false; }
 });
 ipcMain.handle('speedtest-last', () => core.state.lastSpeedtest || null);
+module.exports = { nvidia, lhmCpuTemp };
