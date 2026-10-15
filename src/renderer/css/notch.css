@@ -69,6 +69,11 @@ body[data-size=large] #notch[data-mode=collapsed].has-dl { width: 300px; }
 /* micro utilise : point orange facon iOS */
 .c-mic { display: none; width: 8px; height: 8px; border-radius: 50%; background: #ff9f0a; box-shadow: 0 0 6px #ff9f0a99; flex-shrink: 0; animation: mic-in .3s var(--effects); }
 .has-mic .c-mic { display: block; }
+.c-focus { display: none; font-size: 16px; color: var(--md-primary); flex-shrink: 0; }
+#notch.focus .c-focus { display: block; }
+/* plus de 8 tuiles : une 3e rangee, un peu moins hautes */
+.tiles.many .tile { height: 52px; border-radius: 18px; }
+.tiles.many .tile .ms { font-size: 20px; }
 @keyframes mic-in { from { transform: scale(0); } }
 .eq { display: none; gap: 2px; align-items: center; height: 14px; }
 .playing .eq { display: flex; }

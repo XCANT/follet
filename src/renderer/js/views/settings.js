@@ -120,7 +120,7 @@ I.view('settings', {
   // ---------- Activites ----------
   r_activities() {
     const a = this.data.config.activities;
-    return `<div class="body-s variant" style="margin:0 8px 12px">L'encoche s'élargit quelques secondes quand quelque chose se passe.</div>`
+    return `<div class="body-s variant" style="margin:0 8px 12px">L'encoche s'élargit quelques secondes quand quelque chose se passe. Le mode concentration (tuile de l'accueil ou clic droit sur l'encoche) les met en pause, sauf les minuteurs, les rappels et la batterie faible.</div>`
       + this.row(`${ms('volume_up', 's20')} Volume`, 'Quand le volume change (touches du clavier, Windows…).', this.sw('volume', a.volume))
       + this.row(`${ms('music_note', 's20')} Nouvelle chanson`, '', this.sw('media', a.media))
       + this.row(`${ms('headphones', 's20')} Sortie audio`, 'Casque ou haut-parleurs connectés.', this.sw('audioDevice', a.audioDevice))
@@ -129,6 +129,7 @@ I.view('settings', {
       + this.row(`${ms('mic', 's20')} Micro utilisé`, 'Un point orange reste dans l\'encoche tant qu\'une appli enregistre ton micro.', this.sw('mic', a.mic !== false))
       + this.row(`${ms('download', 's20')} Téléchargements`, "Progression des téléchargements du navigateur, puis le fichier dans l'Étagère.", this.sw('downloads', a.downloads !== false))
       + this.row(`${ms('umbrella', 's20')} Pluie imminente`, "Prévient quand la pluie ou la neige arrive dans l'heure.", this.sw('rain', a.rain !== false))
+      + this.row(`${ms('device_thermostat', 's20')} Alerte de chauffe`, "Quand la carte graphique NVIDIA dépasse 85 °C (ou le processeur 95 °C, avec Libre Hardware Monitor), avec l'appli la plus gourmande.", this.sw('heat', a.heat !== false))
       + this.row(`${ms('event', 's20')} Rappels d'agenda`, "Avant chaque événement de l'agenda, puis à son début.", '<div class="seg-rem"></div>')
       + this.row(`${ms('bluetooth', 's20')} Appareils Bluetooth`, 'Connexion, déconnexion et batterie faible (casque, manette, souris…).', this.sw('bluetooth', a.bluetooth !== false))
       + this.row(`${ms('lyrics', 's20')} Paroles synchronisées`, "Dans l'aperçu et l'accueil, quand la chanson est connue de LRCLIB (lrclib.net, base libre et gratuite).", this.sw('lyrics', a.lyrics !== false));
@@ -140,8 +141,8 @@ I.view('settings', {
 
   // ---------- Tuiles de l'accueil ----------
   r_tiles() {
-    const list = this.data.config.tiles || [], last = list.length - 1, full = list.length >= 8;
-    return `<div class="body-s variant" style="margin:0 8px 12px">Jusqu'à 8 tuiles sur l'accueil : raccourcis de Follet, tes applis, fichiers, dossiers ou sites.</div>`
+    const list = this.data.config.tiles || [], last = list.length - 1, full = list.length >= 12;
+    return `<div class="body-s variant" style="margin:0 8px 12px">Jusqu'à 12 tuiles sur l'accueil : raccourcis de Follet, tes applis, fichiers, dossiers ou sites.</div>`
       + list.map((t, i) => { const b = I.tileInfo(t); return this.row(`${ms(b.icon, 's20')} <span${t.k ? '' : ' data-noi18n'}>${esc(b.label)}</span>`, t.k ? '' : esc(t.path || t.url),
         `<div style="display:flex;gap:2px"><button class="icon-btn sm state" data-tmove="${i}" data-d="-1" title="Monter" ${i ? '' : 'disabled'}>${ms('arrow_upward')}</button><button class="icon-btn sm state" data-tmove="${i}" data-d="1" title="Descendre" ${i < last ? '' : 'disabled'}>${ms('arrow_downward')}</button><button class="icon-btn sm state" data-tdel="${i}" title="Retirer">${ms('delete')}</button></div>`); }).join('')
       + `<div class="t-add" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 8px 0">
@@ -151,7 +152,7 @@ I.view('settings', {
           <button class="btn tonal sm state" data-add="url" ${full ? 'disabled' : ''}>${ms('public')}Site web</button>
           <button class="btn text sm state" data-add="reset">Rétablir</button>
         </div>
-        ${full ? `<div class="body-s variant" style="margin:10px 8px 0;display:flex;gap:6px;align-items:center">${ms('info', 's18')}8 tuiles au maximum : retire-en une avec ${ms('delete', 's18')} pour en ajouter une autre.</div>` : ''}
+        ${full ? `<div class="body-s variant" style="margin:10px 8px 0;display:flex;gap:6px;align-items:center">${ms('info', 's18')}12 tuiles au maximum : retire-en une avec ${ms('delete', 's18')} pour en ajouter une autre.</div>` : ''}
         <div class="t-url" style="display:none;gap:8px;margin:12px 8px 0"><input class="field t-url-in" placeholder="https://…" style="flex:1"><input class="field t-name-in" placeholder="Nom" style="width:140px"><button class="btn filled sm state t-url-ok">OK</button></div>`;
   },
   b_tiles(body) {

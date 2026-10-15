@@ -76,6 +76,7 @@ I.view('home', {
     // tuiles (Reglages -> Tuiles) : Wi-Fi et Bluetooth sont de vrais interrupteurs, le reste ouvre quelque chose
     this.renderTiles();
     I.on('tiles', () => this.renderTiles());
+    I.on('focus', () => this.paintFocus());
     $('.tiles', el).addEventListener('click', async (e) => {
       const t = e.target.closest('.tile'); if (!t) return;
       const k = t.dataset.k;
@@ -87,6 +88,7 @@ I.view('home', {
         if (r === 'Allowed') t.classList.toggle('on', on); else snack('Windows a refusé le changement');
         return;
       }
+      if (k === 'follet:focus') return I.toggleFocus(t);
       I.setMode('collapsed');
       if (!(await follet.tileRun(+t.dataset.i))) snack("Impossible d'ouvrir cette tuile");
     });
@@ -115,13 +117,16 @@ I.view('home', {
   async renderTiles() {
     const { config } = await follet.configGet();
     const tiles = config.tiles || [];
+    $('.tiles', this.el).classList.toggle('many', tiles.length > 8);
     $('.tiles', this.el).innerHTML = tiles.map((t, i) => {
       const b = I.tileInfo(t);
       return `<button class="tile state" data-i="${i}" data-k="${esc(t.k || '')}" title="${esc(t.path || t.url || '')}">${b.img ? `<img class="t-img" data-icon="${esc(t.path)}">` : ms(b.icon)}<span class="ellipsis"${t.k ? '' : ' data-noi18n'}>${esc(b.label)}</span></button>`;
     }).join('');
     $$('.tiles img[data-icon]', this.el).forEach(async (img) => { const u = await follet.appIcon(img.dataset.icon).catch(() => null); if (u) img.src = u; else img.replaceWith(Object.assign(document.createElement('span'), { className: 'ms', textContent: 'draft' })); });
     this.loadRadios();
+    this.paintFocus();
   },
+  paintFocus() { const t = $('.tile[data-k="follet:focus"]', this.el); if (t) t.classList.toggle('on', I.focusOn()); },
   async loadRadios() {
     const list = await follet.radios().catch(() => []);
     for (const r of list || []) { const t = $(`.tile[data-k="radio:${r.kind}"]`, this.el); if (t) t.classList.toggle('on', r.on); }

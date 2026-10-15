@@ -243,7 +243,33 @@ function showActivity(html, kind, dur = 2600) {
   return true;
 }
 I.showActivity = showActivity;
+// Mode concentration : ces activites ne font plus s'elargir l'encoche (sauf batterie faible)
+const FOCUS_MUTED = ['notif', 'media', 'audioDevice', 'battery', 'download', 'rain', 'heat', 'bt', 'mic', 'update'];
+I.focusUntil = 0;
+I.focusOn = () => I.focusUntil === -1 || I.focusUntil > Date.now();
+I.focusLabel = (u) => (u === -1 ? (I.lang === 'en' ? 'Until you turn it off' : "Jusqu'à ce que tu l'arrêtes")
+  : (I.lang === 'en' ? 'Until ' : "Jusqu'à ") + new Date(u).toLocaleTimeString(I.locale, { hour: '2-digit', minute: '2-digit' }));
+const applyFocus = (u, announce) => {
+  I.focusUntil = u || 0;
+  notchEl.classList.toggle('focus', I.focusOn());
+  I.emit('focus', I.focusUntil);
+  if (!announce) return;
+  if (I.focusOn()) showActivity(`<div class="a-ico">${ms('do_not_disturb_on', 'fill s20')}</div><div class="a-txt"><div class="title-s">Mode concentration</div><div class="body-s variant" data-noi18n>${esc(I.focusLabel(I.focusUntil))}</div></div>`, 'focus', 2500);
+  else showActivity(`<div class="a-ico">${ms('do_not_disturb_off', 's20')}</div><div class="a-txt"><div class="title-s">Mode concentration arrêté</div></div>`, 'focus', 2000);
+};
+follet.focus().then((u) => applyFocus(u, false)).catch(() => { });
+follet.onFocus((u) => applyFocus(u, true));
+// les durees proposees (tuile de l'accueil) ; s'il est actif, on l'arrete
+I.toggleFocus = (anchor) => {
+  if (I.focusOn()) return follet.focusSet(0);
+  openMenu(anchor, [{ icon: 'schedule', label: '1 heure', value: 60 }, { icon: 'bedtime', label: "Jusqu'à demain matin", value: 'morning' }, { icon: 'all_inclusive', label: "Jusqu'à ce que je l'arrête", value: 'always' }], (it) => follet.focusSet(it.value));
+};
+// clic droit sur l'encoche : menu natif des outils
+$('#compact').addEventListener('contextmenu', (e) => { e.preventDefault(); follet.notchMenu(); });
+$('.topbar').addEventListener('contextmenu', (e) => { e.preventDefault(); follet.notchMenu(); });
+
 I.activity = (a) => {
+  if (I.focusOn() && FOCUS_MUTED.includes(a.kind) && !a.low) return;
   I.mascot.bump();
   if (a.kind === 'battery' && a.low) I.flashMood('alert', 3500);
   else if (a.kind === 'audioDevice' || (a.kind === 'battery' && a.plugged)) I.flashMood('happy', 2500);
@@ -305,6 +331,10 @@ I.activity = (a) => {
     showActivity(`<div class="a-ico${a.low ? ' warn' : ''}">${ms(a.low ? 'battery_alert' : I.btIcon(a), 'fill s20')}</div><div class="a-txt"><div class="title-s ellipsis" data-noi18n>${esc(a.name)}</div><div class="body-s variant">${sub}</div></div>${a.on === false ? ms('bluetooth_disabled', 's20') : bat}`, 'bt', 3500);
   } else if (a.kind === 'mic') {
     showActivity(`<div class="a-ico mic">${ms('mic', 'fill s20')}</div><div class="a-txt"><div class="title-s">Micro utilisé</div><div class="body-s variant ellipsis" data-noi18n>${esc(a.apps.join(', '))}</div></div>`, 'mic', 3500);
+  } else if (a.kind === 'heat') {
+    I.flashMood('alert', 4000);
+    const what = a.part === 'gpu' ? 'Carte graphique très chaude' : 'Processeur très chaud';
+    showActivity(`<div class="a-ico warn">${ms('device_thermostat', 'fill s20')}</div><div class="a-txt"><div class="title-s">${what}</div><div class="body-s variant ellipsis"${a.app ? ' data-noi18n' : ''}>${a.app ? esc((I.lang === 'en' ? 'Busiest app: ' : 'Appli la plus gourmande : ') + a.app) : 'Laisse ton PC respirer un peu'}</div></div><div class="a-val">${a.temp} °C</div>`, 'heat', 5000);
   } else if (a.kind === 'update') {
     I.flashMood('happy', 2500);
     showActivity(`<div class="a-ico">${ms('system_update_alt', 'fill s20')}</div><div class="a-txt"><div class="title-s">Mise à jour ${esc(a.version)}</div><div class="body-s variant">Réglages → À propos pour l'installer</div></div>`, 'update', 5000);
@@ -316,7 +346,7 @@ $('.c-art').addEventListener('click', (e) => { e.stopPropagation(); follet.media
 // tuiles de l'accueil : raccourcis integres, ou une appli / un fichier / un dossier / un site choisis
 I.TILES = {
   'radio:WiFi': ['wifi', 'Wi-Fi'], 'radio:Bluetooth': ['bluetooth', 'Bluetooth'], 'ms-screenclip:': ['screenshot_region', 'Capture'],
-  'follet:shot': ['screenshot_monitor', 'Écran → Étagère'], 'follet:ocr': ['document_scanner', "Texte de l'écran"], 'follet:color': ['colorize', 'Pipette'], 'taskmgr': ['monitor_heart', 'Tâches'], 'explorer': ['folder', 'Fichiers'],
+  'follet:shot': ['screenshot_monitor', 'Écran → Étagère'], 'follet:ocr': ['document_scanner', "Texte de l'écran"], 'follet:color': ['colorize', 'Pipette'], 'follet:focus': ['do_not_disturb_on', 'Concentration'], 'taskmgr': ['monitor_heart', 'Tâches'], 'explorer': ['folder', 'Fichiers'],
   'ms-settings:': ['settings', 'Paramètres'], 'calc': ['calculate', 'Calcul'], 'terminal': ['terminal', 'Terminal'], 'notepad': ['edit_note', 'Bloc-notes'],
   'lock': ['lock', 'Verrouiller'], 'ms-settings-bluetooth:': ['bluetooth_searching', 'Appareils'],
 };
