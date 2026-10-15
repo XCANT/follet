@@ -63,7 +63,7 @@ If something goes wrong, the log is in `%APPDATA%\Follet\logs\follet.log`.
 | **Power** | Lock, sleep, sign out, restart, shut down |
 | **Settings** | Language, colors (ready-made themes, pure black for OLED screens), Follet's color, notch size and position, display, shortcut, activities, visible tabs and their order, weather, calendars, AI, settings backup (export / import) |
 
-**Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, a calendar reminder, a download (then on the Shelf), volume, a new song, headphones connected, Bluetooth devices (with their battery), charger, low battery, timer done, file dropped. An orange dot stays in the notch while an app is recording your microphone, like on iPhone.
+**Live activities.** When collapsed, the notch widens for a few seconds when something happens: a Windows notification, a calendar reminder, a download (then on the Shelf), volume, a new song, headphones connected, Bluetooth devices (with their battery), charger, low battery, timer done, file dropped. An orange dot stays in the notch while an app is recording your microphone, like on iPhone. It also warns when the graphics card or processor overheats. **Focus mode** (home tile or right-click on the notch) pauses activities for an hour, until morning or until you turn it off.
 
 **Follet has moods.** Headphones while music plays, a halo while the AI thinks, a wink when the answer arrives, a nightcap after 5 idle minutes, big eyes for alerts.
 
@@ -137,6 +137,8 @@ src/main/
   bluetooth.js   connected Bluetooth devices -> activities
   screenshot.js  Ctrl+Alt+S -> screenshot on the Shelf
   downloads.js   browser downloads -> progress chip, then the Shelf
+  focus.js       focus mode (pauses activities)
+  heat.js        heat alert (nvidia-smi, Libre Hardware Monitor)
   picker.js      Ctrl+Alt+T screen text (Windows OCR), Ctrl+Alt+C color picker
   update.js      updates from GitHub releases
   ai.js          AI providers, encrypted keys, usage

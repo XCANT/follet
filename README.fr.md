@@ -61,7 +61,7 @@ En cas de pépin, le journal est dans `%APPDATA%\Follet\logs\follet.log`.
 | **Alim.** | Verrouiller, veille, déconnexion, redémarrer, éteindre |
 | **Réglages** | Langue (français ou anglais), couleurs (thèmes prêts, noir pur pour écrans OLED), couleur de Follet, taille et position de l'encoche, écran, raccourci, activités, onglets visibles et leur ordre, météo, agendas, IA, sauvegarde des réglages (exporter / importer) |
 
-**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, rappel d'agenda, téléchargement (puis dans l'Étagère), volume, nouvelle chanson, casque connecté, appareils Bluetooth (avec leur batterie), chargeur, batterie faible, minuteur terminé, fichier déposé. Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro, comme sur iPhone.
+**Activités en direct.** Repliée, l'encoche s'élargit quelques secondes quand quelque chose se passe : notification Windows, rappel d'agenda, téléchargement (puis dans l'Étagère), volume, nouvelle chanson, casque connecté, appareils Bluetooth (avec leur batterie), chargeur, batterie faible, minuteur terminé, fichier déposé. Un point orange reste dans l'encoche tant qu'une appli enregistre ton micro, comme sur iPhone. Elle prévient aussi quand la carte graphique ou le processeur surchauffe. Le **mode concentration** (tuile de l'accueil ou clic droit sur l'encoche) met les activités en pause pendant une heure, jusqu'au matin ou jusqu'à ce que tu l'arrêtes.
 
 **Follet a des humeurs.** Écouteurs quand la musique joue, auréole quand l'IA réfléchit, clin d'œil quand la réponse arrive, bonnet de nuit après 5 minutes sans activité, grands yeux pour les alertes.
 
@@ -135,6 +135,8 @@ src/main/
   bluetooth.js   appareils Bluetooth connectés -> activités
   screenshot.js  Ctrl+Alt+S -> capture dans l'Étagère
   downloads.js   téléchargements du navigateur -> pastille, puis l'Étagère
+  focus.js       mode concentration (met les activités en pause)
+  heat.js        alerte de chauffe (nvidia-smi, Libre Hardware Monitor)
   picker.js      Ctrl+Alt+T texte de l'écran (OCR de Windows), Ctrl+Alt+C pipette
   update.js      mises à jour depuis les releases GitHub
   ai.js          fournisseurs d'IA, clés chiffrées, consommation

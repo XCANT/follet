@@ -2,6 +2,18 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.18.0] - 2026-10-15
+
+### Added
+- Focus mode: from a home tile or a right-click on the notch, pause the notch's activities for 1 hour, until tomorrow morning or until you turn it off. Timers, calendar reminders and low battery still show. A small icon in the notch reminds you it's on.
+- Right-click on the notch opens a tools menu: screenshot, screen text, color picker, clipboard, focus mode, settings.
+- Heat alert: the notch warns when the NVIDIA graphics card goes over 85 °C (or the processor over 95 °C, with Libre Hardware Monitor) and names the busiest app. Turn it off in Settings → Activities.
+- Up to 12 home tiles (a third row), and a note explaining why the add buttons are disabled when Home is full.
+
+### Fixed
+- The tucked notch no longer pops out as soon as the mouse touches the top of the screen (when aiming at browser tabs): the mouse has to rest there a moment, following the hover delay setting.
+- When it comes out, the notch no longer bounces away from the top of the screen, which left a gap.
+
 ## [1.17.0] - 2026-10-14
 
 ### Added
