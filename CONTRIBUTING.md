@@ -1,6 +1,6 @@
 # Contributing to Follet
 
-Thanks for wanting to help! Bug reports, ideas, translations and pull requests are all welcome.
+Thanks for wanting to help! Bug reports, ideas, translations and pull requests are all welcome. Please follow the [Code of Conduct](CODE_OF_CONDUCT.md); accessibility barriers are bugs too ([ACCESSIBILITY.md](ACCESSIBILITY.md)).
 
 ## Getting started
 
