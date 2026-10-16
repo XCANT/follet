@@ -2,6 +2,14 @@
 
 Versions follow [SemVer](https://semver.org/). To release: add a section here, bump the version in `package.json` (`npm version x.y.z --no-git-tag-version`), commit, then push a `vx.y.z` tag. GitHub Actions builds the installer and creates the release with this section's text.
 
+## [1.18.3] - 2026-10-16
+
+### Fixed
+- Synced lyrics show up again for YouTube videos: titles with featured artists ("ft. …"), channel names like "ArtistVEVO" and slightly different titles are now matched, picking the version whose length matches the song.
+- Lyrics are retried when LRCLIB can't be reached, instead of staying off for the whole song.
+- Lyrics stay in time: the song position now uses the moment the player reported it, and resuming after a pause no longer jumps ahead.
+- The notch now tucks away behind two windows snapped side by side at the top of the screen, like it does behind a maximized window.
+
 ## [1.18.2] - 2026-10-15
 
 ### Fixed
