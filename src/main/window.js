@@ -137,19 +137,23 @@ ipcMain.on('collapsed', () => {
   revealed = false; applyTuck();
 });
 const DESKTOP_CLASSES = new Set(['Progman', 'WorkerW', 'Shell_TrayWnd', 'Shell_SecondaryTrayWnd']);
-// On regarde la fenetre visible en haut de l'ecran, a cote de l'encoche (pas la fenetre active :
-// une appli maximisee peut etre derriere une petite boite de dialogue).
+// On regarde les fenetres visibles en haut de l'ecran, de chaque cote de l'encoche (pas la fenetre active :
+// une appli maximisee peut etre derriere une petite boite de dialogue). Deux fenetres cote a cote
+// (ancrees a gauche et a droite) collees en haut rangent l'encoche comme une fenetre maximisee.
 async function checkCovered() {
   if (!win || !helper.ready) return;
-  const d = targetDisplay(), b = d.bounds;
-  const pt = screen.dipToScreenPoint({ x: Math.round(b.x + b.width * 0.2), y: b.y + 4 });
-  const w = await helper.call('at', pt);
-  if (w && w.pid === process.pid) return;
-  let covers = false;
-  if (w && !DESKTOP_CLASSES.has(w.cls)) {
+  const d = targetDisplay(), b = d.bounds, wb = win.getBounds();
+  const cx = notchRect ? wb.x + notchRect.x + notchRect.w / 2 : b.x + b.width / 2;
+  const xs = [cx - 160, cx + 160].map((x) => Math.round(Math.min(b.x + b.width - 2, Math.max(b.x + 1, x))));
+  const ws = await Promise.all(xs.map((x) => helper.call('at', screen.dipToScreenPoint({ x, y: b.y + 4 }))));
+  if (ws.some((w) => w && w.pid === process.pid)) return;
+  const atTop = (w) => {
+    if (!w || DESKTOP_CLASSES.has(w.cls)) return false;
+    if (w.max) return true;
     const r = screen.screenToDipRect(null, { x: w.l, y: w.t, width: w.r - w.l, height: w.b - w.t });
-    covers = w.max || (r.width >= d.workArea.width - 2 && r.y <= d.workArea.y + 2);
-  }
+    return r.y <= d.workArea.y + 2;
+  };
+  const covers = ws.some((w) => w && w.max) || ws.every(atTop);
   if (covers !== coveredByMax) { coveredByMax = covers; if (!covers) revealed = false; applyTuck(); }
 }
 
