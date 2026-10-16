@@ -8,7 +8,10 @@ const HEADERS = { 'User-Agent': 'Follet (https://github.com/XCANT/follet)' };
 
 const clean = (s) => (s || '')
   .replace(/\s*[([](official|offical|lyric|lyrics|audio|video|music video|clip officiel|visualizer|hd|4k|remaster(ed)?)[^)\]]*[)\]]/gi, '')
-  .replace(/\s*-\s*(topic|youtube)$/i, '').replace(/\s+/g, ' ').trim();
+  // invites : "(feat. X)", "ft. Pharrell Williams, Nile Rodgers" (jusqu'au prochain " - ")
+  .replace(/\s*[([](ft|feat|featuring)\b[^)\]]*[)\]]/gi, '').replace(/\s+(ft|feat|featuring)\b\.?\s.*?(?=\s+[-–—]\s+|$)/gi, '')
+  .replace(/\s*-\s*(topic|youtube)$/i, '').replace(/vevo$/i, '').replace(/\s+/g, ' ').trim();
+const norm = (s) => clean(s).toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
 
 function parse(lrc) {
   const out = [];
@@ -19,11 +22,20 @@ function parse(lrc) {
   return out.sort((a, b) => a.t - b.t);
 }
 
-async function query(params) {
-  const r = await fetch('https://lrclib.net/api/get?' + new URLSearchParams(params), { headers: HEADERS, signal: AbortSignal.timeout(8000) });
+async function query(params, path = 'get') {
+  const r = await fetch(`https://lrclib.net/api/${path}?` + new URLSearchParams(params), { headers: HEADERS, signal: AbortSignal.timeout(8000) });
   if (r.status === 404) return null;
   if (!r.ok) throw new Error('lrclib ' + r.status);
   return r.json();
+}
+// Recherche plein texte : on garde le resultat synchronise dont la duree est la plus proche
+// (sinon "Get Lucky" tombe sur le remix de 10 minutes)
+async function search(a, t, duration) {
+  const list = await query({ q: `${a} ${t}` }, 'search');
+  if (!Array.isArray(list)) return null;
+  const want = norm(t), score = (r) => (duration > 0 ? Math.abs(r.duration - duration) : 0) + (norm(r.trackName) === want ? 0 : 3);
+  const ok = list.filter((r) => r.syncedLyrics && (!(duration > 0) || Math.abs(r.duration - duration) <= 8)).sort((x, y) => score(x) - score(y));
+  return ok[0] || null;
 }
 
 async function find(artist, title, duration) {
@@ -39,6 +51,7 @@ async function find(artist, title, duration) {
     if (!r && p.duration) { delete p.duration; r = await query(p); }   // la duree varie d'une source a l'autre
     if (r) return r;
   }
+  for (const [a, t] of tries) if (a && t) { const r = await search(a, t, duration); if (r) return r; }
   return null;
 }
 
@@ -51,7 +64,7 @@ ipcMain.handle('lyrics-get', async (_e, { artist, title, duration }) => {
     const r = await find(artist, title, duration);
     if (r && r.syncedLyrics) res = { lines: parse(r.syncedLyrics) };
     else if (r && r.instrumental) res = { instrumental: true };
-  } catch { return null; }                     // erreur reseau : on reessaiera a la prochaine chanson
+  } catch { return { error: true }; }          // erreur reseau : l'interface reessaiera un peu plus tard
   cache.set(key, res);
   if (cache.size > 60) cache.delete(cache.keys().next().value);
   return res;

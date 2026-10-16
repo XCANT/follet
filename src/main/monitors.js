@@ -31,8 +31,14 @@ async function pollMedia() {
   const trackChanged = m.key !== mediaKey;
   if (m.thumbVer !== thumbVer) { thumbVer = m.thumbVer; thumb = m.thumb || null; theme.setArt(thumb); }
   // Position : certaines applis ne mettent a jour la ligne de temps qu'aux changements d'etat
-  if (!posBase || posBase.raw !== m.position || trackChanged) posBase = { raw: m.position, at: Date.now() };
+  // (le navigateur donne l'heure de son dernier releve : on part de la, sinon de notre premiere lecture ;
+  // une reprise apres une pause sans nouveau releve repart de maintenant)
   const playing = m.status === 'Playing';
+  if (!posBase || posBase.raw !== m.position || posBase.updated !== m.updated || trackChanged || (playing && !posBase.playing)) {
+    const now = Date.now(), fresh = posBase && posBase.raw === m.position && posBase.updated === m.updated && !trackChanged;
+    posBase = { raw: m.position, updated: m.updated, at: !fresh && m.updated > now - 6 * 3600e3 && m.updated <= now ? m.updated : now };
+  }
+  posBase.playing = playing;
   const position = Math.min(m.duration || Infinity, posBase.raw + (playing ? (Date.now() - posBase.at) / 1000 : 0));
   media = { ...m, thumb, position, appName: appLabel(m.app) };
   // nouvelle chanson (pas au tout premier releve)

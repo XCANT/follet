@@ -210,13 +210,15 @@ follet.media().then((m) => { if (m) { I.media = m; I.mediaAt = Date.now(); rende
 I.mediaPos = () => { const m = I.media; return !m.present ? 0 : m.position + (m.status === 'Playing' ? (Date.now() - (I.mediaAt || Date.now())) / 1000 : 0); };
 I.lyrics = null;
 let lyricsKey = null, lyricShown = null;
-async function loadLyrics() {
+async function loadLyrics(retry) {
   const m = I.media, key = m.present ? `${m.artist}|${m.title}` : null;
-  if (key === lyricsKey) return;
+  if (key === lyricsKey && !retry) return;
   lyricsKey = key; I.lyrics = null; showLyric();
   if (!key) return;
-  const r = await follet.lyrics({ artist: m.artist, title: m.title, duration: m.duration }).catch(() => null);
-  if (key === lyricsKey && r && r.lines && r.lines.length) { I.lyrics = r.lines; showLyric(); }
+  const r = await follet.lyrics({ artist: m.artist, title: m.title, duration: m.duration }).catch(() => ({ error: true }));
+  if (key !== lyricsKey) return;
+  if (r && r.lines && r.lines.length) { I.lyrics = r.lines; showLyric(); }
+  else if (r && r.error) setTimeout(() => { if (key === lyricsKey) loadLyrics(true); }, 30000);   // LRCLIB injoignable
 }
 function currentLyric() {
   const L = I.lyrics; if (!L) return null;
